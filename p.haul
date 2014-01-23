@@ -1,0 +1,16 @@
+#!/bin/env python
+import sys
+import p_haul_img as ph_img
+import p_haul_iters as ph_iters
+
+if len(sys.argv) < 2:
+	print "Missing pid and host"
+	sys.exit(1)
+
+# Magic constants (should be configurable)
+tgt_pid = int(sys.argv[1])
+target_host = sys.argv[2]
+
+# Start the migration
+worker = ph_iters.phaul_iter_worker(tgt_pid, target_host, ph_img)
+worker.start_migration()

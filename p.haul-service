@@ -1,0 +1,9 @@
+#!/bin/env python
+
+import p_haul_service as ph_srv
+
+if __name__ == "__main__":
+	from rpyc.utils.server import ThreadedServer
+	print "Starting p.haul rpyc service"
+	t = ThreadedServer(ph_srv.phaul_service, port = 18861)
+	t.start()
