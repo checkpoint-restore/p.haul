@@ -2,6 +2,7 @@
 # The P.HAUL core -- the class that drives migration
 #
 
+import time
 import rpyc
 import rpc_pb2 as cr_rpc
 import p_haul_criu as cr_api
@@ -54,6 +55,8 @@ class phaul_iter_worker:
 		print "Connecting to target host"
 		th_con = rpyc.connect(self.target_host, rpyc_target_port)
 		self.th = th_con.root
+
+		start_time = time.time()
 
 		print "Starting iterations"
 		while True:
@@ -155,6 +158,8 @@ class phaul_iter_worker:
 			print "\tDump failed"
 			raise 1
 
+		end_time = time.time()
+
 		stats = cr_api.criu_get_dstats(self.img.image_dir())
 		print "Final dump -- %d pages, %d skipped" % \
 				(stats.pages_written, stats.pages_skipped_parent)
@@ -163,5 +168,7 @@ class phaul_iter_worker:
 		self.img.close()
 
 		rst_time = self.th.restore_time()
-		print "Migration succeeded, frozen time is ~%.2lf sec (restore ~%.2lf sec)" % \
-				((self.frozen_time) / 1000000., rst_time / 1000000.)
+		print "Migration succeeded"
+		print "\t  total time is ~%.2lf sec" % (end_time - start_time)
+		print "\t frozen time is ~%.2lf sec" % (self.frozen_time / 1000000.)
+		print "\trestore time is ~%.2lf sec" % (rst_time / 1000000.)
