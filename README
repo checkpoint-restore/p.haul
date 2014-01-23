@@ -1,0 +1,15 @@
+p.haul
+==============
+
+Process HAULer -- a tool to live-migrate containers and processes
+
+The live-migration idea is quite simple. To live migrate a task
+one needs to
+
+* stop it and save its state into image file(s)
+* make images available on the remote host
+* recreate task on it from the images
+
+This is what p.haul does. It heavily uses CRIU (http://criu.org)
+to do state dump and restore. Task's stopped time is decreased
+using the CRIU's pre-dump action.
