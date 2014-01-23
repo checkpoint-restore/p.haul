@@ -4,7 +4,7 @@ set -x
 set -e
 
 gcc "mem-touch.c" -o "mem-touch"
-for f in $(ldd a.out | grep -P '^\s' | grep -v vdso | sed "s/.*=> //" | awk '{ print $1 }'); do
+for f in $(ldd "mem-touch" | grep -P '^\s' | grep -v vdso | sed "s/.*=> //" | awk '{ print $1 }'); do
 	cp "$f" .
 done
 
