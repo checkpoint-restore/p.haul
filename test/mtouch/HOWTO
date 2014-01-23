@@ -19,6 +19,11 @@ from one node ot another (nodes can be VMs).
    NFS is required since p.haul currently doesn't handle FS migration,
    so any file used by migrating task should be available on both nodes.
 
+   Note, that absolute paths to files on that NFS mount should concide
+   on both nodes. E.g. you mount NFS on _both_ nodes on the same path,
+   or you share some directory from one node and mount it on the same
+   path on another.
+
 
 2. Prepare CRIU and p.haul on _both_ nodes
 
