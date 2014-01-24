@@ -19,7 +19,6 @@ class phaul_images:
 	def __init__(self):
 		self.current_iter = 0
 		self.current_dir = None
-		self.prev_dir = None
 		self.img_path = tempfile.mkdtemp("", "", img_path)
 
 	def close(self):
@@ -27,7 +26,6 @@ class phaul_images:
 		pass
 
 	def new_image_dir(self):
-		self.prev_dir = self.current_dir
 		self.current_iter += 1
 		img_dir = "%s/%d" % (self.img_path, self.current_iter)
 		print "\tMaking directory %s" % img_dir
@@ -41,7 +39,10 @@ class phaul_images:
 		return self.current_dir
 
 	def prev_image_dir(self):
-		return self.prev_dir
+		if self.current_iter == 1:
+			return None
+		else:
+			return "../%d" % (self.current_iter - 1)
 
 	# Images transfer
 	# Are there better ways for doing this?
