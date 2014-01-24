@@ -141,6 +141,7 @@ class phaul_iter_worker:
 			cc.ack_notify()
 
 		print "Dump complete"
+		self.th.end_iter()
 
 		#
 		# Dump is complete -- go to target node,
@@ -164,7 +165,6 @@ class phaul_iter_worker:
 		print "Final dump -- %d pages, %d skipped" % \
 				(stats.pages_written, stats.pages_skipped_parent)
 		self.frozen_time += stats.frozen_time
-		self.th.end_iter()
 		self.img.close()
 
 		rst_time = self.th.restore_time()

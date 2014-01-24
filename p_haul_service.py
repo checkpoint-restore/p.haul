@@ -50,7 +50,7 @@ class phaul_service(rpyc.Service):
 		self.start_page_server()
 
 	def exposed_end_iter(self):
-		pass
+		self.page_server_pid = 0
 
 	def exposed_get_ps_port(self):
 		return ps_start_port + self.dump_iter
