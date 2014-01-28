@@ -21,13 +21,16 @@ phaul_iter_min_size = 64
 phaul_iter_grow_max = 10
 
 class phaul_iter_worker:
-	def __init__(self, pid, host, img):
+	def __init__(self, p_type, host, img):
 		self.frozen_time = 0
 		self.iteration = 0
 		self.prev_stats = None
-		self.pid = pid
 		self.target_host = host
 		self.img = img.phaul_images()
+
+		self.htype = p_type
+		self.pid = p_type.root_task_pid()
+		print "\tWill work on %d task\n" % self.pid
 
 	def make_dump_req(self, typ):
 		#
@@ -55,6 +58,7 @@ class phaul_iter_worker:
 		print "Connecting to target host"
 		th_con = rpyc.connect(self.target_host, rpyc_target_port)
 		self.th = th_con.root
+		self.th.set_htype(self.htype.name(), self.htype.id())
 
 		start_time = time.time()
 

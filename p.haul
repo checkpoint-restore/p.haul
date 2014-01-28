@@ -1,16 +1,34 @@
 #!/bin/env python
 import sys
+import argparse
 import p_haul_img as ph_img
 import p_haul_iters as ph_iters
 
-if len(sys.argv) < 2:
-	print "Missing pid and host"
+import p_haul_type
+
+# Usage idea
+# p.haul <type> <id> <destination>
+#
+# E.g.
+#
+# # p.haul ovz 100 10.0.0.1
+#
+# or
+#
+# # p.haul lxc myct 10.0.0.2
+#
+
+parser = argparse.ArgumentParser("Process HAULer")
+parser.add_argument("type", help = "Type of hat to haul, e.g. ovz")
+parser.add_argument("id", help = "ID of what to haul")
+parser.add_argument("to", help = "IP where to haul")
+
+args = parser.parse_args()
+
+ph_type = p_haul_type.get(args.type, args.id)
+if not ph_type:
 	sys.exit(1)
 
-# Magic constants (should be configurable)
-tgt_pid = int(sys.argv[1])
-target_host = sys.argv[2]
-
 # Start the migration
-worker = ph_iters.phaul_iter_worker(tgt_pid, target_host, ph_img)
+worker = ph_iters.phaul_iter_worker(ph_type, args.to, ph_img)
 worker.start_migration()

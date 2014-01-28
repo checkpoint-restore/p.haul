@@ -6,6 +6,8 @@ import rpyc, rpc_pb2 as cr_rpc, os
 import p_haul_img as ph_img
 import p_haul_criu as cr_api
 
+import p_haul_type
+
 ps_start_port = 12345
 
 class phaul_service(rpyc.Service):
@@ -13,6 +15,7 @@ class phaul_service(rpyc.Service):
 		print "Connected"
 		self.dump_iter = 0
 		self.page_server_pid = 0
+		self.restored = False
 		self.img = ph_img.phaul_images() # FIXME -- get images driver from client
 
 	def on_disconnect(self):
@@ -21,8 +24,15 @@ class phaul_service(rpyc.Service):
 			print "Sopping page server %d" % self.page_server_pid
 			os.kill(self.page_server_pid, 9)
 
+		if self.htype and not self.restored:
+			self.htype.unroll_fs()
+
 		print "Closing images"
 		self.img.close()
+
+	def exposed_set_htype(self, name, id):
+		print "Selecting htype to %s, %s" % (name, id)
+		self.htype = p_haul_type.get(name, id)
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
@@ -65,10 +75,17 @@ class phaul_service(rpyc.Service):
 		req.type = cr_rpc.RESTORE
 		req.opts.images_dir_fd = self.img.image_dir_fd()
 
+		nroot = self.htype.prepare_fs()
+		if nroot:
+			req.opts.root = nroot
+			print "Restore root set to %s" % req.opts.root
+
 		resp = cc.send_req(req)
 		if (resp.type != cr_rpc.RESTORE) or (not resp.success):
 			print "\tFailed to restore"
 			raise 1
+
+		self.restored = True
 
 	def exposed_restore_time(self):
 		stats = cr_api.criu_get_rstats(self.img.image_dir())
