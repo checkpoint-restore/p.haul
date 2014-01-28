@@ -6,6 +6,7 @@ import p_haul_ovz
 import p_haul_pid
 
 haul_types = {
+	p_haul_ovz.name: p_haul_ovz,
 	p_haul_pid.name: p_haul_pid
 }
 

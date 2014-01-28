@@ -127,6 +127,8 @@ class phaul_iter_worker:
 		print "\tIssuing dump command to service"
 		req = self.make_dump_req(cr_rpc.DUMP)
 		req.opts.notify_scripts = True
+		req.opts.file_locks = True
+		req.opts.evasive_devices = True
 		cc.send_req(req, False)
 
 		while True:
