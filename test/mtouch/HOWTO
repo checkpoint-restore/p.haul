@@ -83,9 +83,12 @@ from one node ot another (nodes can be VMs).
 
 4. Migrate memory toucher from source node
 
-	[src]# ./p.haul $test_pid $destination_node_ip
+	[src]# ./p.haul pid $test_pid $destination_node_ip
 	...
-	Migration succeeded, frozen time is ~0.94 sec (restore ~0.70 sec)
+	Migration succeeded
+		total time is ~4.12 sec
+		frozen time is ~1.61 sec
+		restore time is ~1.06 sec
 
 
 5. Check that test works OK on destination node
