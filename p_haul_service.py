@@ -18,8 +18,10 @@ class phaul_service(rpyc.Service):
 	def on_disconnect(self):
 		print "Disconnected"
 		if self.page_server_pid:
-			print "Sopping page server"
+			print "Sopping page server %d" % self.page_server_pid
 			os.kill(self.page_server_pid, 9)
+
+		print "Closing images"
 		self.img.close()
 
 	def start_page_server(self):
