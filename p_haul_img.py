@@ -47,7 +47,7 @@ class phaul_images:
 	# Images transfer
 	# Are there better ways for doing this?
 
-	def sync_imgs_to_target(self, th):
+	def sync_imgs_to_target(self, th, htype):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
 		print "Sending images to target"
@@ -59,6 +59,12 @@ class phaul_images:
 			if img.endswith(".img"):
 				print "\t\t-> %s" % img
 				tf.add(os.path.join(self.current_dir, img), img)
+
+		print "\tAdd htype images"
+		for himg in htype.get_meta_images():
+			print "\t\t-> %s" % himg
+			tf.add(himg)
+
 		tf.close()
 
 		print "\tCopy"

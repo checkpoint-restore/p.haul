@@ -19,3 +19,9 @@ class p_haul_type:
 
 	def unroll_fs(self):
 		pass
+
+	def get_meta_images(self):
+		return []
+
+	def put_meta_images(self, dir):
+		pass

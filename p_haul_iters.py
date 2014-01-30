@@ -155,7 +155,7 @@ class phaul_iter_worker:
 		# tasks on source node
 		#
 
-		self.img.sync_imgs_to_target(self.th)
+		self.img.sync_imgs_to_target(self.th, self.htype)
 
 		print "Asking target host to restore"
 		self.th.restore_from_images()

@@ -3,12 +3,14 @@
 #
 
 import os
+import shutil
 
 name = "ovz"
 vzpid_dir = "/var/lib/vzctl/vepid/"
 vz_dir = "/vz"
 vzpriv_dir = "%s/private" % vz_dir
 vzroot_dir = "%s/root" % vz_dir
+vz_conf_dir = "/etc/vz/conf/"
 
 class p_haul_type:
 	def __init__(self, id):
@@ -28,6 +30,13 @@ class p_haul_type:
 
 	def __ct_root(self):
 		return "%s/%s" % (vzroot_dir, self.ctid)
+
+	def get_meta_images(self):
+		return [ os.path.join(vz_conf_dir, "%s.conf" % self.ctid) ]
+
+	def put_meta_images(self, dir):
+		print "Putting config file into %s" % vz_conf_dir
+		shutil.copy("%s/%s/%s.conf" % (dir, vz_conf_dir, self.ctid), vz_conf_dir)
 
 	def prepare_fs(self):
 		nroot = self.__ct_root()

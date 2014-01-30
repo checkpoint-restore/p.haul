@@ -71,6 +71,8 @@ class phaul_service(rpyc.Service):
 		print "Restoring from images"
 		cc = cr_api.criu_conn()
 
+		self.htype.put_meta_images(self.img.image_dir())
+
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.RESTORE
 		req.opts.images_dir_fd = self.img.image_dir_fd()
