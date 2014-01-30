@@ -11,6 +11,7 @@ vz_dir = "/vz"
 vzpriv_dir = "%s/private" % vz_dir
 vzroot_dir = "%s/root" % vz_dir
 vz_conf_dir = "/etc/vz/conf/"
+vz_pidfiles = "/var/lib/vzctl/vepid/"
 
 class p_haul_type:
 	def __init__(self, id):
@@ -50,3 +51,9 @@ class p_haul_type:
 			print "Unmounting CT root"
 			os.system("umount %s" % self.__ct_root())
 			self.fs_mounted = False
+
+	def restored(self, pid):
+		print "Writing pidfile"
+		pidfile = open(os.path.join(vz_pidfiles, self.ctid), 'w')
+		pidfile.write("%d" % pid)
+		pidfile.close()

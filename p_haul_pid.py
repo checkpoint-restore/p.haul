@@ -25,3 +25,6 @@ class p_haul_type:
 
 	def put_meta_images(self, dir):
 		pass
+
+	def restored(self, pid):
+		pass

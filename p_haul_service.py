@@ -87,6 +87,7 @@ class phaul_service(rpyc.Service):
 			print "\tFailed to restore"
 			raise 1
 
+		self.htype.restored(resp.restore.pid)
 		self.restored = True
 
 	def exposed_restore_time(self):
