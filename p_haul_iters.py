@@ -58,7 +58,7 @@ class phaul_iter_worker:
 		print "Connecting to target host"
 		th_con = rpyc.connect(self.target_host, rpyc_target_port)
 		self.th = th_con.root
-		self.th.set_htype(self.htype.name(), self.htype.id())
+		self.th.set_htype(self.htype.id())
 
 		start_time = time.time()
 

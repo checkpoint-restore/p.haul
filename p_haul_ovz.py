@@ -15,11 +15,8 @@ class p_haul_type:
 		self.ctid = id
 		self.fs_mounted = False
 
-	def name(self):
-		return name
-
 	def id(self):
-		return self.ctid
+		return (name, self.ctid)
 
 	def root_task_pid(self):
 		pf = open(os.path.join(vzpid_dir, self.ctid))

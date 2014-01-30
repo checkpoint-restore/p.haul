@@ -25,7 +25,7 @@ parser.add_argument("to", help = "IP where to haul")
 
 args = parser.parse_args()
 
-ph_type = p_haul_type.get(args.type, args.id)
+ph_type = p_haul_type.get((args.type, args.id))
 if not ph_type:
 	sys.exit(1)
 

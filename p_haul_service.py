@@ -30,9 +30,9 @@ class phaul_service(rpyc.Service):
 		print "Closing images"
 		self.img.close()
 
-	def exposed_set_htype(self, name, id):
-		print "Selecting htype to %s, %s" % (name, id)
-		self.htype = p_haul_type.get(name, id)
+	def exposed_set_htype(self, id):
+		print "Selecting htype to", id
+		self.htype = p_haul_type.get(id)
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
