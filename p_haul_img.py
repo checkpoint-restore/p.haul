@@ -6,6 +6,7 @@ import os
 import tempfile
 import rpyc
 import tarfile
+import time
 
 img_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
@@ -23,10 +24,14 @@ class phaul_images:
 		self.current_iter = 0
 		self.current_dir = None
 		self.img_path = tempfile.mkdtemp("", "", img_path)
+		self.sync_time = 0.0
 
 	def close(self):
 		# Remove images directory here (need CLI option --keep-images)
 		pass
+
+	def img_sync_time(self):
+		return self.sync_time
 
 	def new_image_dir(self):
 		self.current_iter += 1
@@ -55,6 +60,8 @@ class phaul_images:
 		# so copy only those from the top dir
 		print "Sending images to target"
 
+		start = time.time()
+
 		print "\tPack"
 		tf_name = os.path.join(self.current_dir, img_tarfile)
 		tf = tarfile.open(tf_name, "w")
@@ -78,6 +85,8 @@ class phaul_images:
 
 		print "\tUnpack"
 		rfh.unpack_and_close()
+
+		self.sync_time = time.time() - start
 
 # This one is created by target
 class exposed_images_tar():

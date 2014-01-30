@@ -175,6 +175,7 @@ class phaul_iter_worker:
 
 		rst_time = self.th.restore_time()
 		print "Migration succeeded"
-		print "\t  total time is ~%.2lf sec" % (end_time - start_time)
-		print "\t frozen time is ~%.2lf sec" % (self.frozen_time / 1000000.)
-		print "\trestore time is ~%.2lf sec" % (rst_time / 1000000.)
+		print "\t   total time is ~%.2lf sec" % (end_time - start_time)
+		print "\t  frozen time is ~%.2lf sec" % (self.frozen_time / 1000000.)
+		print "\t restore time is ~%.2lf sec" % (rst_time / 1000000.)
+		print "\timg sync time is ~%.2lf sec" % (self.img.img_sync_time())
