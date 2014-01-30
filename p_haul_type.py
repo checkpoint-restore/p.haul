@@ -1,5 +1,7 @@
 #
 # Haulers' type selector
+# Types (htypes) are classes, that help hauling processes.
+# See p_haul_pid for comments of how a class should look like.
 #
 
 import p_haul_ovz
