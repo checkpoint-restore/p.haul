@@ -2,7 +2,9 @@
 # P.HAUL code, that helps on the target node (rpyc service)
 #
 
-import rpyc, rpc_pb2 as cr_rpc, os
+import rpyc
+import os
+import rpc_pb2 as cr_rpc
 import p_haul_img as ph_img
 import p_haul_criu as cr_api
 

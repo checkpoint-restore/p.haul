@@ -3,7 +3,8 @@
 # Includes class to work with CRIU service and helpers
 #
 
-import socket, struct
+import socket
+import struct
 import rpc_pb2 as cr_rpc
 import stats_pb2 as crs
 

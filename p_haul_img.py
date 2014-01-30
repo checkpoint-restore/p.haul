@@ -2,7 +2,10 @@
 # images driver for migration (without FS transfer)
 #
 
-import os, tempfile, rpyc, tarfile
+import os
+import tempfile
+import rpyc
+import tarfile
 
 img_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
