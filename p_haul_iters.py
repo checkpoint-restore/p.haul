@@ -61,6 +61,7 @@ class phaul_iter_worker:
 		self.th.set_htype(self.htype.id())
 
 		start_time = time.time()
+		iter_times = []
 
 		print "Starting iterations"
 		while True:
@@ -85,6 +86,7 @@ class phaul_iter_worker:
 			print "Dumped %d pages, %d skipped" % \
 					(stats.pages_written, stats.pages_skipped_parent)
 
+			iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
 			self.frozen_time += stats.frozen_time
 
 			#
@@ -170,12 +172,13 @@ class phaul_iter_worker:
 		stats = cr_api.criu_get_dstats(self.img.image_dir())
 		print "Final dump -- %d pages, %d skipped" % \
 				(stats.pages_written, stats.pages_skipped_parent)
+		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
 		self.frozen_time += stats.frozen_time
 		self.img.close()
 
 		rst_time = self.th.restore_time()
 		print "Migration succeeded"
 		print "\t   total time is ~%.2lf sec" % (end_time - start_time)
-		print "\t  frozen time is ~%.2lf sec" % (self.frozen_time / 1000000.)
+		print "\t  frozen time is ~%.2lf sec (" % (self.frozen_time / 1000000.), iter_times, ")"
 		print "\t restore time is ~%.2lf sec" % (rst_time / 1000000.)
 		print "\timg sync time is ~%.2lf sec" % (self.img.img_sync_time())
