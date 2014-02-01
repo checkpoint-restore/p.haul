@@ -167,6 +167,8 @@ class phaul_iter_worker:
 			print "\tDump failed"
 			raise 1
 
+		self.htype.clean_migrated()
+
 		end_time = time.time()
 
 		stats = cr_api.criu_get_dstats(self.img.image_dir())

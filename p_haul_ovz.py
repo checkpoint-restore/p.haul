@@ -46,11 +46,17 @@ class p_haul_type:
 		self.fs_mounted = True
 		return nroot
 
+	def __umount_root(self):
+		print "Umounting CT root"
+		os.system("umount %s" % self.__ct_root())
+		self.fs_mounted = False
+
 	def unroll_fs(self):
 		if self.fs_mounted:
-			print "Unmounting CT root"
-			os.system("umount %s" % self.__ct_root())
-			self.fs_mounted = False
+			self.__umount_root()
+
+	def clean_migrated(self):
+		self.__umount_root()
 
 	def restored(self, pid):
 		print "Writing pidfile"
