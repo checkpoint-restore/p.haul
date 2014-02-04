@@ -27,7 +27,7 @@ class phaul_iter_worker:
 		self.prev_stats = None
 		self.target_host = host
 		self.img = img.phaul_images()
-
+		self.verb = cr_api.def_verb
 		self.htype = p_type
 		self.pid = p_type.root_task_pid()
 		print "\tWill work on %d task\n" % self.pid
@@ -51,14 +51,19 @@ class phaul_iter_worker:
 
 		return req
 
+	def verbose(self, level):
+		self.verb = level
+
 	def start_migration(self):
 		print "Connecting to CRIU service"
 		cc = cr_api.criu_conn()
+		cc.verbose(self.verb)
 
 		print "Connecting to target host"
 		th_con = rpyc.connect(self.target_host, rpyc_target_port)
 		self.th = th_con.root
 		self.th.set_htype(self.htype.id())
+		self.th.verbose(self.verb)
 
 		start_time = time.time()
 		iter_times = []

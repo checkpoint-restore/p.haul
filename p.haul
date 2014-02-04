@@ -4,6 +4,7 @@ import argparse
 import p_haul_img as ph_img
 import p_haul_iters as ph_iters
 
+import p_haul_criu
 import p_haul_type
 
 # Usage idea
@@ -22,6 +23,7 @@ parser = argparse.ArgumentParser("Process HAULer")
 parser.add_argument("type", help = "Type of hat to haul, e.g. ovz")
 parser.add_argument("id", help = "ID of what to haul")
 parser.add_argument("to", help = "IP where to haul")
+parser.add_argument("-v", help = "Verbosity level", default = p_haul_criu.def_verb, type = int)
 
 args = parser.parse_args()
 
@@ -31,4 +33,5 @@ if not ph_type:
 
 # Start the migration
 worker = ph_iters.phaul_iter_worker(ph_type, args.to, ph_img)
+worker.verbose(args.v)
 worker.start_migration()

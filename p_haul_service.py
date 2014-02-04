@@ -19,6 +19,7 @@ class phaul_service(rpyc.Service):
 		self.page_server_pid = 0
 		self.restored = False
 		self.img = ph_img.phaul_images() # FIXME -- get images driver from client
+		self.verb = cr_api.def_verb
 
 	def on_disconnect(self):
 		print "Disconnected"
@@ -32,6 +33,9 @@ class phaul_service(rpyc.Service):
 		print "Closing images"
 		self.img.close()
 
+	def exposed_verbose(self, level):
+		self.verb = level
+
 	def exposed_set_htype(self, id):
 		print "Selecting htype to", id
 		self.htype = p_haul_type.get(id)
@@ -39,6 +43,7 @@ class phaul_service(rpyc.Service):
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
 		cc = cr_api.criu_conn()
+		cc.verbose(self.verb)
 
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.PAGE_SERVER
@@ -72,6 +77,7 @@ class phaul_service(rpyc.Service):
 	def exposed_restore_from_images(self):
 		print "Restoring from images"
 		cc = cr_api.criu_conn()
+		cc.verbose(self.verb)
 
 		self.htype.put_meta_images(self.img.image_dir())
 

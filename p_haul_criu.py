@@ -16,6 +16,8 @@ req_types = {
 	cr_rpc.RESTORE: "restore"
 }
 
+def_verb = 2
+
 #
 # Connection to CRIU service
 #
@@ -25,9 +27,13 @@ class criu_conn:
 		print "\tConnecting to CRIU service"
 		self.cs = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		self.cs.connect(criu_socket)
+		self.verb = def_verb
+
+	def verbose(self, level):
+		self.verb = level
 
 	def send_req(self, req, with_resp = True):
-		req.opts.log_level = 3
+		req.opts.log_level = self.verb
 		req.opts.log_file = "criu_%s.log" % req_types[req.type]
 		self.cs.send(req.SerializeToString())
 		if with_resp:
