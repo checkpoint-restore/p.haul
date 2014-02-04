@@ -67,12 +67,10 @@ class phaul_images:
 		tf = tarfile.open(tf_name, "w")
 		for img in os.listdir(self.current_dir):
 			if img.endswith(".img"):
-				print "\t\t-> %s" % img
 				tf.add(os.path.join(self.current_dir, img), img)
 
 		print "\tAdd htype images"
 		for himg in htype.get_meta_images():
-			print "\t\t-> %s" % himg
 			tf.add(himg)
 
 		tf.close()
