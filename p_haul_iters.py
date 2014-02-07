@@ -136,6 +136,7 @@ class phaul_iter_worker:
 		req.opts.notify_scripts = True
 		req.opts.file_locks = True
 		req.opts.evasive_devices = True
+		req.opts.link_remap = True
 		cc.send_req(req, False)
 
 		while True:
