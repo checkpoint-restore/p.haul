@@ -141,7 +141,7 @@ class phaul_iter_worker:
 		while True:
 			resp = cc.recv_resp()
 			if resp.type != cr_rpc.NOTIFY:
-				print "Unexpected responce from service"
+				print "Unexpected responce from service (%d)" % resp.type
 				raise 1
 			if resp.notify.script == "post-dump":
 				#
@@ -150,7 +150,7 @@ class phaul_iter_worker:
 				# and keeps the tasks frozen.
 				#
 				break
-			print "\t\tNotify"
+			print "\t\tNotify (%s)" % resp.notify.script
 			cc.ack_notify()
 
 		print "Dump complete"
