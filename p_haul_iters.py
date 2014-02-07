@@ -141,8 +141,13 @@ class phaul_iter_worker:
 		while True:
 			resp = cc.recv_resp()
 			if resp.type != cr_rpc.NOTIFY:
+				if resp.type == cr_rpc.DUMP and not resp.success:
+					print "Dump failed"
+					raise 1
+
 				print "Unexpected responce from service (%d)" % resp.type
 				raise 1
+
 			if resp.notify.script == "post-dump":
 				#
 				# Dump is effectively over. Now CRIU
