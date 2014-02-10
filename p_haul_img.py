@@ -71,7 +71,7 @@ class phaul_images:
 
 		print "\tAdd htype images"
 		for himg in htype.get_meta_images(self.current_dir):
-			tf.add(himg)
+			tf.add(himg[0], himg[1])
 
 		tf.close()
 

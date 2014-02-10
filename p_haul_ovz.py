@@ -32,12 +32,17 @@ class p_haul_type:
 	def __ct_root(self):
 		return "%s/%s" % (vzroot_dir, self.ctid)
 
+	def __ct_config(self):
+		return "%s.conf" % self.ctid
+
 	def get_meta_images(self, dir):
-		return [ os.path.join(vz_conf_dir, "%s.conf" % self.ctid) ]
+		cfg_name = self.__ct_config()
+		return [ (os.path.join(vz_conf_dir, cfg_name), cfg_name) ]
 
 	def put_meta_images(self, dir):
 		print "Putting config file into %s" % vz_conf_dir
-		shutil.copy("%s/%s/%s.conf" % (dir, vz_conf_dir, self.ctid), vz_conf_dir)
+		cfg_name = self.__ct_config()
+		shutil.copy("%s/%s" % (dir, self.__ct_config()), vz_conf_dir)
 
 	def prepare_fs(self):
 		nroot = self.__ct_root()
