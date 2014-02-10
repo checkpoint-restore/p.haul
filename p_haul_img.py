@@ -70,7 +70,7 @@ class phaul_images:
 				tf.add(os.path.join(self.current_dir, img), img)
 
 		print "\tAdd htype images"
-		for himg in htype.get_meta_images():
+		for himg in htype.get_meta_images(self.current_dir):
 			tf.add(himg)
 
 		tf.close()

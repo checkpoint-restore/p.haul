@@ -32,7 +32,7 @@ class p_haul_type:
 	def __ct_root(self):
 		return "%s/%s" % (vzroot_dir, self.ctid)
 
-	def get_meta_images(self):
+	def get_meta_images(self, dir):
 		return [ os.path.join(vz_conf_dir, "%s.conf" % self.ctid) ]
 
 	def put_meta_images(self, dir):

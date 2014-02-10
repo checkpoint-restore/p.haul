@@ -30,8 +30,9 @@ class p_haul_type:
 		pass
 
 	# Get list of files which should be copied to
-	# the destination node
-	def get_meta_images(self):
+	# the destination node. The dir argument is where
+	# temporary stuff can be put
+	def get_meta_images(self, dir):
 		return []
 
 	# Take your files from dir and put in whatever
