@@ -36,7 +36,7 @@ class phaul_iter_worker:
 		self.th.set_htype(self.htype.id())
 
 		self.pid = p_type.root_task_pid()
-		print "\tWill work on %d task\n" % self.pid
+		print "\tWill work on %d task" % self.pid
 
 	def make_dump_req(self, typ):
 		#
