@@ -7,6 +7,7 @@ import tempfile
 import rpyc
 import tarfile
 import time
+import shutil
 
 img_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
@@ -26,8 +27,12 @@ class phaul_images:
 		self.img_path = tempfile.mkdtemp("", "", img_path)
 		self.sync_time = 0.0
 
-	def close(self):
-		# Remove images directory here (need CLI option --keep-images)
+	def close(self, keep_images):
+		if not keep_images:
+			print "Removing images"
+			shutil.rmtree(self.img_path)
+		else:
+			print "Images are kept in %s" % self.img_path
 		pass
 
 	def img_sync_time(self):

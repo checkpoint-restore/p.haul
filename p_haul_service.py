@@ -31,10 +31,13 @@ class phaul_service(rpyc.Service):
 			self.htype.unroll_fs()
 
 		print "Closing images"
-		self.img.close()
+		self.img.close(self.keep_images)
 
 	def exposed_verbose(self, level):
 		self.verb = level
+
+	def exposed_keep_images(self, v):
+		self.keep_images = v
 
 	def exposed_set_htype(self, id):
 		print "Selecting htype to", id

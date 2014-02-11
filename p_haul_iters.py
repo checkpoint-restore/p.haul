@@ -54,6 +54,9 @@ class phaul_iter_worker:
 	def verbose(self, level):
 		self.verb = level
 
+	def keep_images(self, val):
+		self.keep_images = val
+
 	def start_migration(self):
 		print "Connecting to CRIU service"
 		cc = cr_api.criu_conn()
@@ -64,6 +67,7 @@ class phaul_iter_worker:
 		self.th = th_con.root
 		self.th.set_htype(self.htype.id())
 		self.th.verbose(self.verb)
+		self.th.keep_images(self.keep_images)
 
 		start_time = time.time()
 		iter_times = []
@@ -188,7 +192,7 @@ class phaul_iter_worker:
 				(stats.pages_written, stats.pages_skipped_parent)
 		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
 		self.frozen_time += stats.frozen_time
-		self.img.close()
+		self.img.close(self.keep_images)
 
 		rst_time = self.th.restore_time()
 		print "Migration succeeded"
