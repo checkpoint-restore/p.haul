@@ -19,7 +19,7 @@ class p_haul_type:
 	def __init__(self, id):
 		self.ctid = id
 		self.fs_mounted = False
-		self.veths = []
+		self._veths = []
 
 	def id(self):
 		return (name, self.ctid)
@@ -77,7 +77,7 @@ class p_haul_type:
 						v_out = pa[1]
 
 					if v_in and v_out:
-						self.veths.append((v_in, v_out))
+						self._veths.append((v_in, v_out))
 						break
 		ifd.close()
 		ofd.close()
@@ -99,6 +99,9 @@ class p_haul_type:
 		os.system("mount --bind %s %s" % (self.__ct_priv(), nroot))
 		self.fs_mounted = True
 		return nroot
+
+	def veths(self):
+		return self._veths
 
 	def __umount_root(self):
 		print "Umounting CT root"

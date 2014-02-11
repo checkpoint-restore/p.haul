@@ -86,6 +86,11 @@ class phaul_service(rpyc.Service):
 		req.opts.images_dir_fd = self.img.image_dir_fd()
 		req.opts.notify_scripts = True
 
+		for veth in self.htype.veths():
+			v = req.opts.veths.add()
+			v.if_in = veth[0]
+			v.if_out = veth[1]
+
 		nroot = self.htype.prepare_fs()
 		if nroot:
 			req.opts.root = nroot

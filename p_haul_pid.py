@@ -46,6 +46,10 @@ class p_haul_type:
 	def prepare_ct(self, pid):
 		pass
 
+	# Get list of veth pairs if any
+	def veths(self):
+		return []
+
 	# Restoring done, the new top task has pid pid
 	def restored(self, pid):
 		pass
