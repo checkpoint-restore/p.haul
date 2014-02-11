@@ -37,6 +37,9 @@ class p_haul_type:
 	def __ct_config(self):
 		return "%s.conf" % self.ctid
 
+	#
+	# Meta-images for OVZ -- container config and info about CGroups
+	#
 	def get_meta_images(self, dir):
 		cg_img = os.path.join(dir, cg_image_name)
 		p_haul_cgroup.dump_hier(self.root_task_pid(), cg_img)
@@ -48,8 +51,14 @@ class p_haul_type:
 		print "Putting config file into %s" % vz_conf_dir
 		cfg_name = self.__ct_config()
 		shutil.copy("%s/%s" % (dir, self.__ct_config()), vz_conf_dir)
+		# Keep this name, we'll need one in prepare_ct()
 		self.cg_img = os.path.join(dir, cg_image_name)
 
+	#
+	# Create cgroup hierarchy and put root task into it
+	# Hierarchy is unlimited, we will apply config limitations
+	# in ->restored->__apply_cg_config later
+	#
 	def prepare_ct(self, pid):
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
