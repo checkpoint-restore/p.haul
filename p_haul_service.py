@@ -84,16 +84,32 @@ class phaul_service(rpyc.Service):
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.RESTORE
 		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.notify_scripts = True
 
 		nroot = self.htype.prepare_fs()
 		if nroot:
 			req.opts.root = nroot
 			print "Restore root set to %s" % req.opts.root
 
-		resp = cc.send_req(req)
-		if (resp.type != cr_rpc.RESTORE) or (not resp.success):
-			print "\tFailed to restore"
-			raise 1
+		cc.send_req(req, False)
+
+		while True:
+			resp = cc.recv_resp()
+			if resp.type == cr_rpc.NOTIFY:
+				print "\t\tNotify (%s)" % resp.notify.script
+				cc.ack_notify()
+				continue
+
+			if resp.type != cr_rpc.RESTORE:
+				print "Unexpected responce from service (%d)" % resp.type
+				raise 1
+
+			if not resp.success:
+				print "Restore failed"
+				raise 1
+
+			print "Restore succeeded"
+			break
 
 		self.htype.restored(resp.restore.pid)
 		self.restored = True
