@@ -50,7 +50,18 @@ class p_haul_type:
 	def put_meta_images(self, dir):
 		print "Putting config file into %s" % vz_conf_dir
 		cfg_name = self.__ct_config()
-		shutil.copy("%s/%s" % (dir, self.__ct_config()), vz_conf_dir)
+
+		#
+		# Copy config into /etc parsing it at the same time
+		#
+
+		ifd = open(os.path.join(dir, self.__ct_config()))
+		ofd = open(os.path.join(vz_conf_dir, self.__ct_config()), "w")
+		for line in ifd:
+			ofd.write(line)
+		ifd.close()
+		ofd.close()
+
 		# Keep this name, we'll need one in prepare_ct()
 		self.cg_img = os.path.join(dir, cg_image_name)
 
