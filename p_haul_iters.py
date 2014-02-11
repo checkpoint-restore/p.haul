@@ -156,6 +156,7 @@ class phaul_iter_worker:
 				# and keeps the tasks frozen.
 				#
 				break
+
 			print "\t\tNotify (%s)" % resp.notify.script
 			cc.ack_notify()
 
