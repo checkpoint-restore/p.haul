@@ -19,6 +19,7 @@ class p_haul_type:
 	def __init__(self, id):
 		self.ctid = id
 		self.fs_mounted = False
+		self.veths = []
 
 	def id(self):
 		return (name, self.ctid)
@@ -59,6 +60,25 @@ class p_haul_type:
 		ofd = open(os.path.join(vz_conf_dir, self.__ct_config()), "w")
 		for line in ifd:
 			ofd.write(line)
+
+			if line.startswith("NETIF="):
+				#
+				# Parse and keep veth pairs, later we will
+				# equip restore request with this data
+				#
+				v_in = None
+				v_out = None
+				vs = line.split("=", 1)[1].strip("\"")
+				for parm in vs.split(","):
+					pa = parm.split("=")
+					if pa[0] == "ifname":
+						v_in = pa[1]
+					elif pa[0] == "host_ifname":
+						v_out = pa[1]
+
+					if v_in and v_out:
+						self.veths.append((v_in, v_out))
+						break
 		ifd.close()
 		ofd.close()
 
