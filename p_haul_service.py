@@ -96,7 +96,15 @@ class phaul_service(rpyc.Service):
 		while True:
 			resp = cc.recv_resp()
 			if resp.type == cr_rpc.NOTIFY:
-				print "\t\tNotify (%s)" % resp.notify.script
+				print "\t\tNotify (%s.%d)" % (resp.notify.script, resp.notify.pid)
+				if resp.notify.script == "setup-namespaces":
+					# At that point we have only one task
+					# living in namespaces and waiting for
+					# us to ACK the notify. Htype might want
+					# to configure namespace (external net
+					# devices) and cgroups
+					self.htype.prepare_ct(resp.notify.pid)
+
 				cc.ack_notify()
 				continue
 

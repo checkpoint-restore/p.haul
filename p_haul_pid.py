@@ -41,6 +41,11 @@ class p_haul_type:
 	def put_meta_images(self, dir):
 		pass
 
+	# Things are started to get restored, only the
+	# first task (with pid @pid) is created.
+	def prepare_ct(self, pid):
+		pass
+
 	# Restoring done, the new top task has pid pid
 	def restored(self, pid):
 		pass
