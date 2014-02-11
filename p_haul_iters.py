@@ -28,12 +28,13 @@ class phaul_iter_worker:
 		self.target_host = host
 		self.img = img.phaul_images()
 		self.verb = cr_api.def_verb
-		self.htype = p_type
 
 		print "Connecting to target host"
 		self.th_con = rpyc.connect(self.target_host, rpyc_target_port)
 		self.th = self.th_con.root
-		self.th.set_htype(self.htype.id())
+
+		self.htype = p_type
+		self.th.htype(p_type.id())
 
 		self.pid = p_type.root_task_pid()
 		print "\tWill work on %d task" % self.pid

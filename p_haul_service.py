@@ -39,7 +39,7 @@ class phaul_service(rpyc.Service):
 	def exposed_keep_images(self, v):
 		self.keep_images = v
 
-	def exposed_set_htype(self, id):
+	def exposed_htype(self, id):
 		print "Selecting htype to", id
 		self.htype = p_haul_type.get(id)
 
