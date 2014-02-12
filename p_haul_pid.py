@@ -58,3 +58,12 @@ class p_haul_type:
 	# things up if required
 	def clean_migrated(self):
 		pass
+
+	#
+	# Lock and unlock networking
+	#
+	def net_lock(self):
+		pass
+
+	def net_unlock(self):
+		pass

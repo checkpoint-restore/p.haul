@@ -114,6 +114,11 @@ class phaul_service(rpyc.Service):
 					# devices) and cgroups
 					#
 					self.htype.prepare_ct(resp.notify.pid)
+				elif resp.notify.script == "network-unlock":
+					self.htype.net_unlock()
+				elif resp.notify.script == "network-lock":
+					print "Locking network on restore?"
+					raise 1
 
 				cc.ack_notify()
 				continue

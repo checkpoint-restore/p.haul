@@ -163,6 +163,11 @@ class phaul_iter_worker:
 				#
 				break
 
+			elif resp.notify.script == "network-lock":
+				self.htype.net_lock()
+			elif resp.notify.script == "network-unlock":
+				self.htype.net_unlock()
+
 			print "\t\tNotify (%s)" % resp.notify.script
 			cc.ack_notify()
 
