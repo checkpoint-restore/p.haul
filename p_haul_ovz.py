@@ -16,16 +16,44 @@ vz_pidfiles = "/var/lib/vzctl/vepid/"
 cg_image_name = "ovzcg.img"
 
 class p_haul_type:
+	def __load_ct_config(self, dir):
+		print "Loading config file from %s" % dir
+		ifd = open(os.path.join(dir, self.__ct_config()))
+		for line in ifd:
+			self.cfg.append(line)
+
+			if line.startswith("NETIF="):
+				#
+				# Parse and keep veth pairs, later we will
+				# equip restore request with this data
+				#
+				v_in = None
+				v_out = None
+				vs = line.split("=", 1)[1].strip("\"")
+				for parm in vs.split(","):
+					pa = parm.split("=")
+					if pa[0] == "ifname":
+						v_in = pa[1]
+					elif pa[0] == "host_ifname":
+						v_out = pa[1]
+
+					if v_in and v_out:
+						self._veths.append((v_in, v_out))
+						break
+		ifd.close()
+
 	def __init__(self, id):
 		self.ctid = id
 		self.fs_mounted = False
 		self._veths = []
+		self.cfg = []
 
 	def id(self):
 		return (name, self.ctid)
 
 	def init_src(self):
-		pass
+		self.__load_ct_config(vz_conf_dir)
+
 	def init_dst(self):
 		pass
 
@@ -55,36 +83,10 @@ class p_haul_type:
 
 	def put_meta_images(self, dir):
 		print "Putting config file into %s" % vz_conf_dir
-		cfg_name = self.__ct_config()
 
-		#
-		# Copy config into /etc parsing it at the same time
-		#
-
-		ifd = open(os.path.join(dir, self.__ct_config()))
+		self.__load_ct_config(dir)
 		ofd = open(os.path.join(vz_conf_dir, self.__ct_config()), "w")
-		for line in ifd:
-			ofd.write(line)
-
-			if line.startswith("NETIF="):
-				#
-				# Parse and keep veth pairs, later we will
-				# equip restore request with this data
-				#
-				v_in = None
-				v_out = None
-				vs = line.split("=", 1)[1].strip("\"")
-				for parm in vs.split(","):
-					pa = parm.split("=")
-					if pa[0] == "ifname":
-						v_in = pa[1]
-					elif pa[0] == "host_ifname":
-						v_out = pa[1]
-
-					if v_in and v_out:
-						self._veths.append((v_in, v_out))
-						break
-		ifd.close()
+		ofd.writelines(self.cfg)
 		ofd.close()
 
 		# Keep this name, we'll need one in prepare_ct()
