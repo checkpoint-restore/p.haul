@@ -5,6 +5,7 @@
 import os
 import shutil
 import p_haul_cgroup
+import p_haul_netifapi as netif
 
 name = "ovz"
 vzpid_dir = "/var/lib/vzctl/vepid/"
@@ -136,7 +137,9 @@ class p_haul_type:
 		self.__apply_cg_config()
 
 	def net_lock(self):
-		pass
+		for veth in self._veths:
+			netif.ifdown(veth[1])
 
 	def net_unlock(self):
-		pass
+		for veth in self._veths:
+			netif.ifup(veth[1])
