@@ -28,7 +28,7 @@ parser.add_argument("--keep-images", help = "Keep images after migration", defau
 
 args = parser.parse_args()
 
-ph_type = p_haul_type.get((args.type, args.id))
+ph_type = p_haul_type.get_src((args.type, args.id))
 if not ph_type:
 	sys.exit(1)
 

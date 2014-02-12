@@ -8,6 +8,15 @@ class p_haul_type:
 	def __init__(self, id):
 		self.pid = int(id)
 
+
+	#
+	# Initialize itself for source node or destination one
+	#
+	def init_src(self):
+		pass
+	def init_dst(self):
+		pass
+
 	# Get tuple of name and id to construct the
 	# same object on the remote host
 	def id(self):

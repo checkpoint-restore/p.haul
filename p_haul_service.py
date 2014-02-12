@@ -41,7 +41,7 @@ class phaul_service(rpyc.Service):
 
 	def exposed_htype(self, id):
 		print "Selecting htype to", id
-		self.htype = p_haul_type.get(id)
+		self.htype = p_haul_type.get_dst(id)
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter

@@ -24,6 +24,11 @@ class p_haul_type:
 	def id(self):
 		return (name, self.ctid)
 
+	def init_src(self):
+		pass
+	def init_dst(self):
+		pass
+
 	def root_task_pid(self):
 		pf = open(os.path.join(vzpid_dir, self.ctid))
 		pid = pf.read()
