@@ -26,7 +26,8 @@ class p_haul_type:
 			if line.startswith("NETIF="):
 				#
 				# Parse and keep veth pairs, later we will
-				# equip restore request with this data
+				# equip restore request with this data and
+				# will use it while (un)locking the network
 				#
 				v_in = None
 				v_out = None
@@ -49,6 +50,12 @@ class p_haul_type:
 
 	def __init__(self, id):
 		self._ctid = id
+		#
+		# This list would contain (v_in, v_out, v_br) tuples where
+		# v_in is the name of veth device in CT
+		# v_out is its peer on the host
+		# v_bridge is the bridge to which thie veth is attached
+		#
 		self._veths = []
 		self._cfg = []
 
@@ -115,6 +122,11 @@ class p_haul_type:
 		return nroot
 
 	def veths(self):
+		#
+		# Caller wants to see list of tuples with [0] being name
+		# in CT and [1] being name on host. Just return existing
+		# tuples, the [2] with bridge name wouldn't hurt
+		#
 		return self._veths
 
 	def __umount_root(self):
