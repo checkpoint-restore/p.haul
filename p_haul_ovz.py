@@ -21,7 +21,7 @@ class p_haul_type:
 		print "Loading config file from %s" % dir
 		ifd = open(os.path.join(dir, self.__ct_config()))
 		for line in ifd:
-			self.cfg.append(line)
+			self._cfg.append(line)
 
 			if line.startswith("NETIF="):
 				#
@@ -48,12 +48,12 @@ class p_haul_type:
 		ifd.close()
 
 	def __init__(self, id):
-		self.ctid = id
+		self._ctid = id
 		self._veths = []
-		self.cfg = []
+		self._cfg = []
 
 	def id(self):
-		return (name, self.ctid)
+		return (name, self._ctid)
 
 	def init_src(self):
 		self._fs_mounted = True
@@ -65,18 +65,18 @@ class p_haul_type:
 		self._bridged = False
 
 	def root_task_pid(self):
-		pf = open(os.path.join(vzpid_dir, self.ctid))
+		pf = open(os.path.join(vzpid_dir, self._ctid))
 		pid = pf.read()
 		return int(pid)
 
 	def __ct_priv(self):
-		return "%s/%s" % (vzpriv_dir, self.ctid)
+		return "%s/%s" % (vzpriv_dir, self._ctid)
 
 	def __ct_root(self):
-		return "%s/%s" % (vzroot_dir, self.ctid)
+		return "%s/%s" % (vzroot_dir, self._ctid)
 
 	def __ct_config(self):
-		return "%s.conf" % self.ctid
+		return "%s.conf" % self._ctid
 
 	#
 	# Meta-images for OVZ -- container config and info about CGroups
@@ -93,7 +93,7 @@ class p_haul_type:
 
 		self.__load_ct_config(dir)
 		ofd = open(os.path.join(vz_conf_dir, self.__ct_config()), "w")
-		ofd.writelines(self.cfg)
+		ofd.writelines(self._cfg)
 		ofd.close()
 
 		# Keep this name, we'll need one in prepare_ct()
@@ -133,7 +133,7 @@ class p_haul_type:
 
 	def restored(self, pid):
 		print "Writing pidfile"
-		pidfile = open(os.path.join(vz_pidfiles, self.ctid), 'w')
+		pidfile = open(os.path.join(vz_pidfiles, self._ctid), 'w')
 		pidfile.write("%d" % pid)
 		pidfile.close()
 
