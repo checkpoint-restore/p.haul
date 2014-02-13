@@ -17,6 +17,17 @@ vz_pidfiles = "/var/lib/vzctl/vepid/"
 cg_image_name = "ovzcg.img"
 
 class p_haul_type:
+	def __init__(self, id):
+		self._ctid = id
+		#
+		# This list would contain (v_in, v_out, v_br) tuples where
+		# v_in is the name of veth device in CT
+		# v_out is its peer on the host
+		# v_bridge is the bridge to which thie veth is attached
+		#
+		self._veths = []
+		self._cfg = []
+
 	def __load_ct_config(self, dir):
 		print "Loading config file from %s" % dir
 		ifd = open(os.path.join(dir, self.__ct_config()))
@@ -48,16 +59,10 @@ class p_haul_type:
 
 		ifd.close()
 
-	def __init__(self, id):
-		self._ctid = id
-		#
-		# This list would contain (v_in, v_out, v_br) tuples where
-		# v_in is the name of veth device in CT
-		# v_out is its peer on the host
-		# v_bridge is the bridge to which thie veth is attached
-		#
-		self._veths = []
-		self._cfg = []
+	def __apply_cg_config(self):
+		print "Applying CT configs"
+		# FIXME -- implement
+		pass
 
 	def id(self):
 		return (name, self._ctid)
@@ -114,6 +119,11 @@ class p_haul_type:
 	def prepare_ct(self, pid):
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
+	def __umount_root(self):
+		print "Umounting CT root"
+		os.system("umount %s" % self.__ct_root())
+		self._fs_mounted = False
+
 	def mount(self):
 		nroot = self.__ct_root()
 		print "Mounting CT root to %s" % nroot
@@ -121,27 +131,9 @@ class p_haul_type:
 		self._fs_mounted = True
 		return nroot
 
-	def veths(self):
-		#
-		# Caller wants to see list of tuples with [0] being name
-		# in CT and [1] being name on host. Just return existing
-		# tuples, the [2] with bridge name wouldn't hurt
-		#
-		return self._veths
-
-	def __umount_root(self):
-		print "Umounting CT root"
-		os.system("umount %s" % self.__ct_root())
-		self._fs_mounted = False
-
 	def umount(self):
 		if self._fs_mounted:
 			self.__umount_root()
-
-	def __apply_cg_config(self):
-		print "Applying CT configs"
-		# FIXME -- implement
-		pass
 
 	def restored(self, pid):
 		print "Writing pidfile"
@@ -163,3 +155,12 @@ class p_haul_type:
 
 	def can_migrate_tcp(self):
 		return True
+
+	def veths(self):
+		#
+		# Caller wants to see list of tuples with [0] being name
+		# in CT and [1] being name on host. Just return existing
+		# tuples, the [2] with bridge name wouldn't hurt
+		#
+		return self._veths
+
