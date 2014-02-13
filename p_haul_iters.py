@@ -190,7 +190,7 @@ class phaul_iter_worker:
 			print "\tDump failed"
 			raise 1
 
-		self.htype.clean_migrated()
+		self.htype.unroll_fs()
 
 		end_time = time.time()
 

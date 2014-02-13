@@ -34,7 +34,7 @@ class p_haul_type:
 	def prepare_fs(self):
 		return None
 
-	# Roll back any changes done by prepare_fs
+	# Remove any specific FS setup
 	def unroll_fs(self):
 		pass
 
@@ -61,11 +61,6 @@ class p_haul_type:
 
 	# Restoring done, the new top task has pid pid
 	def restored(self, pid):
-		pass
-
-	# The task/container is no longer here -- clean
-	# things up if required
-	def clean_migrated(self):
 		pass
 
 	#

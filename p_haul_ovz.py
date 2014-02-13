@@ -45,7 +45,6 @@ class p_haul_type:
 
 	def __init__(self, id):
 		self.ctid = id
-		self.fs_mounted = False
 		self._veths = []
 		self.cfg = []
 
@@ -53,10 +52,11 @@ class p_haul_type:
 		return (name, self.ctid)
 
 	def init_src(self):
+		self._fs_mounted = True
 		self.__load_ct_config(vz_conf_dir)
 
 	def init_dst(self):
-		pass
+		self._fs_mounted = False
 
 	def root_task_pid(self):
 		pf = open(os.path.join(vzpid_dir, self.ctid))
@@ -105,7 +105,7 @@ class p_haul_type:
 		nroot = self.__ct_root()
 		print "Mounting CT root to %s" % nroot
 		os.system("mount --bind %s %s" % (self.__ct_priv(), nroot))
-		self.fs_mounted = True
+		self._fs_mounted = True
 		return nroot
 
 	def veths(self):
@@ -114,14 +114,11 @@ class p_haul_type:
 	def __umount_root(self):
 		print "Umounting CT root"
 		os.system("umount %s" % self.__ct_root())
-		self.fs_mounted = False
+		self._fs_mounted = False
 
 	def unroll_fs(self):
-		if self.fs_mounted:
+		if self._fs_mounted:
 			self.__umount_root()
-
-	def clean_migrated(self):
-		self.__umount_root()
 
 	def __apply_cg_config(self):
 		print "Applying CT configs"
