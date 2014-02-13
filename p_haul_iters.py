@@ -184,6 +184,13 @@ class phaul_iter_worker:
 
 		print "Asking target host to restore"
 		self.th.restore_from_images()
+
+		#
+		# Ack the notify after restore -- CRIU would
+		# then terminate all tasks and send us back
+	 	# DUMP/success message
+		#
+
 		cc.ack_notify()
 		resp = cc.recv_resp()
 		if resp.type != cr_rpc.DUMP:
