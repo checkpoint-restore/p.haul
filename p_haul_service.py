@@ -28,7 +28,7 @@ class phaul_service(rpyc.Service):
 			os.kill(self.page_server_pid, 9)
 
 		if self.htype and not self.restored:
-			self.htype.unroll_fs()
+			self.htype.umount()
 
 		print "Closing images"
 		self.img.close(self.keep_images and self.restored)
@@ -94,7 +94,7 @@ class phaul_service(rpyc.Service):
 			v.if_in = veth[0]
 			v.if_out = veth[1]
 
-		nroot = self.htype.prepare_fs()
+		nroot = self.htype.mount()
 		if nroot:
 			req.opts.root = nroot
 			print "Restore root set to %s" % req.opts.root

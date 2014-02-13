@@ -101,7 +101,7 @@ class p_haul_type:
 	def prepare_ct(self, pid):
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
-	def prepare_fs(self):
+	def mount(self):
 		nroot = self.__ct_root()
 		print "Mounting CT root to %s" % nroot
 		os.system("mount --bind %s %s" % (self.__ct_priv(), nroot))
@@ -116,7 +116,7 @@ class p_haul_type:
 		os.system("umount %s" % self.__ct_root())
 		self._fs_mounted = False
 
-	def unroll_fs(self):
+	def umount(self):
 		if self._fs_mounted:
 			self.__umount_root()
 

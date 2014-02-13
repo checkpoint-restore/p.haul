@@ -31,11 +31,11 @@ class p_haul_type:
 	# the new root, if required. 'None' will mean
 	# that things will get restored in the current
 	# mount namespace and w/o chroot
-	def prepare_fs(self):
+	def mount(self):
 		return None
 
 	# Remove any specific FS setup
-	def unroll_fs(self):
+	def umount(self):
 		pass
 
 	# Get list of files which should be copied to
