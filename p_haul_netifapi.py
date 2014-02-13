@@ -13,3 +13,7 @@ def ifup(ifname):
 def ifdown(ifname):
 	print "\t\tDowning %s" % ifname
 	os.system("ip link set %s down" % ifname)
+
+def bridge_add(ifname, brname):
+	print "\t\tAdd %s to %s" % (ifname, brname)
+	os.system("brctl addif %s %s" % (brname, ifname))

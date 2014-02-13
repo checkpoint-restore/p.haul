@@ -30,17 +30,21 @@ class p_haul_type:
 				#
 				v_in = None
 				v_out = None
-				vs = line.split("=", 1)[1].strip("\"")
+				v_bridge = None
+				vs = line.strip().split("=", 1)[1].strip("\"")
 				for parm in vs.split(","):
 					pa = parm.split("=")
 					if pa[0] == "ifname":
 						v_in = pa[1]
 					elif pa[0] == "host_ifname":
 						v_out = pa[1]
+					elif pa[0] == "bridge":
+						v_bridge = pa[1]
 
-					if v_in and v_out:
-						self._veths.append((v_in, v_out))
-						break
+				if v_in and v_out:
+					print "\tCollect %s -> %s (%s) veth" % (v_in, v_out, v_bridge)
+					self._veths.append((v_in, v_out, v_bridge))
+
 		ifd.close()
 
 	def __init__(self, id):
@@ -53,10 +57,12 @@ class p_haul_type:
 
 	def init_src(self):
 		self._fs_mounted = True
+		self._bridged = True
 		self.__load_ct_config(vz_conf_dir)
 
 	def init_dst(self):
 		self._fs_mounted = False
+		self._bridged = False
 
 	def root_task_pid(self):
 		pf = open(os.path.join(vzpid_dir, self.ctid))
@@ -140,3 +146,5 @@ class p_haul_type:
 	def net_unlock(self):
 		for veth in self._veths:
 			netif.ifup(veth[1])
+			if veth[2] and not self._bridged:
+				netif.bridge_add(veth[1], veth[2])
