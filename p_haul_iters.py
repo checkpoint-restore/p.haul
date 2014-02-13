@@ -143,6 +143,9 @@ class phaul_iter_worker:
 		req.opts.file_locks = True
 		req.opts.evasive_devices = True
 		req.opts.link_remap = True
+		if self.htype.can_migrate_tcp:
+			req.opts.tcp_established = True
+
 		cc.send_req(req, False)
 
 		while True:

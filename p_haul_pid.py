@@ -71,3 +71,6 @@ class p_haul_type:
 
 	def net_unlock(self):
 		pass
+
+	def can_migrate_tcp(self):
+		return False

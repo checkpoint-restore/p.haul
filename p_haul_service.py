@@ -89,6 +89,9 @@ class phaul_service(rpyc.Service):
 		req.opts.images_dir_fd = self.img.image_dir_fd()
 		req.opts.notify_scripts = True
 
+		if self.htype.can_migrate_tcp():
+			req.opts.tcp_established = True
+
 		for veth in self.htype.veths():
 			v = req.opts.veths.add()
 			v.if_in = veth[0]

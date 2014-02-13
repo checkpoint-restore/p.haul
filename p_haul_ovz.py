@@ -160,3 +160,6 @@ class p_haul_type:
 			netif.ifup(veth[1])
 			if veth[2] and not self._bridged:
 				netif.bridge_add(veth[1], veth[2])
+
+	def can_migrate_tcp(self):
+		return True
