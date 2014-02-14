@@ -13,3 +13,6 @@ one needs to
 This is what p.haul does. It heavily uses CRIU (http://criu.org)
 to do state dump and restore. Task's stopped time is decreased
 using the CRIU's pre-dump action.
+
+For more information read the P.Haul-related pages on the CRIU
+wiki (http://criu.org/Category:P.Haul).
