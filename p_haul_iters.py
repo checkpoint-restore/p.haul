@@ -85,7 +85,7 @@ class phaul_iter_worker:
 
 			req = self.make_dump_req(cr_rpc.PRE_DUMP)
 			resp = cc.send_req(req)
-			if (resp.type != cr_rpc.DUMP) or (not resp.success):
+			if (resp.type != cr_rpc.PRE_DUMP) or (not resp.success):
 				print "\tPre-dump failed"
 				raise 1
 
