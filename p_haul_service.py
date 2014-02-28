@@ -53,6 +53,7 @@ class phaul_service(rpyc.Service):
 		req.opts.ps.port = ps_start_port + self.dump_iter # FIXME -- implement and use autobind in CRIU
 
 		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.work_dir_fd = self.img.work_dir_fd()
 		p_img = self.img.prev_image_dir()
 		if p_img:
 			req.opts.parent_img = p_img
@@ -87,6 +88,7 @@ class phaul_service(rpyc.Service):
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.RESTORE
 		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.work_dir_fd = self.img.work_dir_fd()
 		req.opts.notify_scripts = True
 
 		if self.htype.can_migrate_tcp():
@@ -141,7 +143,7 @@ class phaul_service(rpyc.Service):
 		self.restored = True
 
 	def exposed_restore_time(self):
-		stats = cr_api.criu_get_rstats(self.img.image_dir())
+		stats = cr_api.criu_get_rstats(self.img)
 		return stats.restore_time
 
 	def exposed_open_image_tar(self):

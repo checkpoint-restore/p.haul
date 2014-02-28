@@ -52,6 +52,7 @@ class phaul_iter_worker:
 		req.opts.track_mem = True
 
 		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.work_dir_fd = self.img.work_dir_fd()
 		p_img = self.img.prev_image_dir()
 		if p_img:
 			req.opts.parent_img = p_img
@@ -93,7 +94,7 @@ class phaul_iter_worker:
 
 			self.th.end_iter()
 
-			stats = cr_api.criu_get_dstats(self.img.image_dir())
+			stats = cr_api.criu_get_dstats(self.img)
 			print "Dumped %d pages, %d skipped" % \
 					(stats.pages_written, stats.pages_skipped_parent)
 
@@ -204,7 +205,7 @@ class phaul_iter_worker:
 
 		end_time = time.time()
 
-		stats = cr_api.criu_get_dstats(self.img.image_dir())
+		stats = cr_api.criu_get_dstats(self.img)
 		print "Final dump -- %d pages, %d skipped" % \
 				(stats.pages_written, stats.pages_skipped_parent)
 		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))

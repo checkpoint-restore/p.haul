@@ -24,15 +24,17 @@ class phaul_images:
 	def __init__(self):
 		self.current_iter = 0
 		self.current_dir = None
-		self.img_path = tempfile.mkdtemp("", "", img_path)
+		self.wdir = tempfile.mkdtemp("", "", img_path)
+		self.img_path = os.path.join(self.wdir, "img")
+		os.mkdir(self.img_path)
 		self.sync_time = 0.0
 
 	def close(self, keep_images):
 		if not keep_images:
 			print "Removing images"
-			shutil.rmtree(self.img_path)
+			shutil.rmtree(self.wdir)
 		else:
-			print "Images are kept in %s" % self.img_path
+			print "Images are kept in %s" % self.wdir
 		pass
 
 	def img_sync_time(self):
@@ -48,8 +50,14 @@ class phaul_images:
 	def image_dir_fd(self):
 		return os.open(self.current_dir, os.O_DIRECTORY)
 
+	def work_dir_fd(self):
+		return os.open(self.wdir, os.O_DIRECTORY)
+
 	def image_dir(self):
 		return self.current_dir
+
+	def work_dir(self):
+		return self.wdir
 
 	def prev_image_dir(self):
 		if self.current_iter == 1:

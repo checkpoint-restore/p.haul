@@ -5,6 +5,7 @@
 
 import socket
 import struct
+import os
 import rpc_pb2 as cr_rpc
 import stats_pb2 as crs
 
@@ -56,9 +57,9 @@ class criu_conn:
 
 CRIU_STATS_MAGIC = 0x57093306
 
-def criu_get_stats(path):
+def criu_get_stats(img, file_name):
 	s = struct.Struct("I I")
-	f = open(path)
+	f = open(os.path.join(img.work_dir(), file_name))
 	#
 	# Stats file is 4 butes of magic, then 4 bytes with
 	# stats packet size
@@ -73,10 +74,10 @@ def criu_get_stats(path):
 
 	return stats
 
-def criu_get_dstats(dpath):
-	stats = criu_get_stats("%s/stats-dump" % dpath)
+def criu_get_dstats(img):
+	stats = criu_get_stats(img, "stats-dump")
 	return stats.dump
 
-def criu_get_rstats(dpath):
-	stats = criu_get_stats("%s/stats-restore" % dpath)
+def criu_get_rstats(img):
+	stats = criu_get_stats(img, "stats-restore")
 	return stats.restore
