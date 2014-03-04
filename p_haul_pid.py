@@ -2,6 +2,8 @@
 # Individual process hauler
 #
 
+import fs_haul_shared
+
 name = "pid"
 
 class p_haul_type:
@@ -37,6 +39,10 @@ class p_haul_type:
 	# Remove any specific FS setup
 	def umount(self):
 		pass
+
+	# Get driver for FS migration
+	def get_fs(self):
+		return fs_haul_shared.p_haul_fs()
 
 	# Get list of files which should be copied to
 	# the destination node. The dir argument is where

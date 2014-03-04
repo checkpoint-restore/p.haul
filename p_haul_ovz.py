@@ -6,6 +6,7 @@ import os
 import shutil
 import p_haul_cgroup
 import p_haul_netifapi as netif
+import fs_haul_shared
 
 name = "ovz"
 vzpid_dir = "/var/lib/vzctl/vepid/"
@@ -134,6 +135,10 @@ class p_haul_type:
 	def umount(self):
 		if self._fs_mounted:
 			self.__umount_root()
+
+	def get_fs(self):
+		# FIXME -- get what FS the CT is on
+		return fs_haul_shared.p_haul_fs()
 
 	def restored(self, pid):
 		print "Writing pidfile"
