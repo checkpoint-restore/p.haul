@@ -5,8 +5,9 @@
 #
 
 class p_haul_fs:
-	def __init__(self):
-		print "Initilized subtree FS hauler"
+	def __init__(self, subtree_path):
+		print "Initialized subtree FS hauler (%s)" % subtree_path
+		self.__root = subtree_path
 		pass
 
 	def start_migration(self):

@@ -149,7 +149,7 @@ class p_haul_type:
 		if rootfs == "nfs":
 			return fs_haul_shared.p_haul_fs()
 		if rootfs == "ext3" or rootfs == "ext4":
-			return fs_haul_subtree.p_haul_fs()
+			return fs_haul_subtree.p_haul_fs(self.__ct_priv())
 
 		print "Unknown CT FS"
 		return None
