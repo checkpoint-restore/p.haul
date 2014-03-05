@@ -31,7 +31,7 @@ class phaul_service(rpyc.Service):
 			self.htype.umount()
 
 		print "Closing images"
-		self.img.close(self.keep_images and self.restored)
+		self.img.close(self.keep_images or not self.restored)
 
 	def exposed_verbose(self, level):
 		self.verb = level
