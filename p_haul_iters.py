@@ -76,6 +76,9 @@ class phaul_iter_worker:
 		start_time = time.time()
 		iter_times = []
 
+		print "Preliminary FS migration"
+		self.fs.start_migration()
+
 		print "Starting iterations"
 		while True:
 			print "* Iteration %d" % self.iteration
@@ -128,6 +131,8 @@ class phaul_iter_worker:
 			self.iteration += 1
 			self.prev_stats = stats
 			print "\t> Proceed to next iteration"
+
+			self.fs.next_iteration()
 
 		#
 		# Finish with iterations -- do full dump, send images
@@ -185,6 +190,8 @@ class phaul_iter_worker:
 		# tasks on source node
 		#
 
+		print "Final FS and images sync"
+		self.fs.stop_migration()
 		self.img.sync_imgs_to_target(self.th, self.htype)
 
 		print "Asking target host to restore"
