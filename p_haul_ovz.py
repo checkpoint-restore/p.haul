@@ -6,7 +6,9 @@ import os
 import shutil
 import p_haul_cgroup
 import p_haul_netifapi as netif
+import p_haul_fsapi as fsapi
 import fs_haul_shared
+import fs_haul_subtree
 
 name = "ovz"
 vzpid_dir = "/var/lib/vzctl/vepid/"
@@ -137,8 +139,20 @@ class p_haul_type:
 			self.__umount_root()
 
 	def get_fs(self):
-		# FIXME -- get what FS the CT is on
-		return fs_haul_shared.p_haul_fs()
+		rootfs = fsapi.path_to_fs(self.__ct_priv())
+		if not rootfs:
+			print "CT is on unknown FS"
+			return None
+
+		print "CT is on %s" % rootfs
+
+		if rootfs == "nfs":
+			return fs_haul_shared.p_haul_fs()
+		if rootfs == "ext3" or rootfs == "ext4":
+			return fs_haul_subtree.p_haul_fs()
+
+		print "Unknown CT FS"
+		return None
 
 	def restored(self, pid):
 		print "Writing pidfile"
