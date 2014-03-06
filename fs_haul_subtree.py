@@ -10,6 +10,12 @@ class p_haul_fs:
 		self.__root = subtree_path
 		pass
 
+	def set_target_host(self, thost):
+		self.__thost = thost
+
+	def set_work_dir(self, wdir):
+		self.__wdir = wdir
+
 	def start_migration(self):
 		pass
 

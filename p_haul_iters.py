@@ -38,6 +38,7 @@ class phaul_iter_worker:
 
 		self.pid = p_type.root_task_pid()
 		self.fs = p_type.get_fs()
+		self.fs.set_target_host(host)
 		print "\tWill work on %d task" % self.pid
 
 	def make_dump_req(self, typ):
@@ -77,6 +78,7 @@ class phaul_iter_worker:
 		iter_times = []
 
 		print "Preliminary FS migration"
+		self.fs.set_work_dir(self.img.work_dir())
 		self.fs.start_migration()
 
 		print "Starting iterations"

@@ -7,6 +7,12 @@ class p_haul_fs:
 		print "Initilized shared FS hauler"
 		pass
 
+	def set_target_host(self, thost):
+		pass
+
+	def set_work_dir(self, wdir):
+		pass
+
 	def start_migration(self):
 		pass
 
