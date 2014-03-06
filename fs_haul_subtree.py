@@ -45,3 +45,7 @@ class p_haul_fs:
 	def stop_migration(self):
 		print "Doing final FS sync"
 		self.__run_rsync()
+
+	# When rsync-ing FS inodes number will change
+	def persistent_inodes(self):
+		return False

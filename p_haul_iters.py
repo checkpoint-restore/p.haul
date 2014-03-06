@@ -58,6 +58,8 @@ class phaul_iter_worker:
 		p_img = self.img.prev_image_dir()
 		if p_img:
 			req.opts.parent_img = p_img
+		if not self.fs.persistent_inodes():
+			req.opts.force_irmap = True
 
 		return req
 

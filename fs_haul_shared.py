@@ -21,3 +21,8 @@ class p_haul_fs:
 
 	def stop_migration(self):
 		pass
+
+	# Inode numbers do not change on this FS
+	# during migration
+	def persistent_inodes(self):
+		return True
