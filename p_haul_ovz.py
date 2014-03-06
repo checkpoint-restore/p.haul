@@ -130,6 +130,8 @@ class p_haul_type:
 	def mount(self):
 		nroot = self.__ct_root()
 		print "Mounting CT root to %s" % nroot
+		if not os.access(nroot, os.F_OK):
+			os.makedirs(nroot)
 		os.system("mount --bind %s %s" % (self.__ct_priv(), nroot))
 		self._fs_mounted = True
 		return nroot
