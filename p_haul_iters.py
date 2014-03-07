@@ -38,6 +38,9 @@ class phaul_iter_worker:
 
 		self.pid = p_type.root_task_pid()
 		self.fs = p_type.get_fs()
+		if not self.fs:
+			raise Exception("No FS driver found")
+
 		self.fs.set_target_host(host)
 		print "\tWill work on %d task" % self.pid
 
