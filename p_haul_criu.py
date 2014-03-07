@@ -25,7 +25,6 @@ def_verb = 2
 
 class criu_conn:
 	def __init__(self):
-		print "\tConnecting to CRIU service"
 		self.cs = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		self.cs.connect(criu_socket)
 		self.verb = def_verb

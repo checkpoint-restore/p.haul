@@ -42,7 +42,6 @@ class phaul_iter_worker:
 			raise Exception("No FS driver found")
 
 		self.fs.set_target_host(host)
-		print "\tWill work on %d task" % self.pid
 
 	def make_dump_req(self, typ):
 		#
