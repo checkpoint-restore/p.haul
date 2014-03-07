@@ -95,8 +95,7 @@ class phaul_iter_worker:
 			req = self.make_dump_req(cr_rpc.PRE_DUMP)
 			resp = cc.send_req(req)
 			if (resp.type != cr_rpc.PRE_DUMP) or (not resp.success):
-				print "\tPre-dump failed"
-				raise 1
+				raise Exception("Pre-dump failed")
 
 			print "\tPre-dump succeeded"
 
@@ -163,11 +162,9 @@ class phaul_iter_worker:
 			resp = cc.recv_resp()
 			if resp.type != cr_rpc.NOTIFY:
 				if resp.type == cr_rpc.DUMP and not resp.success:
-					print "Dump failed"
-					raise 1
-
-				print "Unexpected responce from service (%d)" % resp.type
-				raise 1
+					raise Exception("Dump failed")
+				else:
+					raise Exception("Unexpected responce from service (%d)" % resp.type)
 
 			if resp.notify.script == "post-dump":
 				#
@@ -210,8 +207,7 @@ class phaul_iter_worker:
 		cc.ack_notify()
 		resp = cc.recv_resp()
 		if resp.type != cr_rpc.DUMP:
-			print "\tDump failed"
-			raise 1
+			raise Exception("Dump failed")
 
 		self.htype.umount()
 

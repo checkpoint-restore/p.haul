@@ -61,8 +61,7 @@ class phaul_service(rpyc.Service):
 		print "\tSending criu rpc req"
 		resp = cc.send_req(req)
 		if (resp.type != cr_rpc.PAGE_SERVER) or (not resp.success):
-			print "\tFailed to start page server"
-			raise 1
+			raise Exception("Failed to start page server")
 
 		self.page_server_pid = resp.ps.pid
 		print "\tPage server started at %d" % resp.ps.pid
@@ -122,19 +121,16 @@ class phaul_service(rpyc.Service):
 				elif resp.notify.script == "network-unlock":
 					self.htype.net_unlock()
 				elif resp.notify.script == "network-lock":
-					print "Locking network on restore?"
-					raise 1
+					raise Exception("Locking network on restore?")
 
 				cc.ack_notify()
 				continue
 
 			if resp.type != cr_rpc.RESTORE:
-				print "Unexpected responce from service (%d)" % resp.type
-				raise 1
+				raise Exception("Unexpected responce from service (%d)" % resp.type)
 
 			if not resp.success:
-				print "Restore failed"
-				raise 1
+				raise Exception("Restore failed")
 
 			print "Restore succeeded"
 			break

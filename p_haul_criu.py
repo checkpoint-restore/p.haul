@@ -66,8 +66,7 @@ def criu_get_stats(img, file_name):
 	#
 	v = s.unpack(f.read(s.size))
 	if v[0] != CRIU_STATS_MAGIC:
-		print "Magic is %x, expect %x" % (magic, CRIU_STATS_MAGIC)
-		raise 1
+		raise Exception("Magic is %x, expect %x" % (magic, CRIU_STATS_MAGIC))
 
 	stats = crs.stats_entry()
 	stats.ParseFromString(f.read(v[1]))

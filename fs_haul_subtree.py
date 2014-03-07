@@ -32,8 +32,7 @@ class p_haul_fs:
 		ret = sp.call(["rsync", "-a", self.__root, dst],
 				stdout = logf, stderr = logf)
 		if ret != 0:
-			print "Rsync failed"
-			raise 1
+			raise Exception("Rsync failed")
 
 	def start_migration(self):
 		print "Starting FS migration"
