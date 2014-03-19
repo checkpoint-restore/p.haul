@@ -8,6 +8,7 @@ import rpyc
 import tarfile
 import time
 import shutil
+import time
 
 img_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
@@ -24,7 +25,8 @@ class phaul_images:
 	def __init__(self):
 		self.current_iter = 0
 		self.current_dir = None
-		self.wdir = tempfile.mkdtemp("", "", img_path)
+		prefix = time.strftime("%y.%m.%d-%H.%M-", time.localtime())
+		self.wdir = tempfile.mkdtemp("", prefix, img_path)
 		self.img_path = os.path.join(self.wdir, "img")
 		os.mkdir(self.img_path)
 		self.sync_time = 0.0
