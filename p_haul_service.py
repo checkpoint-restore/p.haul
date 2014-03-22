@@ -95,8 +95,8 @@ class phaul_service(rpyc.Service):
 
 		for veth in self.htype.veths():
 			v = req.opts.veths.add()
-			v.if_in = veth[0]
-			v.if_out = veth[1]
+			v.if_in = veth.name
+			v.if_out = veth.pair
 
 		nroot = self.htype.mount()
 		if nroot:
