@@ -21,8 +21,8 @@ vz_pidfiles = "/var/lib/vzctl/vepid/"
 cg_image_name = "ovzcg.img"
 
 class p_haul_type:
-	def __init__(self, id):
-		self._ctid = id
+	def __init__(self, ctid):
+		self._ctid = ctid
 		#
 		# This list would contain (v_in, v_out, v_br) tuples where
 		# v_in is the name of veth device in CT
@@ -32,9 +32,9 @@ class p_haul_type:
 		self._veths = []
 		self._cfg = []
 
-	def __load_ct_config(self, dir):
-		print "Loading config file from %s" % dir
-		ifd = open(os.path.join(dir, self.__ct_config()))
+	def __load_ct_config(self, path):
+		print "Loading config file from %s" % path
+		ifd = open(os.path.join(path, self.__ct_config()))
 		for line in ifd:
 			self._cfg.append(line)
 
@@ -101,23 +101,23 @@ class p_haul_type:
 	#
 	# Meta-images for OVZ -- container config and info about CGroups
 	#
-	def get_meta_images(self, dir):
-		cg_img = os.path.join(dir, cg_image_name)
+	def get_meta_images(self, path):
+		cg_img = os.path.join(path, cg_image_name)
 		p_haul_cgroup.dump_hier(self.root_task_pid(), cg_img)
 		cfg_name = self.__ct_config()
 		return [ (os.path.join(vz_conf_dir, cfg_name), cfg_name), \
 			 (cg_img, cg_image_name) ]
 
-	def put_meta_images(self, dir):
+	def put_meta_images(self, path):
 		print "Putting config file into %s" % vz_conf_dir
 
-		self.__load_ct_config(dir)
+		self.__load_ct_config(path)
 		ofd = open(os.path.join(vz_conf_dir, self.__ct_config()), "w")
 		ofd.writelines(self._cfg)
 		ofd.close()
 
 		# Keep this name, we'll need one in prepare_ct()
-		self.cg_img = os.path.join(dir, cg_image_name)
+		self.cg_img = os.path.join(path, cg_image_name)
 
 	#
 	# Create cgroup hierarchy and put root task into it
