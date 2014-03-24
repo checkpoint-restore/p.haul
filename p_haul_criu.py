@@ -24,10 +24,14 @@ def_verb = 2
 #
 
 class criu_conn:
-	def __init__(self):
+	def __enter__(self):
 		self.cs = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		self.cs.connect(criu_socket)
 		self.verb = def_verb
+		return self
+
+	def __exit__(self, type, value, traceback):
+		self.cs.close()
 
 	def verbose(self, level):
 		self.verb = level
@@ -44,7 +48,7 @@ class criu_conn:
 		resp.ParseFromString(self.cs.recv(1024))
 		return resp
 
-	def ack_notify(self):
+	def ack_notify(self, success = True):
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.NOTIFY
 		req.notify_success = True
