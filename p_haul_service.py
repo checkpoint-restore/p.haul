@@ -7,10 +7,13 @@ import os
 import rpc_pb2 as cr_rpc
 import p_haul_img as ph_img
 import p_haul_criu as cr_api
-
+import p_haul_socket as ph_sk
 import p_haul_type
 
 ps_start_port = 12345
+
+def init():
+	ph_sk.start_listener()
 
 class phaul_service(rpyc.Service):
 	def on_connect(self):
@@ -20,6 +23,7 @@ class phaul_service(rpyc.Service):
 		self.restored = False
 		self.img = ph_img.phaul_images() # FIXME -- get images driver from client
 		self.verb = cr_api.def_verb
+		self.mem_sk = None
 
 	def on_disconnect(self):
 		print "Disconnected"
@@ -32,6 +36,14 @@ class phaul_service(rpyc.Service):
 
 		print "Closing images"
 		self.img.close(self.keep_images or not self.restored)
+		if self.mem_sk:
+			self.mem_sk.close()
+
+	def exposed_accept_mem_sk(self, name):
+		# FIXME -- this may have not yet appeared, listener
+		# is wating for the final SYN,ACK to arrive :(
+		self.mem_sk = ph_sk.get_by_name(name)
+		print "Mem sk accepted, name", self.mem_sk.name()
 
 	def exposed_verbose(self, level):
 		self.verb = level

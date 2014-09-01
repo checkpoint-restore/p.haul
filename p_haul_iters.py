@@ -6,6 +6,7 @@ import time
 import rpyc
 import rpc_pb2 as cr_rpc
 import p_haul_criu as cr_api
+import p_haul_socket as ph_sk
 
 rpyc_target_port = 18861
 
@@ -42,6 +43,9 @@ class phaul_iter_worker:
 			raise Exception("No FS driver found")
 
 		self.fs.set_target_host(host)
+
+		self.mem_sk = ph_sk.create(self.target_host)
+		self.th.accept_mem_sk(self.mem_sk.name())
 
 	def make_dump_req(self, typ):
 		#
@@ -221,6 +225,7 @@ class phaul_iter_worker:
 		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
 		self.frozen_time += stats.frozen_time
 		self.img.close(self.keep_images)
+		self.mem_sk.close()
 
 		rst_time = self.th.restore_time()
 		print "Migration succeeded"
