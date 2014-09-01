@@ -10,8 +10,6 @@ import p_haul_criu as cr_api
 import p_haul_socket as ph_sk
 import p_haul_type
 
-ps_start_port = 12345
-
 def init():
 	ph_sk.start_listener()
 
@@ -62,7 +60,7 @@ class phaul_service(rpyc.Service):
 
 			req = cr_rpc.criu_req()
 			req.type = cr_rpc.PAGE_SERVER
-			req.opts.ps.port = ps_start_port + self.dump_iter # FIXME -- implement and use autobind in CRIU
+			req.opts.ps.fd = self.mem_sk.fileno()
 
 			req.opts.images_dir_fd = self.img.image_dir_fd()
 			req.opts.work_dir_fd = self.img.work_dir_fd()
@@ -85,9 +83,6 @@ class phaul_service(rpyc.Service):
 
 	def exposed_end_iter(self):
 		self.page_server_pid = 0
-
-	def exposed_get_ps_port(self):
-		return ps_start_port + self.dump_iter
 
 	def exposed_restore_from_images(self):
 		print "Restoring from images"

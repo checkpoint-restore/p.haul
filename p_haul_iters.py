@@ -55,8 +55,7 @@ class phaul_iter_worker:
 		req = cr_rpc.criu_req()
 		req.type = typ
 		req.opts.pid = self.pid
-		req.opts.ps.address = self.target_host
-		req.opts.ps.port = self.th.get_ps_port()
+		req.opts.ps.fd = self.mem_sk.fileno()
 		req.opts.track_mem = True
 
 		req.opts.images_dir_fd = self.img.image_dir_fd()

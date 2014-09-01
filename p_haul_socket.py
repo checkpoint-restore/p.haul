@@ -31,6 +31,9 @@ class ph_socket:
 	def name(self):
 		return self._sk.getsockname()
 
+	def fileno(self):
+		return self._sk.fileno()
+
 	def close(self):
 		if self._sk:
 			self._sk.close()
