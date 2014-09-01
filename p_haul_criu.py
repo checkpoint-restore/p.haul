@@ -6,10 +6,12 @@
 import socket
 import struct
 import os
+import subprocess
 import rpc_pb2 as cr_rpc
 import stats_pb2 as crs
 
-criu_socket = "/var/run/criu_service.socket"
+criu_binary = "/root/criu/criu"
+
 req_types = {
 	cr_rpc.DUMP: "dump",
 	cr_rpc.PRE_DUMP: "pre_dump",
@@ -25,13 +27,15 @@ def_verb = 2
 
 class criu_conn:
 	def __enter__(self):
-		self.cs = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
-		self.cs.connect(criu_socket)
-		self.verb = def_verb
+		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+		self.swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
+		css[0].close()
+		self.cs = css[1]
 		return self
 
 	def __exit__(self, type, value, traceback):
 		self.cs.close()
+		self.swrk.wait()
 
 	def verbose(self, level):
 		self.verb = level
