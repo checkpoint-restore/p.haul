@@ -26,6 +26,9 @@ def_verb = 2
 #
 
 class criu_conn:
+	def __init__(self, iteration = 0):
+		self._iter = iteration
+
 	def __enter__(self):
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		self.swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
@@ -42,8 +45,9 @@ class criu_conn:
 
 	def send_req(self, req, with_resp = True):
 		req.opts.log_level = self.verb
-		req.opts.log_file = "criu_%s.log" % req_types[req.type]
+		req.opts.log_file = "criu_%s.%d.log" % (req_types[req.type], self._iter)
 		self.cs.send(req.SerializeToString())
+		self._iter += 1
 		if with_resp:
 			return self.recv_resp()
 

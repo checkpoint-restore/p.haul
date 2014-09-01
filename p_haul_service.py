@@ -55,7 +55,7 @@ class phaul_service(rpyc.Service):
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
-		with cr_api.criu_conn() as cc:
+		with cr_api.criu_conn(self.dump_iter) as cc:
 			cc.verbose(self.verb)
 
 			req = cr_rpc.criu_req()
