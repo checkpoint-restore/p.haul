@@ -31,14 +31,14 @@ class criu_conn:
 
 	def __enter__(self):
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
-		self.swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
+		self.__swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
 		css[0].close()
-		self.cs = css[1]
+		self.__cs = css[1]
 		return self
 
 	def __exit__(self, type, value, traceback):
-		self.cs.close()
-		self.swrk.wait()
+		self.__cs.close()
+		self.__swrk.wait()
 
 	def verbose(self, level):
 		self.verb = level
@@ -46,21 +46,21 @@ class criu_conn:
 	def send_req(self, req, with_resp = True):
 		req.opts.log_level = self.verb
 		req.opts.log_file = "criu_%s.%d.log" % (req_types[req.type], self._iter)
-		self.cs.send(req.SerializeToString())
+		self.__cs.send(req.SerializeToString())
 		self._iter += 1
 		if with_resp:
 			return self.recv_resp()
 
 	def recv_resp(self):
 		resp = cr_rpc.criu_resp()
-		resp.ParseFromString(self.cs.recv(1024))
+		resp.ParseFromString(self.__cs.recv(1024))
 		return resp
 
 	def ack_notify(self, success = True):
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.NOTIFY
 		req.notify_success = True
-		self.cs.send(req.SerializeToString())
+		self.__cs.send(req.SerializeToString())
 
 #
 # Helper to read CRIU-generated statistics
