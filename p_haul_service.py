@@ -20,7 +20,6 @@ class phaul_service(rpyc.Service):
 		self.page_server_pid = 0
 		self.restored = False
 		self.img = ph_img.phaul_images() # FIXME -- get images driver from client
-		self.mem_sk = None
 		self.criu = None
 
 	def on_disconnect(self):
@@ -37,15 +36,13 @@ class phaul_service(rpyc.Service):
 
 		print "Closing images"
 		self.img.close(self.keep_images or not self.restored)
-		if self.mem_sk:
-			self.mem_sk.close()
 
 	def exposed_accept_mem_sk(self, name):
 		# FIXME -- this may have not yet appeared, listener
 		# is wating for the final SYN,ACK to arrive :(
-		self.mem_sk = ph_sk.get_by_name(name)
-		print "Mem sk accepted, name", self.mem_sk.name()
-		self.criu = cr_api.criu_conn(self.mem_sk)
+		mem_sk = ph_sk.get_by_name(name)
+		print "Mem sk accepted, name", mem_sk.name()
+		self.criu = cr_api.criu_conn(mem_sk)
 
 	def exposed_verbose(self, level):
 		self.criu.verbose(level)
@@ -63,7 +60,7 @@ class phaul_service(rpyc.Service):
 		req = cr_rpc.criu_req()
 		req.type = cr_rpc.PAGE_SERVER
 		req.keep_open = True
-		req.opts.ps.fd = self.mem_sk.criu_fileno()
+		req.opts.ps.fd = self.criu.mem_sk_fileno()
 
 		req.opts.images_dir_fd = self.img.image_dir_fd()
 		req.opts.work_dir_fd = self.img.work_dir_fd()

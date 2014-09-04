@@ -43,10 +43,9 @@ class phaul_iter_worker:
 
 		self.fs.set_target_host(host)
 
-		self.mem_sk = ph_sk.create(self.target_host)
-		self.th.accept_mem_sk(self.mem_sk.name())
-
-		self.criu = cr_api.criu_conn(self.mem_sk)
+		mem_sk = ph_sk.create(self.target_host)
+		self.th.accept_mem_sk(mem_sk.name())
+		self.criu = cr_api.criu_conn(mem_sk)
 
 	def make_dump_req(self, typ):
 		#
@@ -56,7 +55,7 @@ class phaul_iter_worker:
 		req = cr_rpc.criu_req()
 		req.type = typ
 		req.opts.pid = self.pid
-		req.opts.ps.fd = self.mem_sk.criu_fileno()
+		req.opts.ps.fd = self.criu.mem_sk_fileno()
 		req.opts.track_mem = True
 
 		req.opts.images_dir_fd = self.img.image_dir_fd()
@@ -223,7 +222,6 @@ class phaul_iter_worker:
 		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
 		self.frozen_time += stats.frozen_time
 		self.img.close(self.keep_images)
-		self.mem_sk.close()
 		cc.close()
 
 		rst_time = self.th.restore_time()
