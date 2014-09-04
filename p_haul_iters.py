@@ -28,7 +28,6 @@ class phaul_iter_worker:
 		self.prev_stats = None
 		self.target_host = host
 		self.img = img.phaul_images()
-		self.verb = cr_api.def_verb
 
 		print "Connecting to target host"
 		self.th_con = rpyc.connect(self.target_host, rpyc_target_port)
@@ -46,6 +45,8 @@ class phaul_iter_worker:
 
 		self.mem_sk = ph_sk.create(self.target_host)
 		self.th.accept_mem_sk(self.mem_sk.name())
+
+		self.criu = cr_api.criu_conn(self.mem_sk)
 
 	def make_dump_req(self, typ):
 		#
@@ -69,150 +70,148 @@ class phaul_iter_worker:
 		return req
 
 	def verbose(self, level):
-		self.verb = level
-		self.th.verbose(self.verb)
+		self.criu.verbose(level)
+		self.th.verbose(level)
 
 	def keep_images(self, val):
 		self.keep_images = val
 		self.th.keep_images(self.keep_images)
 
 	def start_migration(self):
-		print "Connecting to CRIU service"
-		with cr_api.criu_conn(self.mem_sk) as cc:
-			cc.verbose(self.verb)
+		start_time = time.time()
+		iter_times = []
 
-			start_time = time.time()
-			iter_times = []
+		print "Preliminary FS migration"
+		self.fs.set_work_dir(self.img.work_dir())
+		self.fs.start_migration()
 
-			print "Preliminary FS migration"
-			self.fs.set_work_dir(self.img.work_dir())
-			self.fs.start_migration()
+		print "Starting iterations"
+		cc = self.criu
 
-			print "Starting iterations"
-			while True:
-				print "* Iteration %d" % self.iteration
-
-				self.th.start_iter()
-				self.img.new_image_dir()
-
-				print "\tIssuing pre-dump command to service"
-
-				req = self.make_dump_req(cr_rpc.PRE_DUMP)
-				resp = cc.send_req(req)
-				if (resp.type != cr_rpc.PRE_DUMP) or (not resp.success):
-					raise Exception("Pre-dump failed")
-
-				print "\tPre-dump succeeded"
-
-				self.th.end_iter()
-
-				stats = cr_api.criu_get_dstats(self.img)
-				print "Dumped %d pages, %d skipped" % \
-						(stats.pages_written, stats.pages_skipped_parent)
-
-				iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
-				self.frozen_time += stats.frozen_time
-
-				#
-				# Need to decide whether we do next iteration
-				# or stop on the existing and go do full dump
-				# and restore
-				#
-
-				print "Checking iteration progress:"
-
-				if stats.pages_written <= phaul_iter_min_size:
-					print "\t> Small dump"
-					break;
-
-				if self.prev_stats:
-					w_add = stats.pages_written - self.prev_stats.pages_written
-					w_add = w_add * 100 / self.prev_stats.pages_written
-					if w_add > phaul_iter_grow_max:
-						print "\t> Iteration grows"
-						break
-
-				if self.iteration >= phaul_iter_max:
-					print "\t> Too many iterations"
-					break
-
-				self.iteration += 1
-				self.prev_stats = stats
-				print "\t> Proceed to next iteration"
-
-				self.fs.next_iteration()
-
-			#
-			# Finish with iterations -- do full dump, send images
-			# to target host and restore from them there
-			#
-
-			print "Final dump and restore"
+		while True:
+			print "* Iteration %d" % self.iteration
 
 			self.th.start_iter()
 			self.img.new_image_dir()
 
-			print "\tIssuing dump command to service"
-			req = self.make_dump_req(cr_rpc.DUMP)
-			req.opts.notify_scripts = True
-			req.opts.file_locks = True
-			req.opts.evasive_devices = True
-			req.opts.link_remap = True
-			if self.htype.can_migrate_tcp():
-				req.opts.tcp_established = True
+			print "\tIssuing pre-dump command to service"
 
-			cc.send_req(req, False)
+			req = self.make_dump_req(cr_rpc.PRE_DUMP)
+			resp = cc.send_req(req)
+			if (resp.type != cr_rpc.PRE_DUMP) or (not resp.success):
+				raise Exception("Pre-dump failed")
 
-			while True:
-				resp = cc.recv_resp()
-				if resp.type != cr_rpc.NOTIFY:
-					if resp.type == cr_rpc.DUMP and not resp.success:
-						raise Exception("Dump failed")
-					else:
-						raise Exception("Unexpected responce from service (%d)" % resp.type)
+			print "\tPre-dump succeeded"
 
-				if resp.notify.script == "post-dump":
-					#
-					# Dump is effectively over. Now CRIU
-					# waits for us to do whatever we want
-					# and keeps the tasks frozen.
-					#
-					break
-
-				elif resp.notify.script == "network-lock":
-					self.htype.net_lock()
-				elif resp.notify.script == "network-unlock":
-					self.htype.net_unlock()
-
-				print "\t\tNotify (%s)" % resp.notify.script
-				cc.ack_notify()
-
-			print "Dump complete"
 			self.th.end_iter()
 
-			#
-			# Dump is complete -- go to target node,
-			# restore them there and kill (if required)
-			# tasks on source node
-			#
+			stats = cr_api.criu_get_dstats(self.img)
+			print "Dumped %d pages, %d skipped" % \
+					(stats.pages_written, stats.pages_skipped_parent)
 
-			print "Final FS and images sync"
-			self.fs.stop_migration()
-			self.img.sync_imgs_to_target(self.th, self.htype)
-
-			print "Asking target host to restore"
-			self.th.restore_from_images()
+			iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
+			self.frozen_time += stats.frozen_time
 
 			#
-			# Ack the notify after restore -- CRIU would
-			# then terminate all tasks and send us back
-			# DUMP/success message
+			# Need to decide whether we do next iteration
+			# or stop on the existing and go do full dump
+			# and restore
 			#
 
-			cc.ack_notify()
+			print "Checking iteration progress:"
+
+			if stats.pages_written <= phaul_iter_min_size:
+				print "\t> Small dump"
+				break;
+
+			if self.prev_stats:
+				w_add = stats.pages_written - self.prev_stats.pages_written
+				w_add = w_add * 100 / self.prev_stats.pages_written
+				if w_add > phaul_iter_grow_max:
+					print "\t> Iteration grows"
+					break
+
+			if self.iteration >= phaul_iter_max:
+				print "\t> Too many iterations"
+				break
+
+			self.iteration += 1
+			self.prev_stats = stats
+			print "\t> Proceed to next iteration"
+
+			self.fs.next_iteration()
+
+		#
+		# Finish with iterations -- do full dump, send images
+		# to target host and restore from them there
+		#
+
+		print "Final dump and restore"
+
+		self.th.start_iter()
+		self.img.new_image_dir()
+
+		print "\tIssuing dump command to service"
+		req = self.make_dump_req(cr_rpc.DUMP)
+		req.opts.notify_scripts = True
+		req.opts.file_locks = True
+		req.opts.evasive_devices = True
+		req.opts.link_remap = True
+		if self.htype.can_migrate_tcp():
+			req.opts.tcp_established = True
+
+		cc.send_req(req, False)
+
+		while True:
 			resp = cc.recv_resp()
-			if resp.type != cr_rpc.DUMP:
-				raise Exception("Dump failed")
+			if resp.type != cr_rpc.NOTIFY:
+				if resp.type == cr_rpc.DUMP and not resp.success:
+					raise Exception("Dump failed")
+				else:
+					raise Exception("Unexpected responce from service (%d)" % resp.type)
+
+			if resp.notify.script == "post-dump":
+				#
+				# Dump is effectively over. Now CRIU
+				# waits for us to do whatever we want
+				# and keeps the tasks frozen.
+				#
+				break
+
+			elif resp.notify.script == "network-lock":
+				self.htype.net_lock()
+			elif resp.notify.script == "network-unlock":
+				self.htype.net_unlock()
+
+			print "\t\tNotify (%s)" % resp.notify.script
+			cc.ack_notify()
+
+		print "Dump complete"
+		self.th.end_iter()
+
+		#
+		# Dump is complete -- go to target node,
+		# restore them there and kill (if required)
+		# tasks on source node
+		#
+
+		print "Final FS and images sync"
+		self.fs.stop_migration()
+		self.img.sync_imgs_to_target(self.th, self.htype)
+
+		print "Asking target host to restore"
+		self.th.restore_from_images()
+
+		#
+		# Ack the notify after restore -- CRIU would
+		# then terminate all tasks and send us back
+		# DUMP/success message
+		#
+
+		cc.ack_notify()
+		resp = cc.recv_resp()
+		if resp.type != cr_rpc.DUMP:
+			raise Exception("Dump failed")
 
 		self.htype.umount()
 
@@ -225,6 +224,7 @@ class phaul_iter_worker:
 		self.frozen_time += stats.frozen_time
 		self.img.close(self.keep_images)
 		self.mem_sk.close()
+		cc.close()
 
 		rst_time = self.th.restore_time()
 		print "Migration succeeded"
