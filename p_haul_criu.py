@@ -26,12 +26,22 @@ def_verb = 2
 #
 
 class criu_conn:
-	def __init__(self, iteration = 0):
+	def __init__(self, mem_sk, iteration = 0):
 		self._iter = iteration
+		self.mem_sk = mem_sk
 
 	def __enter__(self):
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
-		self.__swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
+		if self.mem_sk:
+			mem_file = self.mem_sk.fileno()
+			self.mem_sk.set_criu_fileno(1)
+			self.mem_sk = None
+		else:
+			mem_file = None
+
+		self.__swrk = subprocess.Popen([criu_binary, "swrk", "0"],
+				stdin = css[0].fileno(), stdout = mem_file,
+				stderr = None, close_fds = True)
 		css[0].close()
 		self.__cs = css[1]
 		return self

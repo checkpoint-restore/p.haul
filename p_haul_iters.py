@@ -55,7 +55,7 @@ class phaul_iter_worker:
 		req = cr_rpc.criu_req()
 		req.type = typ
 		req.opts.pid = self.pid
-		req.opts.ps.fd = self.mem_sk.fileno()
+		req.opts.ps.fd = self.mem_sk.criu_fileno()
 		req.opts.track_mem = True
 
 		req.opts.images_dir_fd = self.img.image_dir_fd()
@@ -78,7 +78,7 @@ class phaul_iter_worker:
 
 	def start_migration(self):
 		print "Connecting to CRIU service"
-		with cr_api.criu_conn() as cc:
+		with cr_api.criu_conn(self.mem_sk) as cc:
 			cc.verbose(self.verb)
 
 			start_time = time.time()

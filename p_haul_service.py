@@ -55,12 +55,12 @@ class phaul_service(rpyc.Service):
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
-		with cr_api.criu_conn(self.dump_iter) as cc:
+		with cr_api.criu_conn(self.mem_sk, self.dump_iter) as cc:
 			cc.verbose(self.verb)
 
 			req = cr_rpc.criu_req()
 			req.type = cr_rpc.PAGE_SERVER
-			req.opts.ps.fd = self.mem_sk.fileno()
+			req.opts.ps.fd = self.mem_sk.criu_fileno()
 
 			req.opts.images_dir_fd = self.img.image_dir_fd()
 			req.opts.work_dir_fd = self.img.work_dir_fd()
@@ -86,7 +86,7 @@ class phaul_service(rpyc.Service):
 
 	def exposed_restore_from_images(self):
 		print "Restoring from images"
-		with cr_api.criu_conn() as cc:
+		with cr_api.criu_conn(None) as cc:
 			cc.verbose(self.verb)
 
 			self.htype.put_meta_images(self.img.image_dir())

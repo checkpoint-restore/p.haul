@@ -34,6 +34,12 @@ class ph_socket:
 	def fileno(self):
 		return self._sk.fileno()
 
+	def criu_fileno(self):
+		return self._criu_fileno
+
+	def set_criu_fileno(self, val):
+		self._criu_fileno = val
+
 	def close(self):
 		if self._sk:
 			self._sk.close()
