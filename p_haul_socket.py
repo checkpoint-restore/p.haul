@@ -24,7 +24,7 @@ ph_service_port = 18862
 ph_sockets = {}
 
 class ph_socket:
-	def __init__(self, sock = None):
+	def __init__(self, sock):
 		self._sk = sock
 		self._hash_key = None
 
@@ -48,14 +48,6 @@ class ph_socket:
 			ph_socket.pop(self._hash_key)
 
 	# Private to local module methods
-
-	def connect_to(self, tgt_host):
-		if self._sk:
-			self._sk.close()
-
-		self._sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self._sk.connect((tgt_host, ph_service_port))
-
 	def hash(self, key):
 		self._hash_key = key
 		ph_sockets[key] = self
@@ -84,8 +76,11 @@ def start_listener():
 	print "Listener started"
 
 def create(tgt_host):
-	sk = ph_socket()
-	sk.connect_to(tgt_host)
+	csk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	csk.connect((tgt_host, ph_service_port))
+
+	sk = ph_socket(csk)
+
 	print "Connected ph socket to %s" % tgt_host
 	return sk
 
