@@ -26,7 +26,6 @@ ph_sockets = {}
 class ph_socket:
 	def __init__(self, sock):
 		self._sk = sock
-		self._hash_key = None
 
 	def name(self):
 		return self._sk.getsockname()
@@ -43,15 +42,6 @@ class ph_socket:
 	def close(self):
 		if self._sk:
 			self._sk.close()
-		if self._hash_key:
-			print "Removing socket", self._hash_key
-			ph_socket.pop(self._hash_key)
-
-	# Private to local module methods
-	def hash(self, key):
-		self._hash_key = key
-		ph_sockets[key] = self
-		print "Hashing socket", key
 
 class ph_socket_listener(threading.Thread):
 	def __init__(self):
@@ -66,8 +56,7 @@ class ph_socket_listener(threading.Thread):
 		while True:
 			clnt, addr = self.lsk.accept()
 			sk = ph_socket(clnt)
-			sk.hash(addr)
-
+			ph_sockets[addr] = sk
 			print "Accepted connection from", addr
 
 def start_listener():
@@ -86,7 +75,8 @@ def create(tgt_host):
 
 def get_by_name(name):
 	if ph_sockets.has_key(name):
-		return ph_sockets[name]
+		print "Picking up socket", name
+		return ph_sockets.pop(name)
 
 	print "Missing socket", name
 	return None
