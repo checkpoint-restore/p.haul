@@ -31,15 +31,17 @@ class ph_lsocket:
 	def fileno(self):
 		return self._sk.fileno()
 
-	def proceed(self):
+	def proceed(self, poll_list):
 		clnt, addr = self._sk.accept()
-		sk = ph_socket(clnt)
+		sk = ph_socket(clnt, addr)
 		ph_sockets[addr] = sk
+		poll_list.append(sk)
 		print "Accepted connection from", addr
 
 class ph_socket:
-	def __init__(self, sock):
+	def __init__(self, sock, hashv = None):
 		self._sk = sock
+		self._hashv = hashv
 
 	def name(self):
 		return self._sk.getsockname()
@@ -54,8 +56,23 @@ class ph_socket:
 		self._criu_fileno = val
 
 	def close(self):
-		if self._sk:
-			self._sk.close()
+		self._sk.close()
+
+	def picked(self):
+		self._hashv = None
+
+	def proceed(self, poll_list):
+		print "Dropping socket from poll list", self.name()
+		poll_list.remove(self)
+		if self._hashv:
+			#
+			# If client died before calling the get_by_name
+			# the socket is still in ph_sockets dict, so we
+			# need to drop one from it too
+			#
+			print " `- and from hash too"
+			ph_sockets.pop(self._hashv, None)
+			self._hashv = None
 
 class ph_socket_listener(threading.Thread):
 	def __init__(self):
@@ -69,7 +86,7 @@ class ph_socket_listener(threading.Thread):
 		while True:
 			r, w, x = select.select(self._sockets, [], [])
 			for sk in r:
-				sk.proceed()
+				sk.proceed(self._sockets)
 
 def start_listener():
 	lt = ph_socket_listener()
@@ -89,7 +106,6 @@ def get_by_name(name):
 	sk = ph_sockets.pop(name, None)
 	if sk:
 		print "Picking up socket", name
-		return sk
+		sk.picked()
 
-	print "Missing socket", name
-	return None
+	return sk
