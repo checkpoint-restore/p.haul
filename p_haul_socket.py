@@ -1,5 +1,6 @@
 import socket
 import threading
+import select
 
 ph_service_port = 18862
 
@@ -22,6 +23,19 @@ ph_service_port = 18862
 #  < at this point clnt.sk and src.sk are connected >
 #
 ph_sockets = {}
+
+class ph_lsocket:
+	def __init__(self, sock):
+		self._sk = sock
+
+	def fileno(self):
+		return self._sk.fileno()
+
+	def proceed(self):
+		clnt, addr = self._sk.accept()
+		sk = ph_socket(clnt)
+		ph_sockets[addr] = sk
+		print "Accepted connection from", addr
 
 class ph_socket:
 	def __init__(self, sock):
@@ -49,15 +63,13 @@ class ph_socket_listener(threading.Thread):
 		lsk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		lsk.bind(("0.0.0.0", ph_service_port))
 		lsk.listen(4)
-
-		self.lsk = lsk
+		self._sockets = [ph_lsocket(lsk)]
 
 	def run(self):
 		while True:
-			clnt, addr = self.lsk.accept()
-			sk = ph_socket(clnt)
-			ph_sockets[addr] = sk
-			print "Accepted connection from", addr
+			r, w, x = select.select(self._sockets, [], [])
+			for sk in r:
+				sk.proceed()
 
 def start_listener():
 	lt = ph_socket_listener()
