@@ -86,9 +86,10 @@ def create(tgt_host):
 	return sk
 
 def get_by_name(name):
-	if ph_sockets.has_key(name):
+	sk = ph_sockets.pop(name, None)
+	if sk:
 		print "Picking up socket", name
-		return ph_sockets.pop(name)
+		return sk
 
 	print "Missing socket", name
 	return None
