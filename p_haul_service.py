@@ -5,7 +5,7 @@
 import xem_rpc
 import os
 import rpc_pb2 as cr_rpc
-import p_haul_img as ph_img
+import images
 import criu_api
 import p_haul_type
 
@@ -15,7 +15,7 @@ class phaul_service:
 		self.dump_iter = 0
 		self.page_server_pid = 0
 		self.restored = False
-		self.img = ph_img.phaul_images() # FIXME -- get images driver from client
+		self.img = images.phaul_images() # FIXME -- get images driver from client
 		self.criu = None
 
 	def on_disconnect(self):
@@ -81,7 +81,7 @@ class phaul_service:
 		self.page_server_pid = 0
 
 	def rpc_start_accept_images(self):
-		self.img_tar = ph_img.untar_thread(self.data_sk, self.img.image_dir())
+		self.img_tar = images.untar_thread(self.data_sk, self.img.image_dir())
 		self.img_tar.start()
 		print "Started images server"
 
