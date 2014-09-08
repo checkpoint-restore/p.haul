@@ -3,12 +3,9 @@
 #
 
 import time
-import rpyc
+import xem_rpc
 import rpc_pb2 as cr_rpc
 import p_haul_criu as cr_api
-import p_haul_socket as ph_sk
-
-rpyc_target_port = 18861
 
 # Constants for iterations management
 #
@@ -26,12 +23,10 @@ class phaul_iter_worker:
 		self.frozen_time = 0
 		self.iteration = 0
 		self.prev_stats = None
-		self.target_host = host
 		self.img = img.phaul_images()
 
 		print "Connecting to target host"
-		self.th_con = rpyc.connect(self.target_host, rpyc_target_port)
-		self.th = self.th_con.root
+		self.th = xem_rpc.rpc_proxy(host)
 
 		self.htype = p_type
 		self.th.htype(p_type.id())
@@ -43,8 +38,8 @@ class phaul_iter_worker:
 
 		self.fs.set_target_host(host)
 
-		self.mem_sk = ph_sk.create(self.target_host)
-		self.th.accept_mem_sk(self.mem_sk.name())
+		self.mem_sk = self.th.open_socket("datask")
+		self.th.init_criu()
 		self.criu = cr_api.criu_conn(self.mem_sk)
 
 	def make_dump_req(self, typ):

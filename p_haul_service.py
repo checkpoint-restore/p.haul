@@ -2,18 +2,14 @@
 # P.HAUL code, that helps on the target node (rpyc service)
 #
 
-import rpyc
+import xem_rpc
 import os
 import rpc_pb2 as cr_rpc
 import p_haul_img as ph_img
 import p_haul_criu as cr_api
-import p_haul_socket as ph_sk
 import p_haul_type
 
-def init():
-	ph_sk.start_listener()
-
-class phaul_service(rpyc.Service):
+class phaul_service:
 	def on_connect(self):
 		print "Connected"
 		self.dump_iter = 0
@@ -37,20 +33,20 @@ class phaul_service(rpyc.Service):
 		print "Closing images"
 		self.img.close(self.keep_images or not self.restored)
 
-	def exposed_accept_mem_sk(self, name):
-		# FIXME -- this may have not yet appeared, listener
-		# is wating for the final SYN,ACK to arrive :(
-		self.mem_sk = ph_sk.get_by_name(name)
-		print "Mem sk accepted, name", self.mem_sk.name()
+	def on_socket_open(self, sk, uname):
+		self.mem_sk = sk
+		print "Mem sk accepted"
+
+	def rpc_init_criu(self):
 		self.criu = cr_api.criu_conn(self.mem_sk)
 
-	def exposed_verbose(self, level):
+	def rpc_verbose(self, level):
 		self.criu.verbose(level)
 
-	def exposed_keep_images(self, v):
+	def rpc_keep_images(self, v):
 		self.keep_images = v
 
-	def exposed_htype(self, id):
+	def rpc_htype(self, id):
 		print "Selecting htype to", id
 		self.htype = p_haul_type.get_dst(id)
 
@@ -76,24 +72,24 @@ class phaul_service(rpyc.Service):
 		self.page_server_pid = resp.ps.pid
 		print "\tPage server started at %d" % resp.ps.pid
 
-	def exposed_start_iter(self):
+	def rpc_start_iter(self):
 		self.dump_iter += 1
 		self.img.new_image_dir()
 		self.start_page_server()
 
-	def exposed_end_iter(self):
+	def rpc_end_iter(self):
 		self.page_server_pid = 0
 
-	def exposed_start_accept_images(self):
+	def rpc_start_accept_images(self):
 		self.img_tar = ph_img.untar_thread(self.mem_sk, self.img.image_dir())
 		self.img_tar.start()
 		print "Started images server"
 
-	def exposed_stop_accept_images(self):
+	def rpc_stop_accept_images(self):
 		print "Waiting for images to unpack"
 		self.img_tar.join()
 
-	def exposed_restore_from_images(self):
+	def rpc_restore_from_images(self):
 		print "Restoring from images"
 		self.htype.put_meta_images(self.img.image_dir())
 
@@ -152,6 +148,6 @@ class phaul_service(rpyc.Service):
 		self.htype.restored(resp.restore.pid)
 		self.restored = True
 
-	def exposed_restore_time(self):
+	def rpc_restore_time(self):
 		stats = cr_api.criu_get_rstats(self.img)
 		return stats.restore_time

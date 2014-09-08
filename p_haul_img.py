@@ -82,7 +82,7 @@ class phaul_images:
 
 		print "\tPack"
 		tf_name = os.path.join(self.current_dir, img_tarfile)
-		tf = tarfile.open(mode = "w|", fileobj = sock.tofile())
+		tf = tarfile.open(mode = "w|", fileobj = sock.makefile())
 		for img in os.listdir(self.current_dir):
 			if img.endswith(".img"):
 				tf.add(os.path.join(self.current_dir, img), img)
@@ -104,6 +104,6 @@ class untar_thread(threading.Thread):
 		self.__dir = tdir
 
 	def run(self):
-		tf = tarfile.open(mode = "r|", fileobj = self.__sk.tofile())
+		tf = tarfile.open(mode = "r|", fileobj = self.__sk.makefile())
 		tf.extractall(self.__dir)
 		tf.close()
