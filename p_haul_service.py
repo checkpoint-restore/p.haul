@@ -84,6 +84,15 @@ class phaul_service(rpyc.Service):
 	def exposed_end_iter(self):
 		self.page_server_pid = 0
 
+	def exposed_start_accept_images(self):
+		self.img_tar = ph_img.untar_thread(self.mem_sk, self.img.image_dir())
+		self.img_tar.start()
+		print "Started images server"
+
+	def exposed_stop_accept_images(self):
+		print "Waiting for images to unpack"
+		self.img_tar.join()
+
 	def exposed_restore_from_images(self):
 		print "Restoring from images"
 		self.htype.put_meta_images(self.img.image_dir())
@@ -146,6 +155,3 @@ class phaul_service(rpyc.Service):
 	def exposed_restore_time(self):
 		stats = cr_api.criu_get_rstats(self.img)
 		return stats.restore_time
-
-	def exposed_open_image_tar(self):
-		return ph_img.exposed_images_tar(self.img.image_dir())

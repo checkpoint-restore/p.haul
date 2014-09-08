@@ -196,7 +196,7 @@ class phaul_iter_worker:
 
 		print "Final FS and images sync"
 		self.fs.stop_migration()
-		self.img.sync_imgs_to_target(self.th, self.htype)
+		self.img.sync_imgs_to_target(self.th, self.htype, self.mem_sk)
 
 		print "Asking target host to restore"
 		self.th.restore_from_images()

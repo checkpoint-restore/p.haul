@@ -38,6 +38,16 @@ class ph_lsocket:
 		poll_list.append(sk)
 		print "Accepted connection from", addr
 
+class sk2f:
+	def __init__(self, sk):
+		self.__sk = sk
+
+	def read(self, bs):
+		return self.__sk.recv(bs)
+
+	def write(self, buf):
+		self.__sk.send(buf)
+
 class ph_socket:
 	def __init__(self, sock, hashv = None):
 		self._sk = sock
@@ -48,6 +58,9 @@ class ph_socket:
 
 	def fileno(self):
 		return self._sk.fileno()
+
+	def tofile(self):
+		return sk2f(self._sk)
 
 	def criu_fileno(self):
 		return self._criu_fileno

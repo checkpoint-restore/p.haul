@@ -9,6 +9,7 @@ import tarfile
 import time
 import shutil
 import time
+import threading
 
 img_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
@@ -70,16 +71,18 @@ class phaul_images:
 	# Images transfer
 	# Are there better ways for doing this?
 
-	def sync_imgs_to_target(self, th, htype):
+	def sync_imgs_to_target(self, th, htype, sock):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
 		print "Sending images to target"
 
 		start = time.time()
 
+		th.start_accept_images()
+
 		print "\tPack"
 		tf_name = os.path.join(self.current_dir, img_tarfile)
-		tf = tarfile.open(tf_name, "w")
+		tf = tarfile.open(mode = "w|", fileobj = sock.tofile())
 		for img in os.listdir(self.current_dir):
 			if img.endswith(".img"):
 				tf.add(os.path.join(self.current_dir, img), img)
@@ -90,30 +93,17 @@ class phaul_images:
 
 		tf.close()
 
-		print "\tCopy"
-		lfh = open(tf_name, "rb")
-		os.unlink(tf_name)
-		rfh = th.open_image_tar()
-		copy_file(lfh, rfh)
-
-		print "\tUnpack"
-		rfh.unpack_and_close()
+		th.stop_accept_images()
 
 		self.sync_time = time.time() - start
 
-# This one is created by target
-class exposed_images_tar():
-	def __init__(self, dir):
-		self.dir = dir
-		self.fname = os.path.join(dir, img_tarfile)
-		self.fh = open(self.fname, "wb")
+class untar_thread(threading.Thread):
+	def __init__(self, sk, tdir):
+		threading.Thread.__init__(self)
+		self.__sk = sk
+		self.__dir = tdir
 
-	def exposed_write(self, chunk):
-		return self.fh.write(chunk)
-
-	def exposed_unpack_and_close(self):
-		self.fh.close()
-		tf = tarfile.open(self.fname, "r")
-		os.unlink(self.fname)
-		tf.extractall(self.dir)
+	def run(self):
+		tf = tarfile.open(mode = "r|", fileobj = self.__sk.tofile())
+		tf.extractall(self.__dir)
 		tf.close()
