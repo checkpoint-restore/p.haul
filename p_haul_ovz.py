@@ -7,7 +7,7 @@ import shutil
 import p_haul_cgroup
 import p_haul_netifapi as netif
 import p_haul_fsapi as fsapi
-import p_haul_netapi as netapi
+import util
 import fs_haul_shared
 import fs_haul_subtree
 
@@ -59,7 +59,7 @@ class p_haul_type:
 
 				if v_in and v_out:
 					print "\tCollect %s -> %s (%s) veth" % (v_in, v_out, v_bridge)
-					veth = netapi.net_dev()
+					veth = util.net_dev()
 					veth.name = v_in
 					veth.pair = v_out
 					veth.link = v_bridge

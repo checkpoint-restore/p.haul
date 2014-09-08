@@ -7,7 +7,7 @@ import shutil
 import p_haul_cgroup
 import p_haul_netifapi as netif
 import p_haul_fsapi as fsapi
-import p_haul_netapi as netapi
+import util
 import fs_haul_shared
 import fs_haul_subtree
 from subprocess import Popen, PIPE
@@ -49,7 +49,7 @@ class p_haul_type:
 					raise Exception("Unsupported network device type: %s", v)
 				if veth:
 					self._veths.append(veth)
-				veth = netapi.net_dev()
+				veth = util.net_dev()
 			elif k == "lxc.network.link":
 				veth.link = v
 			elif k == "lxc.network.name":
