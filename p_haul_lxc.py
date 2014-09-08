@@ -6,7 +6,6 @@ import os
 import shutil
 import p_haul_cgroup
 import p_haul_netifapi as netif
-import p_haul_fsapi as fsapi
 import util
 import fs_haul_shared
 import fs_haul_subtree
