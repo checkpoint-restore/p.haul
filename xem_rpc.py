@@ -4,8 +4,12 @@ import threading
 
 rpc_port = 12345
 rpc_sk_buf = 256
+
 RPC_CMD = 1
 RPC_CALL = 2
+
+RPC_RESP = 1
+RPC_EXC = 2
 
 #
 # Client
@@ -22,7 +26,15 @@ class _rpc_proxy_caller:
 		raw_data = repr(call)
 		self._rpc_sk.send(raw_data)
 		raw_data = self._rpc_sk.recv(rpc_sk_buf)
-		return eval(raw_data)
+		resp = eval(raw_data)
+
+		if resp[0] == RPC_RESP:
+			return resp[1]
+		elif resp[0] == RPC_EXC:
+			print "Remote exception:"
+			raise resp[1]
+		else:
+			raise Exception("Proto resp error")
 
 class rpc_proxy:
 	def __init__(self, conn):
@@ -70,15 +82,20 @@ class _rpc_server_sk:
 			return
 
 		data = eval(raw_data)
-		if data[0] == RPC_CALL:
-			if not self._master:
-				raise Exception("Proto seq error")
+		try:
+			if data[0] == RPC_CALL:
+				if not self._master:
+					raise Exception("Proto seq error")
 
-			res = getattr(self._master, "rpc_" + data[1])(*data[2])
-		elif data[0] == RPC_CMD:
-			res = getattr(self, data[1])(mgr, *data[2])
+				res = getattr(self._master, "rpc_" + data[1])(*data[2])
+			elif data[0] == RPC_CMD:
+				res = getattr(self, data[1])(mgr, *data[2])
+			else:
+				raise Exception(("Proto typ error", data[0]))
+		except Exception as e:
+			res = (RPC_EXC, e)
 		else:
-			raise Exception(("Proto typ error", data[0]))
+			res = (RPC_RESP, res)
 
 		raw_data = repr(res)
 		self._sk.send(raw_data)
