@@ -38,9 +38,9 @@ class phaul_iter_worker:
 
 		self.fs.set_target_host(host)
 
-		self.mem_sk = self.th.open_socket("datask")
+		self.data_sk = self.th.open_socket("datask")
 		self.th.init_criu()
-		self.criu = cr_api.criu_conn(self.mem_sk)
+		self.criu = cr_api.criu_conn(self.data_sk)
 
 	def make_dump_req(self, typ):
 		#
@@ -191,7 +191,7 @@ class phaul_iter_worker:
 
 		print "Final FS and images sync"
 		self.fs.stop_migration()
-		self.img.sync_imgs_to_target(self.th, self.htype, self.mem_sk)
+		self.img.sync_imgs_to_target(self.th, self.htype, self.data_sk)
 
 		print "Asking target host to restore"
 		self.th.restore_from_images()

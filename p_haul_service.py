@@ -34,11 +34,11 @@ class phaul_service:
 		self.img.close(self.keep_images or not self.restored)
 
 	def on_socket_open(self, sk, uname):
-		self.mem_sk = sk
-		print "Mem sk accepted"
+		self.data_sk = sk
+		print "Data socket (%s) accepted" % uname
 
 	def rpc_init_criu(self):
-		self.criu = cr_api.criu_conn(self.mem_sk)
+		self.criu = cr_api.criu_conn(self.data_sk)
 
 	def rpc_verbose(self, level):
 		self.criu.verbose(level)
@@ -81,7 +81,7 @@ class phaul_service:
 		self.page_server_pid = 0
 
 	def rpc_start_accept_images(self):
-		self.img_tar = ph_img.untar_thread(self.mem_sk, self.img.image_dir())
+		self.img_tar = ph_img.untar_thread(self.data_sk, self.img.image_dir())
 		self.img_tar.start()
 		print "Started images server"
 
