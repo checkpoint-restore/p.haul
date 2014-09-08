@@ -5,7 +5,6 @@
 import os
 import shutil
 import p_haul_cgroup
-import p_haul_netifapi as netif
 import util
 import fs_haul_shared
 import fs_haul_subtree
@@ -170,13 +169,13 @@ class p_haul_type:
 
 	def net_lock(self):
 		for veth in self._veths:
-			netif.ifdown(veth.pair)
+			util.ifdown(veth.pair)
 
 	def net_unlock(self):
 		for veth in self._veths:
-			netif.ifup(veth.pair)
+			util.ifup(veth.pair)
 			if veth.link and not self._bridged:
-				netif.bridge_add(veth.pair, veth.link)
+				util.bridge_add(veth.pair, veth.link)
 
 	def can_migrate_tcp(self):
 		return True

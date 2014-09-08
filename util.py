@@ -16,3 +16,15 @@ def path_to_fs(path):
 			return ln_p[8]
 
 	return None
+
+def ifup(ifname):
+	print "\t\tUpping %s" % ifname
+	os.system("ip link set %s up" % ifname)
+
+def ifdown(ifname):
+	print "\t\tDowning %s" % ifname
+	os.system("ip link set %s down" % ifname)
+
+def bridge_add(ifname, brname):
+	print "\t\tAdd %s to %s" % (ifname, brname)
+	os.system("brctl addif %s %s" % (brname, ifname))
