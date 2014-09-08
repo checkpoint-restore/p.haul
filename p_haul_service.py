@@ -6,7 +6,7 @@ import xem_rpc
 import os
 import rpc_pb2 as cr_rpc
 import p_haul_img as ph_img
-import p_haul_criu as cr_api
+import criu_api
 import p_haul_type
 
 class phaul_service:
@@ -38,7 +38,7 @@ class phaul_service:
 		print "Data socket (%s) accepted" % uname
 
 	def rpc_init_criu(self):
-		self.criu = cr_api.criu_conn(self.data_sk)
+		self.criu = criu_api.criu_conn(self.data_sk)
 
 	def rpc_verbose(self, level):
 		self.criu.verbose(level)
@@ -149,5 +149,5 @@ class phaul_service:
 		self.restored = True
 
 	def rpc_restore_time(self):
-		stats = cr_api.criu_get_rstats(self.img)
+		stats = criu_api.criu_get_rstats(self.img)
 		return stats.restore_time

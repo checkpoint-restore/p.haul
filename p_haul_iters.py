@@ -5,7 +5,7 @@
 import time
 import xem_rpc
 import rpc_pb2 as cr_rpc
-import p_haul_criu as cr_api
+import criu_api
 
 # Constants for iterations management
 #
@@ -40,7 +40,7 @@ class phaul_iter_worker:
 
 		self.data_sk = self.th.open_socket("datask")
 		self.th.init_criu()
-		self.criu = cr_api.criu_conn(self.data_sk)
+		self.criu = criu_api.criu_conn(self.data_sk)
 
 	def make_dump_req(self, typ):
 		#
@@ -99,7 +99,7 @@ class phaul_iter_worker:
 
 			self.th.end_iter()
 
-			stats = cr_api.criu_get_dstats(self.img)
+			stats = criu_api.criu_get_dstats(self.img)
 			print "Dumped %d pages, %d skipped" % \
 					(stats.pages_written, stats.pages_skipped_parent)
 
@@ -211,7 +211,7 @@ class phaul_iter_worker:
 
 		end_time = time.time()
 
-		stats = cr_api.criu_get_dstats(self.img)
+		stats = criu_api.criu_get_dstats(self.img)
 		print "Final dump -- %d pages, %d skipped" % \
 				(stats.pages_written, stats.pages_skipped_parent)
 		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))

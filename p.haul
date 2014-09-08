@@ -4,7 +4,7 @@ import argparse
 import p_haul_img as ph_img
 import p_haul_iters as ph_iters
 
-import p_haul_criu
+import criu_api
 import p_haul_type
 
 # Usage idea
@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser("Process HAULer")
 parser.add_argument("type", help = "Type of hat to haul, e.g. ovz")
 parser.add_argument("id", help = "ID of what to haul")
 parser.add_argument("to", help = "IP where to haul")
-parser.add_argument("-v", help = "Verbosity level", default = p_haul_criu.def_verb, type = int)
+parser.add_argument("-v", help = "Verbosity level", default = criu_api.def_verb, type = int)
 parser.add_argument("--keep-images", help = "Keep images after migration", default = False, action = 'store_true')
 
 args = parser.parse_args()
