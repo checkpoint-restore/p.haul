@@ -43,9 +43,9 @@ class phaul_iter_worker:
 
 		self.fs.set_target_host(host)
 
-		mem_sk = ph_sk.create(self.target_host)
-		self.th.accept_mem_sk(mem_sk.name())
-		self.criu = cr_api.criu_conn(mem_sk)
+		self.mem_sk = ph_sk.create(self.target_host)
+		self.th.accept_mem_sk(self.mem_sk.name())
+		self.criu = cr_api.criu_conn(self.mem_sk)
 
 	def make_dump_req(self, typ):
 		#

@@ -40,9 +40,9 @@ class phaul_service(rpyc.Service):
 	def exposed_accept_mem_sk(self, name):
 		# FIXME -- this may have not yet appeared, listener
 		# is wating for the final SYN,ACK to arrive :(
-		mem_sk = ph_sk.get_by_name(name)
-		print "Mem sk accepted, name", mem_sk.name()
-		self.criu = cr_api.criu_conn(mem_sk)
+		self.mem_sk = ph_sk.get_by_name(name)
+		print "Mem sk accepted, name", self.mem_sk.name()
+		self.criu = cr_api.criu_conn(self.mem_sk)
 
 	def exposed_verbose(self, level):
 		self.criu.verbose(level)

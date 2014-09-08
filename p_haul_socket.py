@@ -55,9 +55,6 @@ class ph_socket:
 	def set_criu_fileno(self, val):
 		self._criu_fileno = val
 
-	def close(self):
-		self._sk.close()
-
 	def picked(self):
 		self._hashv = None
 

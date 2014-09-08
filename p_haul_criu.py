@@ -33,14 +33,12 @@ class criu_conn:
 		self.__swrk = subprocess.Popen([criu_binary, "swrk", "0"],
 				stdin = css[0].fileno(), stdout = mem_sk.fileno(),
 				stderr = None, close_fds = True)
-		self.__mem_sk = mem_sk
 		css[0].close()
 		self.__cs = css[1]
 
 	def close(self):
 		self.__cs.close()
 		self.__swrk.wait()
-		self.__mem_sk.close()
 
 	def mem_sk_fileno(self):
 		return 1 # Dup-ed into swrk in __init__
