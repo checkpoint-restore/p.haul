@@ -3,7 +3,7 @@
 #
 
 import images
-import time
+import mstats
 import xem_rpc
 import rpc_pb2 as cr_rpc
 import criu_api
@@ -21,7 +21,7 @@ phaul_iter_grow_max = 10
 
 class phaul_iter_worker:
 	def __init__(self, p_type, host):
-		self.frozen_time = 0
+		self._mstat = mstats.migration_stats()
 		self.iteration = 0
 		self.prev_stats = None
 		self.img = images.phaul_images()
@@ -73,8 +73,7 @@ class phaul_iter_worker:
 		self.th.keep_images(self.keep_images)
 
 	def start_migration(self):
-		start_time = time.time()
-		iter_times = []
+		self._mstat.start()
 
 		print "Preliminary FS migration"
 		self.fs.set_work_dir(self.img.work_dir())
@@ -101,11 +100,7 @@ class phaul_iter_worker:
 			self.th.end_iter()
 
 			stats = criu_api.criu_get_dstats(self.img)
-			print "Dumped %d pages, %d skipped" % \
-					(stats.pages_written, stats.pages_skipped_parent)
-
-			iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
-			self.frozen_time += stats.frozen_time
+			self._mstat.iteration(stats)
 
 			#
 			# Need to decide whether we do next iteration
@@ -210,19 +205,8 @@ class phaul_iter_worker:
 
 		self.htype.umount()
 
-		end_time = time.time()
-
 		stats = criu_api.criu_get_dstats(self.img)
-		print "Final dump -- %d pages, %d skipped" % \
-				(stats.pages_written, stats.pages_skipped_parent)
-		iter_times.append("%.2lf" % (stats.frozen_time / 1000000.))
-		self.frozen_time += stats.frozen_time
+		self._mstat.iteration(stats)
+		self._mstat.stop(self)
 		self.img.close(self.keep_images)
 		cc.close()
-
-		rst_time = self.th.restore_time()
-		print "Migration succeeded"
-		print "\t   total time is ~%.2lf sec" % (end_time - start_time)
-		print "\t  frozen time is ~%.2lf sec (" % (self.frozen_time / 1000000.), iter_times, ")"
-		print "\t restore time is ~%.2lf sec" % (rst_time / 1000000.)
-		print "\timg sync time is ~%.2lf sec" % (self.img.img_sync_time())
