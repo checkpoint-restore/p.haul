@@ -107,10 +107,8 @@ class phaul_service:
 			print "Restore root set to %s" % req.opts.root
 
 		cc = self.criu
-		cc.send_req(req, False)
-
+		resp = cc.send_req(req)
 		while True:
-			resp = cc.recv_resp()
 			if resp.type == cr_rpc.NOTIFY:
 				print "\t\tNotify (%s.%d)" % (resp.notify.script, resp.notify.pid)
 				if resp.notify.script == "setup-namespaces":
@@ -127,7 +125,7 @@ class phaul_service:
 				elif resp.notify.script == "network-lock":
 					raise Exception("Locking network on restore?")
 
-				cc.ack_notify()
+				resp = cc.ack_notify()
 				continue
 
 			if not resp.success:

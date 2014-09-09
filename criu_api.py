@@ -47,14 +47,14 @@ class criu_conn:
 	def verbose(self, level):
 		self.verb = level
 
-	def send_req(self, req, with_resp = True):
+	def send_req(self, req):
 		req.opts.log_level = self.verb
 		req.opts.log_file = "criu_%s.%d.log" % (req_types[req.type], self._iter)
 		self.__cs.send(req.SerializeToString())
 		self._iter += 1
 		self._last_req = req.type
-		if with_resp:
-			return self.recv_resp()
+
+		return self.recv_resp()
 
 	def recv_resp(self):
 		resp = cr_rpc.criu_resp()
@@ -69,6 +69,8 @@ class criu_conn:
 		req.type = cr_rpc.NOTIFY
 		req.notify_success = True
 		self.__cs.send(req.SerializeToString())
+
+		return self.recv_resp()
 
 #
 # Helper to read CRIU-generated statistics

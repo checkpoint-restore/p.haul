@@ -150,9 +150,8 @@ class phaul_iter_worker:
 		if self.htype.can_migrate_tcp():
 			req.opts.tcp_established = True
 
-		cc.send_req(req, False)
+		resp = cc.send_req(req)
 		while True:
-			resp = cc.recv_resp()
 			if resp.type != cr_rpc.NOTIFY:
 				raise Exception("Dump failed")
 
@@ -170,7 +169,7 @@ class phaul_iter_worker:
 				self.htype.net_unlock()
 
 			print "\t\tNotify (%s)" % resp.notify.script
-			cc.ack_notify()
+			resp = cc.ack_notify()
 
 		print "Dump complete"
 		self.th.end_iter()
@@ -194,8 +193,7 @@ class phaul_iter_worker:
 		# DUMP/success message
 		#
 
-		cc.ack_notify()
-		resp = cc.recv_resp()
+		resp = cc.ack_notify()
 		if not resp.success:
 			raise Exception("Dump screwed up")
 
