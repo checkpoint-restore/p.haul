@@ -79,6 +79,7 @@ class _rpc_server_sk:
 			mgr.remove(self)
 			if self._master:
 				self._master.on_disconnect()
+			self._sk.close()
 			return
 
 		data = eval(raw_data)

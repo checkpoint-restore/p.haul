@@ -16,11 +16,15 @@ class phaul_service:
 		self.restored = False
 		self.img = images.phaul_images() # FIXME -- get images driver from client
 		self.criu = None
+		self.data_sk = None
 
 	def on_disconnect(self):
 		print "Disconnected"
 		if self.criu:
 			self.criu.close()
+
+		if self.data_sk:
+			self.data_sk.close()
 
 		if self.htype and not self.restored:
 			self.htype.umount()
