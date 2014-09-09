@@ -41,7 +41,7 @@ class opendir:
 class phaul_images:
 	def __init__(self):
 		self.current_iter = 0
-		self.current_dir = None
+		self._current_dir = None
 		prefix = time.strftime("%y.%m.%d-%H.%M-", time.localtime())
 		wdir = tempfile.mkdtemp("", prefix, img_path)
 		self._wdir = opendir(wdir)
@@ -51,6 +51,9 @@ class phaul_images:
 
 	def close(self, keep_images):
 		self._wdir.close()
+		if self._current_dir:
+			self._current_dir.close()
+
 		if not keep_images:
 			print "Removing images"
 			shutil.rmtree(self._wdir.name())
@@ -62,20 +65,22 @@ class phaul_images:
 		return self.sync_time
 
 	def new_image_dir(self):
+		if self._current_dir:
+			self._current_dir.close()
 		self.current_iter += 1
 		img_dir = "%s/%d" % (self.img_path, self.current_iter)
 		print "\tMaking directory %s" % img_dir
-		self.current_dir = img_dir
 		os.mkdir(img_dir)
+		self._current_dir = opendir(img_dir)
 
 	def image_dir_fd(self):
-		return os.open(self.current_dir, os.O_DIRECTORY)
+		return self._current_dir.fileno()
 
 	def work_dir_fd(self):
 		return self._wdir.fileno()
 
 	def image_dir(self):
-		return self.current_dir
+		return self._current_dir.name()
 
 	def work_dir(self):
 		return self._wdir.name()
@@ -99,14 +104,15 @@ class phaul_images:
 		th.start_accept_images()
 
 		print "\tPack"
-		tf_name = os.path.join(self.current_dir, img_tarfile)
+		cdir = self._current_dir.name()
+		tf_name = os.path.join(cdir, img_tarfile)
 		tf = tarfile.open(mode = "w|", fileobj = sock.makefile())
-		for img in os.listdir(self.current_dir):
+		for img in os.listdir(cdir):
 			if img.endswith(".img"):
-				tf.add(os.path.join(self.current_dir, img), img)
+				tf.add(os.path.join(cdir, img), img)
 
 		print "\tAdd htype images"
-		for himg in htype.get_meta_images(self.current_dir):
+		for himg in htype.get_meta_images(cdir):
 			tf.add(himg[0], himg[1])
 
 		tf.close()
