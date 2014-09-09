@@ -2,6 +2,7 @@
 # The P.HAUL core -- the class that drives migration
 #
 
+import images
 import time
 import xem_rpc
 import rpc_pb2 as cr_rpc
@@ -19,11 +20,11 @@ phaul_iter_min_size = 64
 phaul_iter_grow_max = 10
 
 class phaul_iter_worker:
-	def __init__(self, p_type, host, img):
+	def __init__(self, p_type, host):
 		self.frozen_time = 0
 		self.iteration = 0
 		self.prev_stats = None
-		self.img = img.phaul_images()
+		self.img = images.phaul_images()
 
 		print "Connecting to target host"
 		self.th = xem_rpc.rpc_proxy(host)

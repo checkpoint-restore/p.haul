@@ -1,7 +1,6 @@
 #!/bin/env python
 import sys
 import argparse
-import images
 import p_haul_iters as ph_iters
 
 import criu_api
@@ -33,7 +32,7 @@ if not ph_type:
 	sys.exit(1)
 
 # Start the migration
-worker = ph_iters.phaul_iter_worker(ph_type, args.to, images)
+worker = ph_iters.phaul_iter_worker(ph_type, args.to)
 worker.verbose(args.v)
 worker.keep_images(args.keep_images)
 worker.start_migration()
