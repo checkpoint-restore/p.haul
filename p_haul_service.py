@@ -13,7 +13,6 @@ class phaul_service:
 	def on_connect(self):
 		print "Connected"
 		self.dump_iter = 0
-		self.page_server_pid = 0
 		self.restored = False
 		self.img = images.phaul_images() # FIXME -- get images driver from client
 		self.criu = None
@@ -22,10 +21,6 @@ class phaul_service:
 		print "Disconnected"
 		if self.criu:
 			self.criu.close()
-
-		if self.page_server_pid:
-			print "Sopping page server %d" % self.page_server_pid
-			os.kill(self.page_server_pid, 9)
 
 		if self.htype and not self.restored:
 			self.htype.umount()
@@ -69,7 +64,6 @@ class phaul_service:
 		if (resp.type != cr_rpc.PAGE_SERVER) or (not resp.success):
 			raise Exception("Failed to start page server")
 
-		self.page_server_pid = resp.ps.pid
 		print "\tPage server started at %d" % resp.ps.pid
 
 	def rpc_start_iter(self):
@@ -78,7 +72,7 @@ class phaul_service:
 		self.start_page_server()
 
 	def rpc_end_iter(self):
-		self.page_server_pid = 0
+		pass
 
 	def rpc_start_accept_images(self):
 		self.img_tar = images.untar_thread(self.data_sk, self.img.image_dir())
