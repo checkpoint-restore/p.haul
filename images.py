@@ -22,22 +22,40 @@ def copy_file(s, d):
 			break
 		d.write(chunk)
 
+class opendir:
+	def __init__(self, path):
+		self._dirname = path
+		self._dirfd = os.open(path, os.O_DIRECTORY)
+
+	def close(self):
+		os.close(self._dirfd)
+		os._dirname = None
+		os._dirfd = -1
+
+	def name(self):
+		return self._dirname
+
+	def fileno(self):
+		return self._dirfd
+
 class phaul_images:
 	def __init__(self):
 		self.current_iter = 0
 		self.current_dir = None
 		prefix = time.strftime("%y.%m.%d-%H.%M-", time.localtime())
-		self.wdir = tempfile.mkdtemp("", prefix, img_path)
-		self.img_path = os.path.join(self.wdir, "img")
+		wdir = tempfile.mkdtemp("", prefix, img_path)
+		self._wdir = opendir(wdir)
+		self.img_path = os.path.join(self._wdir.name(), "img")
 		os.mkdir(self.img_path)
 		self.sync_time = 0.0
 
 	def close(self, keep_images):
+		self._wdir.close()
 		if not keep_images:
 			print "Removing images"
-			shutil.rmtree(self.wdir)
+			shutil.rmtree(self._wdir.name())
 		else:
-			print "Images are kept in %s" % self.wdir
+			print "Images are kept in %s" % self._wdir.name()
 		pass
 
 	def img_sync_time(self):
@@ -54,13 +72,13 @@ class phaul_images:
 		return os.open(self.current_dir, os.O_DIRECTORY)
 
 	def work_dir_fd(self):
-		return os.open(self.wdir, os.O_DIRECTORY)
+		return self._wdir.fileno()
 
 	def image_dir(self):
 		return self.current_dir
 
 	def work_dir(self):
-		return self.wdir
+		return self._wdir.name()
 
 	def prev_image_dir(self):
 		if self.current_iter == 1:
