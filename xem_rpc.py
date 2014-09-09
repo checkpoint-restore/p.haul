@@ -1,6 +1,7 @@
 import socket
 import select
 import threading
+import traceback
 
 rpc_port = 12345
 rpc_sk_buf = 256
@@ -31,8 +32,8 @@ class _rpc_proxy_caller:
 		if resp[0] == RPC_RESP:
 			return resp[1]
 		elif resp[0] == RPC_EXC:
-			print "Remote exception:"
-			raise resp[1]
+			print "Remote exception"
+			raise Exception(resp[1])
 		else:
 			raise Exception("Proto resp error")
 
@@ -94,6 +95,7 @@ class _rpc_server_sk:
 			else:
 				raise Exception(("Proto typ error", data[0]))
 		except Exception as e:
+			traceback.print_exc()
 			res = (RPC_EXC, e)
 		else:
 			res = (RPC_RESP, res)
