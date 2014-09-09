@@ -92,7 +92,7 @@ class phaul_iter_worker:
 
 			req = self.make_dump_req(cr_rpc.PRE_DUMP)
 			resp = cc.send_req(req)
-			if (resp.type != cr_rpc.PRE_DUMP) or (not resp.success):
+			if not resp.success:
 				raise Exception("Pre-dump failed")
 
 			print "\tPre-dump succeeded"
@@ -151,14 +151,10 @@ class phaul_iter_worker:
 			req.opts.tcp_established = True
 
 		cc.send_req(req, False)
-
 		while True:
 			resp = cc.recv_resp()
 			if resp.type != cr_rpc.NOTIFY:
-				if resp.type == cr_rpc.DUMP and not resp.success:
-					raise Exception("Dump failed")
-				else:
-					raise Exception("Unexpected responce from service (%d)" % resp.type)
+				raise Exception("Dump failed")
 
 			if resp.notify.script == "post-dump":
 				#
@@ -200,8 +196,8 @@ class phaul_iter_worker:
 
 		cc.ack_notify()
 		resp = cc.recv_resp()
-		if resp.type != cr_rpc.DUMP:
-			raise Exception("Dump failed")
+		if not resp.success:
+			raise Exception("Dump screwed up")
 
 		self.htype.umount()
 

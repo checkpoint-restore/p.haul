@@ -61,7 +61,7 @@ class phaul_service:
 
 		print "\tSending criu rpc req"
 		resp = self.criu.send_req(req)
-		if (resp.type != cr_rpc.PAGE_SERVER) or (not resp.success):
+		if not resp.success:
 			raise Exception("Failed to start page server")
 
 		print "\tPage server started at %d" % resp.ps.pid
@@ -129,9 +129,6 @@ class phaul_service:
 
 				cc.ack_notify()
 				continue
-
-			if resp.type != cr_rpc.RESTORE:
-				raise Exception("Unexpected responce from service (%d)" % resp.type)
 
 			if not resp.success:
 				raise Exception("Restore failed")

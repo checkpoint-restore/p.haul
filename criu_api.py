@@ -35,6 +35,7 @@ class criu_conn:
 				stderr = None, close_fds = True)
 		css[0].close()
 		self.__cs = css[1]
+		self._last_req = -1
 
 	def close(self):
 		self.__cs.close()
@@ -51,12 +52,16 @@ class criu_conn:
 		req.opts.log_file = "criu_%s.%d.log" % (req_types[req.type], self._iter)
 		self.__cs.send(req.SerializeToString())
 		self._iter += 1
+		self._last_req = req.type
 		if with_resp:
 			return self.recv_resp()
 
 	def recv_resp(self):
 		resp = cr_rpc.criu_resp()
 		resp.ParseFromString(self.__cs.recv(1024))
+		if not resp.type in (cr_rpc.NOTIFY, self._last_req):
+			raise Exception("CRIU RPC error (%d/%d)" % (resp.type, self._last_req))
+
 		return resp
 
 	def ack_notify(self, success = True):
