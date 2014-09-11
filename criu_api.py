@@ -6,6 +6,7 @@
 import socket
 import struct
 import os
+import util
 import subprocess
 import rpc_pb2 as cr_rpc
 import stats_pb2 as crs
@@ -30,19 +31,20 @@ class criu_conn:
 		self._iter = 0
 		self.verb = def_verb
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
-		self.__swrk = subprocess.Popen([criu_binary, "swrk", "0"],
-				stdin = css[0].fileno(), stdout = mem_sk.fileno(),
-				stderr = None, close_fds = True)
+		util.set_cloexec(css[1])
+		print "`- Passing (ctl:%d, data:%d) pair to CRIU" % (css[0].fileno(), mem_sk.fileno())
+		self.__swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
 		css[0].close()
 		self.__cs = css[1]
 		self._last_req = -1
+		self.__mem_fd = mem_sk.fileno()
 
 	def close(self):
 		self.__cs.close()
 		self.__swrk.wait()
 
 	def mem_sk_fileno(self):
-		return 1 # Dup-ed into swrk in __init__
+		return self.__mem_fd
 
 	def verbose(self, level):
 		self.verb = level

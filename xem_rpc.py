@@ -2,6 +2,7 @@ import socket
 import select
 import threading
 import traceback
+import util
 
 rpc_port = 12345
 rpc_sk_buf = 256
@@ -41,6 +42,7 @@ class rpc_proxy:
 	def __init__(self, conn):
 		self._srv = conn
 		self._rpc_sk = self._make_sk()
+		util.set_cloexec(self._rpc_sk)
 		_rpc_proxy_caller(self._rpc_sk, RPC_CMD, "init_rpc")()
 
 	def __getattr__(self, attr):
@@ -104,6 +106,7 @@ class _rpc_server_sk:
 		self._sk.send(raw_data)
 
 	def init_rpc(self, mgr):
+		util.set_cloexec(self)
 		self._master = mgr.make_master()
 		self._master.on_connect()
 
@@ -118,6 +121,7 @@ class _rpc_server_ask:
 		sk.bind(("127.0.0.1", rpc_port))
 		sk.listen(8)
 		self._sk = sk
+		util.set_cloexec(self)
 
 	def fileno(self):
 		return self._sk.fileno()

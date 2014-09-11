@@ -1,4 +1,5 @@
 import os
+import fcntl
 
 class net_dev:
 	def init(self):
@@ -28,3 +29,9 @@ def ifdown(ifname):
 def bridge_add(ifname, brname):
 	print "\t\tAdd %s to %s" % (ifname, brname)
 	os.system("brctl addif %s %s" % (brname, ifname))
+
+def set_cloexec(sk):
+	fd = sk.fileno()
+	flags = fcntl.fcntl(sk, fcntl.F_GETFD)
+	fcntl.fcntl(sk, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
+

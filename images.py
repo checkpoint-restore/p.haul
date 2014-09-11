@@ -10,6 +10,7 @@ import time
 import shutil
 import time
 import threading
+import util
 
 img_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
@@ -26,6 +27,7 @@ class opendir:
 	def __init__(self, path):
 		self._dirname = path
 		self._dirfd = os.open(path, os.O_DIRECTORY)
+		util.set_cloexec(self)
 
 	def close(self):
 		os.close(self._dirfd)
