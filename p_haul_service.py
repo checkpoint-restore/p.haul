@@ -14,9 +14,10 @@ class phaul_service:
 		print "Connected"
 		self.dump_iter = 0
 		self.restored = False
-		self.img = images.phaul_images() # FIXME -- get images driver from client
 		self.criu = None
 		self.data_sk = None
+		self.img = None
+		self.htype = None
 
 	def on_disconnect(self):
 		print "Disconnected"
@@ -29,26 +30,25 @@ class phaul_service:
 		if self.htype and not self.restored:
 			self.htype.umount()
 
-		print "Closing images"
-		if not self.restored:
-			self.img.keep_images(True)
-
-		self.img.close()
+		if self.img:
+			print "Closing images"
+			if not self.restored:
+				self.img.keep_images(True)
+			self.img.close()
 
 	def on_socket_open(self, sk, uname):
 		self.data_sk = sk
 		print "Data socket (%s) accepted" % uname
 
-	def rpc_init_criu(self):
+	def rpc_setup(self, htype_id):
+		print "Setting up service side", htype_id
+		self.img = images.phaul_images()
 		self.criu = criu_api.criu_conn(self.data_sk)
+		self.htype = p_haul_type.get_dst(htype_id)
 
 	def rpc_set_options(self, opts):
 		self.criu.verbose(opts["verbose"])
 		self.img.keep_images(opts["keep_images"])
-
-	def rpc_htype(self, id):
-		print "Selecting htype to", id
-		self.htype = p_haul_type.get_dst(id)
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter

@@ -7,6 +7,7 @@ import mstats
 import xem_rpc
 import rpc_pb2 as cr_rpc
 import criu_api
+import p_haul_type
 
 # Constants for iterations management
 #
@@ -24,24 +25,28 @@ class phaul_iter_worker:
 		self._mstat = mstats.migration_stats()
 		self.iteration = 0
 		self.prev_stats = None
-		self.img = images.phaul_images()
 
 		print "Connecting to target host"
 		self.th = xem_rpc.rpc_proxy(host)
+		self.data_sk = self.th.open_socket("datask")
 
-		self.htype = p_type
-		self.th.htype(p_type.id())
+		print "Setting up local"
+		self.img = images.phaul_images()
+		self.criu = criu_api.criu_conn(self.data_sk)
+		self.htype = p_haul_type.get_src(p_type)
+		if not self.htype:
+			raise Exception("No htype driver found")
 
-		self.pid = p_type.root_task_pid()
-		self.fs = p_type.get_fs()
+		self.pid = self.htype.root_task_pid()
+		self.fs = self.htype.get_fs()
 		if not self.fs:
 			raise Exception("No FS driver found")
 
 		self.fs.set_target_host(host)
 
-		self.data_sk = self.th.open_socket("datask")
-		self.th.init_criu()
-		self.criu = criu_api.criu_conn(self.data_sk)
+		print "Setting up remote"
+		self.th.setup(self.htype.id())
+
 
 	def make_dump_req(self, typ):
 		#

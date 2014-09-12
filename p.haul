@@ -4,7 +4,6 @@ import argparse
 import p_haul_iters as ph_iters
 
 import criu_api
-import p_haul_type
 
 # Usage idea
 # p.haul <type> <id> <destination>
@@ -27,9 +26,7 @@ parser.add_argument("--keep-images", help = "Keep images after migration", defau
 
 args = parser.parse_args()
 
-ph_type = p_haul_type.get_src((args.type, args.id))
-if not ph_type:
-	sys.exit(1)
+ph_type = (args.type, args.id)
 
 # Start the migration
 worker = ph_iters.phaul_iter_worker(ph_type, args.to)
