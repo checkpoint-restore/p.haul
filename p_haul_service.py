@@ -30,7 +30,10 @@ class phaul_service:
 			self.htype.umount()
 
 		print "Closing images"
-		self.img.close(self.keep_images or not self.restored)
+		if not self.restored:
+			self.img.keep_images(True)
+
+		self.img.close()
 
 	def on_socket_open(self, sk, uname):
 		self.data_sk = sk
@@ -41,7 +44,7 @@ class phaul_service:
 
 	def rpc_set_options(self, opts):
 		self.criu.verbose(opts["verbose"])
-		self.keep_images = opts["keep_images"]
+		self.img.keep_images(opts["keep_images"])
 
 	def rpc_htype(self, id):
 		print "Selecting htype to", id

@@ -67,7 +67,7 @@ class phaul_iter_worker:
 	def set_options(self, opts):
 		self.th.set_options(opts)
 		self.criu.verbose(opts["verbose"])
-		self.keep_images = opts["keep_images"]
+		self.img.keep_images(opts["keep_images"])
 
 	def start_migration(self):
 		self._mstat.start()
@@ -199,5 +199,5 @@ class phaul_iter_worker:
 		stats = criu_api.criu_get_dstats(self.img)
 		self._mstat.iteration(stats)
 		self._mstat.stop(self)
-		self.img.close(self.keep_images)
+		self.img.close()
 		cc.close()

@@ -50,13 +50,17 @@ class phaul_images:
 		self.img_path = os.path.join(self._wdir.name(), "img")
 		os.mkdir(self.img_path)
 		self.sync_time = 0.0
+		self._keep_on_close = False
 
-	def close(self, keep_images):
+	def keep_images(self, val):
+		self._keep_on_close = val
+
+	def close(self):
 		self._wdir.close()
 		if self._current_dir:
 			self._current_dir.close()
 
-		if not keep_images:
+		if not self._keep_on_close:
 			print "Removing images"
 			shutil.rmtree(self._wdir.name())
 		else:
