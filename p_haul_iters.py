@@ -31,7 +31,7 @@ class phaul_iter_worker:
 		self.data_sk = self.th.open_socket("datask")
 
 		print "Setting up local"
-		self.img = images.phaul_images()
+		self.img = images.phaul_images("dmp")
 		self.criu = criu_api.criu_conn(self.data_sk)
 		self.htype = p_haul_type.get_src(p_type)
 		if not self.htype:

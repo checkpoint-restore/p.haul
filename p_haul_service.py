@@ -42,7 +42,7 @@ class phaul_service:
 
 	def rpc_setup(self, htype_id):
 		print "Setting up service side", htype_id
-		self.img = images.phaul_images()
+		self.img = images.phaul_images("rst")
 		self.criu = criu_api.criu_conn(self.data_sk)
 		self.htype = p_haul_type.get_dst(htype_id)
 

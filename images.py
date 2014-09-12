@@ -41,11 +41,11 @@ class opendir:
 		return self._dirfd
 
 class phaul_images:
-	def __init__(self):
+	def __init__(self, typ):
 		self.current_iter = 0
 		self._current_dir = None
-		prefix = time.strftime("%y.%m.%d-%H.%M-", time.localtime())
-		wdir = tempfile.mkdtemp("", prefix, img_path)
+		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())
+		wdir = tempfile.mkdtemp(suf, "%s-" % typ, img_path)
 		self._wdir = opendir(wdir)
 		self.img_path = os.path.join(self._wdir.name(), "img")
 		os.mkdir(self.img_path)
