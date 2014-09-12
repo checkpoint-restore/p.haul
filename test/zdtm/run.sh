@@ -16,14 +16,16 @@ echo "Start phaul service"
 PHSPID=$!
 
 echo "Migrating"
-if ! ../../p.haul pid ${PID} "127.0.0.1" -v=4 --keep-images; then
+if ! ../../p.haul pid ${PID} "127.0.0.1" -v=4 --keep-images --dst-rpid init2.pid; then
 	echo "Migration failed"
 	kill -TERM ${PID}
 	kill -TERM ${PHSPID}
 	exit 1
 fi
 
-echo "Checking results"
+PID=$(cat init2.pid)
+
+echo "Checking results, new pid ${PID}"
 kill -TERM ${PID}
 while kill -0 ${PID}; do
 	echo "Waiting to die"
