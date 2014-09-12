@@ -33,6 +33,5 @@ if not ph_type:
 
 # Start the migration
 worker = ph_iters.phaul_iter_worker(ph_type, args.to)
-worker.verbose(args.v)
-worker.keep_images(args.keep_images)
+worker.set_options({"verbose": args.v, "keep_images": args.keep_images})
 worker.start_migration()

@@ -39,11 +39,9 @@ class phaul_service:
 	def rpc_init_criu(self):
 		self.criu = criu_api.criu_conn(self.data_sk)
 
-	def rpc_verbose(self, level):
-		self.criu.verbose(level)
-
-	def rpc_keep_images(self, v):
-		self.keep_images = v
+	def rpc_set_options(self, opts):
+		self.criu.verbose(opts["verbose"])
+		self.keep_images = opts["keep_images"]
 
 	def rpc_htype(self, id):
 		print "Selecting htype to", id

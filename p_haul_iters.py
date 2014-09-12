@@ -64,13 +64,10 @@ class phaul_iter_worker:
 
 		return req
 
-	def verbose(self, level):
-		self.criu.verbose(level)
-		self.th.verbose(level)
-
-	def keep_images(self, val):
-		self.keep_images = val
-		self.th.keep_images(self.keep_images)
+	def set_options(self, opts):
+		self.th.set_options(opts)
+		self.criu.verbose(opts["verbose"])
+		self.keep_images = opts["keep_images"]
 
 	def start_migration(self):
 		self._mstat.start()
