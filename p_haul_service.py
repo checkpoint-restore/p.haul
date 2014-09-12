@@ -49,6 +49,7 @@ class phaul_service:
 	def rpc_set_options(self, opts):
 		self.criu.verbose(opts["verbose"])
 		self.img.keep_images(opts["keep_images"])
+		self.pidfile = opts["dst_rpid"]
 
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
@@ -141,6 +142,8 @@ class phaul_service:
 
 		self.htype.restored(resp.restore.pid)
 		self.restored = True
+		if self.pidfile:
+			open(self.pidfile, "w").writelines(["%d" % resp.restore.pid])
 
 	def rpc_restore_time(self):
 		stats = criu_api.criu_get_rstats(self.img)
