@@ -37,11 +37,11 @@ class phaul_iter_worker:
 		if not self.htype:
 			raise Exception("No htype driver found")
 
-		self.pid = self.htype.root_task_pid()
 		self.fs = self.htype.get_fs()
 		if not self.fs:
 			raise Exception("No FS driver found")
 
+		self.pid = self.htype.root_task_pid()
 		self.fs.set_target_host(host)
 
 		print "Setting up remote"
