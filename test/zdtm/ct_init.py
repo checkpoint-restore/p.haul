@@ -12,42 +12,28 @@ def wup(foo, bar):
 signal.signal(signal.SIGTERM, wup)
 
 def getmlist():
-	f = open("/proc/self/mountinfo")
-	ml = []
-	for l in f.readlines():
-		ls = l.split()
-		ml.append(ls[4])
-
-	return ml
+	return map(lambda x: x.split()[4], open("/proc/self/mountinfo").readlines())
 
 def try_umont(ml):
-	for p in ml:
-		if p in ("/", "/proc"):
-			continue
-
+	fl = filter(lambda x: not x in ("/", "/proc"), ml)
+	for p in fl:
 		print "Umounting [%s]" % p
 		os.system("umount -l %s >/dev/null 2>&1" % p)
-
 
 def umount_all():
 	at = 0
 	while True:
 		ml = getmlist()
-		if len(ml) == 2:
-			return ml
-		if at >= 8:
+		if len(ml) == 2 or at >= 8:
 			return ml
 
 		try_umont(ml)
 		at += 1
 
 ml = umount_all()
-print "Left:"
-print ml
-print "Me:"
-print os.getpid(), os.getpgrp(), os.getsid(0)
-print "Proc:"
-print os.listdir("/proc")
+print "Me:", os.getpid(), os.getpgrp(), os.getsid(0)
+print "Left:", ml
+print "Proc:", os.listdir("/proc")
 
 #
 # From now on make's output will mess with
@@ -65,9 +51,9 @@ for tst in test_list:
 os.write(3, "!")
 os.close(3)
 signal.pause()
+
 for tst in test_list:
-	pid = int(open("%s.pid" % tst).readline())
-	os.kill(pid, signal.SIGTERM)
+	os.kill(int(open("%s.pid" % tst).readline()), signal.SIGTERM)
 
 while True:
 	try:
@@ -78,14 +64,13 @@ while True:
 
 flist = []
 for tst in test_list:
-	outf = open("%s.out" % tst)
-	lns = outf.readlines()
-	res = filter(lambda x: x.endswith("PASS\n"), lns)
+	res = filter(lambda x: x.endswith("PASS\n"), open("%s.out" % tst).readlines())
 	if len(res) == 0:
 		flist.append(tst)
 
 if len(flist) != 0:
 	print "Some tests failed:"
 	print flist
+	print "FAIL"
 else:
 	print "All tests PASS"
