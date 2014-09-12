@@ -37,10 +37,7 @@ int main(int argc, char **argv)
 		dup2(fd, 1);
 		dup2(fd, 2);
 		close(fd);
-
-		fd = open("/dev/null", O_RDONLY);
-		dup2(fd, 0);
-		close(fd);
+		close(0);
 
 		close(start[0]);
 		dup2(start[1], 3);
