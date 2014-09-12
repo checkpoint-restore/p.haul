@@ -39,11 +39,11 @@ class _rpc_proxy_caller:
 			raise Exception("Proto resp error")
 
 class rpc_proxy:
-	def __init__(self, conn):
+	def __init__(self, conn, *args):
 		self._srv = conn
 		self._rpc_sk = self._make_sk()
 		util.set_cloexec(self._rpc_sk)
-		_rpc_proxy_caller(self._rpc_sk, RPC_CMD, "init_rpc")()
+		_rpc_proxy_caller(self._rpc_sk, RPC_CMD, "init_rpc")(args)
 
 	def __getattr__(self, attr):
 		return _rpc_proxy_caller(self._rpc_sk, RPC_CALL, attr)
@@ -105,10 +105,10 @@ class _rpc_server_sk:
 		raw_data = repr(res)
 		self._sk.send(raw_data)
 
-	def init_rpc(self, mgr):
+	def init_rpc(self, mgr, args):
 		util.set_cloexec(self)
 		self._master = mgr.make_master()
-		self._master.on_connect()
+		self._master.on_connect(*args)
 
 	def pick_channel(self, mgr, hash_name, uname):
 		sk = mgr.pick_sk(hash_name)
