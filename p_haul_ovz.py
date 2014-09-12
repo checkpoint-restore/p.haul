@@ -70,9 +70,6 @@ class p_haul_type:
 		# FIXME -- implement
 		pass
 
-	def id(self):
-		return (name, self._ctid)
-
 	def init_src(self):
 		self._fs_mounted = True
 		self._bridged = True

@@ -19,11 +19,6 @@ class p_haul_type:
 	def init_dst(self):
 		pass
 
-	# Get tuple of name and id to construct the
-	# same object on the remote host
-	def id(self):
-		return (name, "%d" % self.pid)
-
 	# Report the pid of the root task of what we're
 	# goung to migrate
 	def root_task_pid(self):

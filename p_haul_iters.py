@@ -45,7 +45,7 @@ class phaul_iter_worker:
 		self.fs.set_target_host(host)
 
 		print "Setting up remote"
-		self.th.setup(self.htype.id())
+		self.th.setup(p_type)
 
 
 	def make_dump_req(self, typ):
