@@ -1,10 +1,24 @@
 #!/bin/env python
 
+import signal
 import xem_rpc
 import p_haul_service as ph_srv
 
 if __name__ == "__main__":
+	sfd = None
+	def fin(foo, bar):
+		print "Stop by %d" % foo
+		sfd.close()
+
 	print "Starting p.haul rpyc service"
 	t = xem_rpc.rpc_threaded_srv(ph_srv.phaul_service)
+
+	# FIXME: Setup stop handlers
+	sfd = t.get_stop_fd()
+	signal.signal(signal.SIGTERM, fin)
+	signal.signal(signal.SIGINT, fin)
+
 	t.start()
+	signal.pause()
 	t.join()
+	print "Bye!"

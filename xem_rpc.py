@@ -130,11 +130,22 @@ class _rpc_server_ask:
 		sk, addr = self._sk.accept()
 		mgr.add(_rpc_server_sk(sk))
 
+class _rpc_stop_fd:
+	def __init__(self, fd):
+		self._fd = fd
+
+	def fileno(self):
+		return self._fd.fileno()
+
+	def work(self, mgr):
+		mgr.stop()
+
 class _rpc_server_manager:
 	def __init__(self, srv_class):
 		self._srv_class = srv_class
 		self._sk_by_name = {}
 		self._poll_list = [_rpc_server_ask()]
+		self._alive = True
 
 	def add(self, sk):
 		self._sk_by_name[sk.hash_name()] = sk
@@ -153,16 +164,30 @@ class _rpc_server_manager:
 	def make_master(self):
 		return self._srv_class()
 
-	def loop(self):
-		while True:
+	def stop(self):
+		self._alive = False
+
+	def loop(self, stop_fd):
+		if stop_fd:
+			self._poll_list.append(_rpc_stop_fd(stop_fd))
+
+		while self._alive:
 			r, w, x = select.select(self._poll_list, [], [])
 			for sk in r:
 				sk.work(self)
+
+		print "RPC Service stops"
 
 class rpc_threaded_srv(threading.Thread):
 	def __init__(self, srv_class):
 		threading.Thread.__init__(self)
 		self._mgr = _rpc_server_manager(srv_class)
+		self._stop_fd = None
 
 	def run(self):
-		self._mgr.loop()
+		self._mgr.loop(self._stop_fd)
+
+	def get_stop_fd(self):
+		sks = socket.socketpair()
+		self._stop_fd = sks[0]
+		return sks[1]
