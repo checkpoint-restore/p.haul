@@ -12,7 +12,7 @@ import time
 import threading
 import util
 
-img_path = "/var/local/p.haul-fs/"
+def_path = "/var/local/p.haul-fs/"
 img_tarfile = "images.tar"
 xfer_size = 64 * 1024
 
@@ -43,14 +43,11 @@ class opendir:
 class phaul_images:
 	def __init__(self, typ):
 		self.current_iter = 0
-		self._current_dir = None
-		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())
-		wdir = tempfile.mkdtemp(suf, "%s-" % typ, img_path)
-		self._wdir = opendir(wdir)
-		self._img_path = os.path.join(self._wdir.name(), "img")
-		os.mkdir(self._img_path)
 		self.sync_time = 0.0
+		self._typ = typ
 		self._keep_on_close = False
+		self._wdir = None
+		self._current_dir = None
 
 	def save_images(self):
 		print "Keeping images"
@@ -59,7 +56,16 @@ class phaul_images:
 	def set_options(self, opts):
 		self._keep_on_close = opts["keep_images"]
 
+		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())
+		wdir = tempfile.mkdtemp(suf, "%s-" % self._typ, opts["img_path"])
+		self._wdir = opendir(wdir)
+		self._img_path = os.path.join(self._wdir.name(), "img")
+		os.mkdir(self._img_path)
+
 	def close(self):
+		if not self._wdir:
+			return
+
 		self._wdir.close()
 		if self._current_dir:
 			self._current_dir.close()

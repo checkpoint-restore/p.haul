@@ -2,7 +2,7 @@
 import sys
 import argparse
 import p_haul_iters as ph_iters
-
+import images
 import criu_api
 
 # Usage idea
@@ -24,6 +24,7 @@ parser.add_argument("to", help = "IP where to haul")
 parser.add_argument("-v", help = "Verbosity level", default = criu_api.def_verb, type = int, dest = "verbose")
 parser.add_argument("--keep-images", help = "Keep images after migration", default = False, action = 'store_true')
 parser.add_argument("--dst-rpid", help = "Write pidfile on restore", default = None)
+parser.add_argument("--img-path", help = "Dirctory where to put images", default = images.def_path)
 
 args = vars(parser.parse_args())
 
