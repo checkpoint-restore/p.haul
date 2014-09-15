@@ -144,7 +144,7 @@ class p_haul_type:
 			self.__umount_root()
 
 	def get_fs(self):
-		rootfs = fsapi.path_to_fs(self.__ct_priv())
+		rootfs = util.path_to_fs(self.__ct_priv())
 		if not rootfs:
 			print "CT is on unknown FS"
 			return None
