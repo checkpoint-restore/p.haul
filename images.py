@@ -13,15 +13,6 @@ import threading
 import util
 
 def_path = "/var/local/p.haul-fs/"
-img_tarfile = "images.tar"
-xfer_size = 64 * 1024
-
-def copy_file(s, d):
-	while True:
-		chunk = s.read(xfer_size)
-		if not chunk:
-			break
-		d.write(chunk)
 
 class opendir:
 	def __init__(self, path):
@@ -119,13 +110,12 @@ class phaul_images:
 
 		th.start_accept_images()
 
+		tf = tarfile.open(mode = "w|", fileobj = sock.makefile())
+
 		print "\tPack"
 		cdir = self._current_dir.name()
-		tf_name = os.path.join(cdir, img_tarfile)
-		tf = tarfile.open(mode = "w|", fileobj = sock.makefile())
-		for img in os.listdir(cdir):
-			if img.endswith(".img"):
-				tf.add(os.path.join(cdir, img), img)
+		for img in filter(lambda x: x.endswith(".img"), os.listdir(cdir)):
+			tf.add(os.path.join(cdir, img), img)
 
 		print "\tAdd htype images"
 		for himg in htype.get_meta_images(cdir):
