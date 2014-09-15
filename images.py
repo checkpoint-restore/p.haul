@@ -52,8 +52,12 @@ class phaul_images:
 		self.sync_time = 0.0
 		self._keep_on_close = False
 
-	def keep_images(self, val):
-		self._keep_on_close = val
+	def save_images(self):
+		print "Keeping images"
+		self._keep_on_close = True
+
+	def set_options(self, opts):
+		self._keep_on_close = opts["keep_images"]
 
 	def close(self):
 		self._wdir.close()

@@ -33,7 +33,7 @@ class phaul_service:
 		if self.img:
 			print "Closing images"
 			if not self.restored:
-				self.img.keep_images(True)
+				self.img.save_images()
 			self.img.close()
 
 	def on_socket_open(self, sk, uname):
@@ -48,7 +48,7 @@ class phaul_service:
 
 	def rpc_set_options(self, opts):
 		self.criu.verbose(opts["verbose"])
-		self.img.keep_images(opts["keep_images"])
+		self.img.set_options(opts)
 		self.htype.set_options(opts)
 
 	def start_page_server(self):

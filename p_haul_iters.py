@@ -72,7 +72,7 @@ class phaul_iter_worker:
 	def set_options(self, opts):
 		self.th.set_options(opts)
 		self.criu.verbose(opts["verbose"])
-		self.img.keep_images(opts["keep_images"])
+		self.img.set_options(opts)
 		self.htype.set_options(opts)
 
 	def start_migration(self):
