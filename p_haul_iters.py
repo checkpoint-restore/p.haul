@@ -73,6 +73,7 @@ class phaul_iter_worker:
 		self.th.set_options(opts)
 		self.criu.verbose(opts["verbose"])
 		self.img.keep_images(opts["keep_images"])
+		self.htype.set_options(opts)
 
 	def start_migration(self):
 		self._mstat.start()

@@ -73,6 +73,9 @@ class p_haul_type:
 		self._bridged = False
 		self.__load_ct_config()
 
+	def set_options(self, opts):
+		pass
+
 	def root_task_pid(self):
 		pid = -1;
 

@@ -9,6 +9,7 @@ name = "pid"
 class p_haul_type:
 	def __init__(self, id):
 		self.pid = int(id)
+		self._pidfile = None
 
 
 	#
@@ -18,6 +19,9 @@ class p_haul_type:
 		pass
 	def init_dst(self):
 		pass
+
+	def set_options(self, opts):
+		self._pidfile = opts["dst_rpid"]
 
 	# Report the pid of the root task of what we're
 	# goung to migrate
@@ -58,7 +62,9 @@ class p_haul_type:
 
 	# Restoring done, the new top task has pid pid
 	def restored(self, pid):
-		pass
+		if self._pidfile:
+			print "Writing rst pidfile"
+			open(self._pidfile, "w").writelines(["%d" % pid])
 
 	#
 	# Lock and unlock networking

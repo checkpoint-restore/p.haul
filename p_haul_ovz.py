@@ -79,6 +79,9 @@ class p_haul_type:
 		self._fs_mounted = False
 		self._bridged = False
 
+	def set_options(self, opts):
+		pass
+
 	def root_task_pid(self):
 		pf = open(os.path.join(vzpid_dir, self._ctid))
 		pid = pf.read()
