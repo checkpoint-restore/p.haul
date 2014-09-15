@@ -47,8 +47,8 @@ class phaul_images:
 		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())
 		wdir = tempfile.mkdtemp(suf, "%s-" % typ, img_path)
 		self._wdir = opendir(wdir)
-		self.img_path = os.path.join(self._wdir.name(), "img")
-		os.mkdir(self.img_path)
+		self._img_path = os.path.join(self._wdir.name(), "img")
+		os.mkdir(self._img_path)
 		self.sync_time = 0.0
 		self._keep_on_close = False
 
@@ -78,7 +78,7 @@ class phaul_images:
 		if self._current_dir:
 			self._current_dir.close()
 		self.current_iter += 1
-		img_dir = "%s/%d" % (self.img_path, self.current_iter)
+		img_dir = "%s/%d" % (self._img_path, self.current_iter)
 		print "\tMaking directory %s" % img_dir
 		os.mkdir(img_dir)
 		self._current_dir = opendir(img_dir)
