@@ -20,7 +20,7 @@ echo "Start phaul service"
 PHSPID=$!
 
 echo "Migrating"
-if ! ../../p.haul pid ${PID} "127.0.0.1" -v=4 --keep-images --dst-rpid "${WDIR}/init2.pid"; then
+if ! ../../p.haul pid ${PID} "127.0.0.1" -v=4 --keep-images --dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"; then
 	echo "Migration failed"
 	kill -TERM ${PID}
 	kill -TERM ${PHSPID}
