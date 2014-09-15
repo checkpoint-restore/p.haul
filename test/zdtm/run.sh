@@ -37,4 +37,10 @@ while kill -0 ${PID}; do
 done
 kill -TERM ${PHSPID}
 
-tail -n1 "${WDIR}/ct.log"
+if tail -n1 "${WDIR}/ct.log" | fgrep PASS; then
+	rm -rf "${WDIR}"
+	exit 0
+else
+	echo "FAIL"
+	exit 1
+fi

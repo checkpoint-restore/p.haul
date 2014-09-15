@@ -73,4 +73,4 @@ if len(flist) != 0:
 	print flist
 	print "FAIL"
 else:
-	print "All tests PASS"
+	print "PASS"
