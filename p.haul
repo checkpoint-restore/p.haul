@@ -21,15 +21,16 @@ parser = argparse.ArgumentParser("Process HAULer")
 parser.add_argument("type", help = "Type of hat to haul, e.g. ovz")
 parser.add_argument("id", help = "ID of what to haul")
 parser.add_argument("to", help = "IP where to haul")
-parser.add_argument("-v", help = "Verbosity level", default = criu_api.def_verb, type = int)
+parser.add_argument("-v", help = "Verbosity level", default = criu_api.def_verb, type = int, dest = "verbose")
 parser.add_argument("--keep-images", help = "Keep images after migration", default = False, action = 'store_true')
 parser.add_argument("--dst-rpid", help = "Write pidfile on restore", default = None)
 
-args = parser.parse_args()
+args = vars(parser.parse_args())
 
-ph_type = (args.type, args.id)
+ph_type = (args.pop("type"), args.pop("id"))
+dst = args.pop("to")
 
 # Start the migration
-worker = ph_iters.phaul_iter_worker(ph_type, args.to)
-worker.set_options({ "verbose": args.v, "keep_images": args.keep_images, "dst_rpid": args.dst_rpid})
+worker = ph_iters.phaul_iter_worker(ph_type, dst)
+worker.set_options(args)
 worker.start_migration()
