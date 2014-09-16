@@ -4,3 +4,7 @@ pipe00
 maps00
 sockets00
 zombie00
+file_shared
+futex
+pstree
+xids00
