@@ -1,7 +1,8 @@
 #!/bin/bash
 set -x
+CRIU_PATH="../../../criu/"
+CRIU_TESTS="${CRIU_PATH}/test/zdtm/"
 WDIR="$(pwd)/wdir"
-CRIU_TESTS="../../../criu/test/zdtm/"
 
 rm -rf "$WDIR"
 mkdir "$WDIR"
@@ -14,6 +15,9 @@ fi
 
 PID=$(cat "${WDIR}/init.pid")
 echo "Tests started at ${PID}"
+
+export PATH="${PATH}:${CRIU_PATH}"
+which criu
 
 echo "Start phaul service"
 ../../p.haul-service > "${WDIR}/ph-srv.log" 2>&1 &

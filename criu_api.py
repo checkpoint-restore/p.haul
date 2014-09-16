@@ -11,7 +11,7 @@ import subprocess
 import rpc_pb2 as cr_rpc
 import stats_pb2 as crs
 
-criu_binary = "/root/criu/criu"
+criu_binary = "criu"
 
 req_types = {
 	cr_rpc.DUMP: "dump",
