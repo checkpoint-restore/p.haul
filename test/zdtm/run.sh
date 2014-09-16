@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 WDIR="$(pwd)/wdir"
-CRIU_TESTS="../../../criu/test/zdtm/live/static"
+CRIU_TESTS="../../../criu/test/zdtm/"
 
 rm -rf "$WDIR"
 mkdir "$WDIR"
@@ -31,9 +31,11 @@ PID=$(cat "${WDIR}/init2.pid")
 
 echo "Checking results, new pid ${PID}"
 kill -TERM ${PID}
+WTM=1
 while kill -0 ${PID}; do
 	echo "Waiting to die"
-	sleep ".1"
+	sleep ".${WTM}"
+	[ $WTM -lt 9 ] && ((WTM++))
 done
 kill -TERM ${PHSPID}
 

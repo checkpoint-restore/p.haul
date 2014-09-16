@@ -43,16 +43,19 @@ print "Proc:", os.listdir("/proc")
 sys.stdout.flush()
 sys.stderr.flush()
 
-os.chdir(criu_tests_dir)
+os.chdir(criu_tests_dir + "/live/")
 os.system("make cleanout")
 for tst in test_list:
-	os.system("make %s.pid" % tst)
+	os.system("make -C %s %s.pid" % tuple(tst.rsplit("/", 1)))
 
 os.write(3, "!")
 os.close(3)
 signal.pause()
 
 for tst in test_list:
+	# XXX: there's a make %test.out command, but
+	# plain kill -TERM does _exactly_ the same and
+	# is slightly faster
 	os.kill(int(open("%s.pid" % tst).readline()), signal.SIGTERM)
 
 while True:
