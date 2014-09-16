@@ -118,7 +118,7 @@ class _rpc_server_sk:
 class _rpc_server_ask:
 	def __init__(self):
 		sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sk.bind(("127.0.0.1", rpc_port))
+		sk.bind(("0.0.0.0", rpc_port))
 		sk.listen(8)
 		self._sk = sk
 		util.set_cloexec(self)
