@@ -4,7 +4,6 @@
 
 import os
 import tempfile
-import rpyc
 import tarfile
 import time
 import shutil
