@@ -22,6 +22,7 @@ class p_haul_type:
 
 	def set_options(self, opts):
 		self._pidfile = opts["dst_rpid"]
+		self._fs_root = opts["pid_root"]
 
 	# Report the pid of the root task of what we're
 	# goung to migrate
@@ -33,7 +34,7 @@ class p_haul_type:
 	# that things will get restored in the current
 	# mount namespace and w/o chroot
 	def mount(self):
-		return None
+		return self._fs_root
 
 	# Remove any specific FS setup
 	def umount(self):
