@@ -43,6 +43,9 @@ class untar_thread(threading.Thread):
 		tf.close()
 
 class phaul_images:
+	WDIR = 1
+	IMGDIR = 2
+
 	def __init__(self, typ):
 		self.current_iter = 0
 		self.sync_time = 0.0
@@ -123,7 +126,7 @@ class phaul_images:
 
 		start = time.time()
 
-		th.start_accept_images()
+		th.start_accept_images(phaul_images.IMGDIR)
 		tf = self.__tar_to_sock(sock)
 
 		print "\tPack"
@@ -142,23 +145,22 @@ class phaul_images:
 		self.sync_time = time.time() - start
 
 	def send_cpuinfo(self, th, sock):
-		th.start_accept_wdir()
+		th.start_accept_images(phaul_images.WDIR)
 		tf = self.__tar_to_sock(sock)
 		img = criu_api.cpuinfo_img_name
 		tf.add(os.path.join(self.work_dir(), img), img)
 		tf.close()
 		th.stop_accept_images()
 
-	def __start_accept(self, sk, dirname):
+	def start_accept_images(self, dir_id, sk):
+		if dir_id == phaul_images.WDIR:
+			dirname = self.work_dir()
+		else:
+			dirname = self.image_dir()
+
 		self.__acc_tar = untar_thread(sk, dirname)
 		self.__acc_tar.start()
 		print "Started images server"
-
-	def start_accept_wdir(self, sk):
-		self.__start_accept(sk, self.work_dir())
-
-	def start_accept_images(self, sk):
-		self.__start_accept(sk, self.image_dir())
 
 	def stop_accept_images(self):
 		print "Waiting for images to unpack"

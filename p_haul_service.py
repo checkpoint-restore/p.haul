@@ -79,11 +79,8 @@ class phaul_service:
 	def rpc_end_iter(self):
 		pass
 
-	def rpc_start_accept_wdir(self):
-		self.img.start_accept_wdir(self.data_sk)
-
-	def rpc_start_accept_images(self):
-		self.img.start_accept_images(self.data_sk)
+	def rpc_start_accept_images(self, dir_id):
+		self.img.start_accept_images(dir_id, self.data_sk)
 
 	def rpc_stop_accept_images(self):
 		self.img.stop_accept_images()
