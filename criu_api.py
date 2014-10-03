@@ -17,8 +17,12 @@ req_types = {
 	cr_rpc.DUMP: "dump",
 	cr_rpc.PRE_DUMP: "pre_dump",
 	cr_rpc.PAGE_SERVER: "page_server",
-	cr_rpc.RESTORE: "restore"
+	cr_rpc.RESTORE: "restore",
+	cr_rpc.CPUINFO_DUMP: "cpuinfo-dump",
+	cr_rpc.CPUINFO_CHECK: "cpuinfo-check",
 }
+
+cpuinfo_img_name = "cpuinfo.img"
 
 def_verb = 2
 

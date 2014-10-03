@@ -8,6 +8,7 @@ import rpc_pb2 as cr_rpc
 import images
 import criu_api
 import p_haul_type
+import util
 
 class phaul_service:
 	def on_connect(self):
@@ -80,14 +81,30 @@ class phaul_service:
 	def rpc_end_iter(self):
 		pass
 
-	def rpc_start_accept_images(self):
-		self.img_tar = images.untar_thread(self.data_sk, self.img.image_dir())
+	def start_accept_images(self, dname):
+		self.img_tar = images.untar_thread(self.data_sk, dname)
 		self.img_tar.start()
 		print "Started images server"
+
+	def rpc_start_accept_wdir(self):
+		self.start_accept_images(self.img.work_dir())
+
+	def rpc_start_accept_images(self):
+		self.start_accept_images(self.img.image_dir())
 
 	def rpc_stop_accept_images(self):
 		print "Waiting for images to unpack"
 		self.img_tar.join()
+
+	def rpc_check_cpuinfo(self):
+		print "Checking cpuinfo"
+		req = cr_rpc.criu_req()
+		req.type = cr_rpc.CPUINFO_CHECK
+		req.opts.images_dir_fd = self.img.work_dir_fd()
+		req.keep_open = True
+		resp = self.criu.send_req(req)
+		print "   `-", resp.success
+		return resp.success
 
 	def rpc_restore_from_images(self):
 		print "Restoring from images"

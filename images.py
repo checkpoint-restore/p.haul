@@ -10,6 +10,7 @@ import shutil
 import time
 import threading
 import util
+import criu_api
 
 def_path = "/var/local/p.haul-fs/"
 
@@ -100,6 +101,10 @@ class phaul_images:
 	# Images transfer
 	# Are there better ways for doing this?
 
+	def __tar_to_sock(self, sock):
+		return tarfile.open(mode = "w|", fileobj = sock.makefile())
+
+
 	def sync_imgs_to_target(self, th, htype, sock):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
@@ -108,8 +113,7 @@ class phaul_images:
 		start = time.time()
 
 		th.start_accept_images()
-
-		tf = tarfile.open(mode = "w|", fileobj = sock.makefile())
+		tf = self.__tar_to_sock(sock)
 
 		print "\tPack"
 		cdir = self._current_dir.name()
@@ -125,6 +129,15 @@ class phaul_images:
 		th.stop_accept_images()
 
 		self.sync_time = time.time() - start
+
+	def send_cpuinfo(self, th, sock):
+		th.start_accept_wdir()
+		tf = self.__tar_to_sock(sock)
+		img = criu_api.cpuinfo_img_name
+		cdir = self._wdir.name()
+		tf.add(os.path.join(cdir, img), img)
+		tf.close()
+		th.stop_accept_images()
 
 class untar_thread(threading.Thread):
 	def __init__(self, sk, tdir):

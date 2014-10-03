@@ -75,8 +75,29 @@ class phaul_iter_worker:
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
 
+	def validate_cpu(self):
+		print "Checking CPU compatibility"
+
+		print "  `- Dumping CPU info"
+		req = cr_rpc.criu_req()
+		req.type = cr_rpc.CPUINFO_DUMP
+		req.opts.images_dir_fd = self.img.work_dir_fd()
+		req.keep_open = True
+		resp = self.criu.send_req(req)
+		if not resp.success:
+			raise Exception("Can't dump cpuinfo")
+
+		print "  `- Sending CPU info"
+		self.img.send_cpuinfo(self.th, self.data_sk)
+
+		print "  `- Checking CPU info"
+		if not self.th.check_cpuinfo():
+			raise Exception("CPUs mismatch")
+
 	def start_migration(self):
 		self._mstat.start()
+
+		self.validate_cpu()
 
 		print "Preliminary FS migration"
 		self.fs.set_work_dir(self.img.work_dir())
