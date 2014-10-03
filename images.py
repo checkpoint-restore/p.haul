@@ -42,6 +42,20 @@ class untar_thread(threading.Thread):
 		tf.extractall(self.__dir)
 		tf.close()
 
+class img_tar:
+	def __init__(self, sk, dirname):
+		self.__tf = tarfile.open(mode = "w|", fileobj = sk.makefile())
+		self.__dir = dirname
+
+	def add(self, img, path = None):
+		if not path:
+			path = os.path.join(self.__dir, img)
+
+		self.__tf.add(path, img)
+
+	def close(self):
+		self.__tf.close()
+
 class phaul_images:
 	WDIR = 1
 	IMGDIR = 2
@@ -115,40 +129,34 @@ class phaul_images:
 	# Images transfer
 	# Are there better ways for doing this?
 
-	def __tar_to_sock(self, sock):
-		return tarfile.open(mode = "w|", fileobj = sock.makefile())
-
-
 	def sync_imgs_to_target(self, th, htype, sock):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
 		print "Sending images to target"
 
 		start = time.time()
+		cdir = self.image_dir()
 
 		th.start_accept_images(phaul_images.IMGDIR)
-		tf = self.__tar_to_sock(sock)
+		tf = img_tar(sock, cdir)
 
 		print "\tPack"
-		cdir = self.image_dir()
 		for img in filter(lambda x: x.endswith(".img"), os.listdir(cdir)):
-			tf.add(os.path.join(cdir, img), img)
+			tf.add(img)
 
 		print "\tAdd htype images"
 		for himg in htype.get_meta_images(cdir):
-			tf.add(himg[0], himg[1])
+			tf.add(himg[1], himg[0])
 
 		tf.close()
-
 		th.stop_accept_images()
 
 		self.sync_time = time.time() - start
 
 	def send_cpuinfo(self, th, sock):
 		th.start_accept_images(phaul_images.WDIR)
-		tf = self.__tar_to_sock(sock)
-		img = criu_api.cpuinfo_img_name
-		tf.add(os.path.join(self.work_dir(), img), img)
+		tf = img_tar(sock, self.work_dir())
+		tf.add(criu_api.cpuinfo_img_name)
 		tf.close()
 		th.stop_accept_images()
 
