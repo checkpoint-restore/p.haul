@@ -116,7 +116,7 @@ class phaul_images:
 		tf = self.__tar_to_sock(sock)
 
 		print "\tPack"
-		cdir = self._current_dir.name()
+		cdir = self.image_dir()
 		for img in filter(lambda x: x.endswith(".img"), os.listdir(cdir)):
 			tf.add(os.path.join(cdir, img), img)
 
@@ -134,8 +134,7 @@ class phaul_images:
 		th.start_accept_wdir()
 		tf = self.__tar_to_sock(sock)
 		img = criu_api.cpuinfo_img_name
-		cdir = self._wdir.name()
-		tf.add(os.path.join(cdir, img), img)
+		tf.add(os.path.join(self.work_dir(), img), img)
 		tf.close()
 		th.stop_accept_images()
 
