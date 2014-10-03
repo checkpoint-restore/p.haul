@@ -74,6 +74,7 @@ class phaul_iter_worker:
 		self.criu.verbose(opts["verbose"])
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
+		self.__force = opts["force"]
 
 	def validate_cpu(self):
 		print "Checking CPU compatibility"
@@ -97,7 +98,8 @@ class phaul_iter_worker:
 	def start_migration(self):
 		self._mstat.start()
 
-		self.validate_cpu()
+		if not self.__force:
+			self.validate_cpu()
 
 		print "Preliminary FS migration"
 		self.fs.set_work_dir(self.img.work_dir())
