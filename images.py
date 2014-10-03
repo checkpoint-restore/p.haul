@@ -31,6 +31,17 @@ class opendir:
 	def fileno(self):
 		return self._dirfd
 
+class untar_thread(threading.Thread):
+	def __init__(self, sk, tdir):
+		threading.Thread.__init__(self)
+		self.__sk = sk
+		self.__dir = tdir
+
+	def run(self):
+		tf = tarfile.open(mode = "r|", fileobj = self.__sk.makefile())
+		tf.extractall(self.__dir)
+		tf.close()
+
 class phaul_images:
 	def __init__(self, typ):
 		self.current_iter = 0
@@ -138,13 +149,17 @@ class phaul_images:
 		tf.close()
 		th.stop_accept_images()
 
-class untar_thread(threading.Thread):
-	def __init__(self, sk, tdir):
-		threading.Thread.__init__(self)
-		self.__sk = sk
-		self.__dir = tdir
+	def __start_accept(self, sk, dirname):
+		self.__acc_tar = untar_thread(sk, dirname)
+		self.__acc_tar.start()
+		print "Started images server"
 
-	def run(self):
-		tf = tarfile.open(mode = "r|", fileobj = self.__sk.makefile())
-		tf.extractall(self.__dir)
-		tf.close()
+	def start_accept_wdir(self, sk):
+		self.__start_accept(sk, self.work_dir())
+
+	def start_accept_images(self, sk):
+		self.__start_accept(sk, self.image_dir())
+
+	def stop_accept_images(self):
+		print "Waiting for images to unpack"
+		self.__acc_tar.join()

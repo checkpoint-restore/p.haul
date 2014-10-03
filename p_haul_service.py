@@ -3,12 +3,10 @@
 #
 
 import xem_rpc
-import os
 import rpc_pb2 as cr_rpc
 import images
 import criu_api
 import p_haul_type
-import util
 
 class phaul_service:
 	def on_connect(self):
@@ -81,20 +79,14 @@ class phaul_service:
 	def rpc_end_iter(self):
 		pass
 
-	def start_accept_images(self, dname):
-		self.img_tar = images.untar_thread(self.data_sk, dname)
-		self.img_tar.start()
-		print "Started images server"
-
 	def rpc_start_accept_wdir(self):
-		self.start_accept_images(self.img.work_dir())
+		self.img.start_accept_wdir(self.data_sk)
 
 	def rpc_start_accept_images(self):
-		self.start_accept_images(self.img.image_dir())
+		self.img.start_accept_images(self.data_sk)
 
 	def rpc_stop_accept_images(self):
-		print "Waiting for images to unpack"
-		self.img_tar.join()
+		self.img.stop_accept_images()
 
 	def rpc_check_cpuinfo(self):
 		print "Checking cpuinfo"
