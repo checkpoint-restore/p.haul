@@ -1,5 +1,6 @@
 import os
 import fcntl
+import errno
 
 class net_dev:
 	def init(self):
@@ -35,3 +36,11 @@ def set_cloexec(sk):
 	flags = fcntl.fcntl(sk, fcntl.F_GETFD)
 	fcntl.fcntl(sk, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
 
+def makedirs(dirpath):
+	try:
+		os.makedirs(dirpath)
+	except OSError as er:
+		if er.errno == errno.EEXIST and os.path.isdir(dirpath):
+			pass
+		else:
+			raise

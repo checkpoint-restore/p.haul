@@ -76,6 +76,7 @@ class phaul_images:
 		self._keep_on_close = opts["keep_images"]
 
 		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())
+		util.makedirs(opts["img_path"])
 		wdir = tempfile.mkdtemp(suf, "%s-" % self._typ, opts["img_path"])
 		self._wdir = opendir(wdir)
 		self._img_path = os.path.join(self._wdir.name(), "img")
