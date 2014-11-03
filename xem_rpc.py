@@ -55,8 +55,9 @@ class rpc_proxy:
 
 	def open_socket(self, uname):
 		sk = self._make_sk()
+		host = _rpc_proxy_caller(sk, RPC_CMD, "get_name")()
 		c = _rpc_proxy_caller(self._rpc_sk, RPC_CMD, "pick_channel")
-		c(sk.getsockname(), uname)
+		c(host, uname)
 		return sk
 
 
@@ -75,6 +76,9 @@ class _rpc_server_sk:
 
 	def hash_name(self):
 		return self._sk.getpeername()
+
+	def get_name(self, mgr):
+		return self.hash_name()
 
 	def work(self, mgr):
 		raw_data = self._sk.recv(rpc_sk_buf)
