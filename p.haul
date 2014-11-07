@@ -4,6 +4,7 @@ import argparse
 import p_haul_iters as ph_iters
 import images
 import criu_api
+import xem_rpc
 
 # Usage idea
 # p.haul <type> <id> <destination>
@@ -27,11 +28,12 @@ parser.add_argument("--dst-rpid", help = "Write pidfile on restore", default = N
 parser.add_argument("--img-path", help = "Dirctory where to put images", default = images.def_path)
 parser.add_argument("--pid-root", help = "Path to tree's FS root")
 parser.add_argument("--force", help = "Don't do any sanity (CPU compat) checks", default = False, action = 'store_true')
+parser.add_argument("--port", help = "Port where to haul", type = int, default = xem_rpc.rpc_port)
 
 args = vars(parser.parse_args())
 
 ph_type = (args.pop("type"), args.pop("id"))
-dst = args.pop("to")
+dst = (args.pop("to"), args.pop("port"))
 
 # Start the migration
 worker = ph_iters.phaul_iter_worker(ph_type, dst)

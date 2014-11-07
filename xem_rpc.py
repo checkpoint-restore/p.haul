@@ -50,7 +50,7 @@ class rpc_proxy:
 
 	def _make_sk(self):
 		sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sk.connect((self._srv, rpc_port))
+		sk.connect(self._srv)
 		return sk
 
 	def open_socket(self, uname):

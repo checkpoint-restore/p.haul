@@ -42,7 +42,7 @@ class phaul_iter_worker:
 			raise Exception("No FS driver found")
 
 		self.pid = self.htype.root_task_pid()
-		self.fs.set_target_host(host)
+		self.fs.set_target_host(host[0])
 
 		print "Setting up remote"
 		self.th.setup(p_type)
