@@ -1,0 +1,130 @@
+#!/usr/bin/bash
+
+set -e
+
+# This script is a p.haul wrapper that allows to migrate process
+# using ssh tunnel for transferring data and without having to
+# start p.haul-service in advance.
+#
+# This script performs folowing actions:
+# 1) Launch p.haul-service on the remote and bind it to localhost:REM_PORT
+# 2) Parse cmdline options to extract ssh* opts and change
+#    p.haul opts appropriately, so p.haul will connect to
+#    localhost:LOC_PORT, that will be followed to the remote
+#    through the ssh tunnel.
+# 3) Establish ssh tunnel localhost:LOC_PORT->SSH->localhost:REM_PORT.
+# 4) Launch p.haul to start migration.
+
+TUNNEL_FLAGS="-o ExitOnForwardFailure=yes -fN "
+SERVER_FLAGS="-ttfM "
+LOC_PORT=54321
+REM_PORT=12345
+PORT=22
+USER="$(whoami)"
+REMOTE=""
+LOG="/tmp/phs.log"
+
+PH_EXEC="p.haul"
+PH_OPTS=()
+
+PHS_EXEC="p.haul-service"
+PHS_OPTS=()
+
+usage=\
+"SSH wrapper for p.haul\n\
+Usage: p.haul-ssh [SSH_OPTIONS] [PHAUL_OPTIONS]
+\n\
+SSH options:\n\
+  --ssh-compression   Use compression in ssh tunnel\n\
+  --ssh-username      Remote username (current user by default)\n\
+  --ssh-loc-port      Local port to use for forwarding (${LOC_PORT} by default)\n\
+  --ssh-port          SSH port (${PORT} by default)\n\
+  --ssh-log           Logfile for service log\n\
+  --ssh-ph-exec       Path to p.haul executable\n\
+  --ssh-phs-exec      Path to p.haul-service executable on the remote machine\n\
+  --help              Print this messange\n\
+\n\
+See p.haul --help for PHAUL_OPTIONS\n"
+
+while [ "$1" != "" ]; do
+	case $1 in
+	"--ssh-compression")
+		SERVER_FLAGS="${SERVER_FLAGS} -C"
+		TUNNEL_FLAGS="${TUNNEL_FLAGS} -C"
+		;;
+	"--ssh-username")
+		shift
+		USER=$1
+		;;
+	"--ssh-loc-port")
+		shift
+		LOC_PORT=$1
+		;;
+	"--port")
+		# Extract --port option(if present).
+		# --port LOC_PORT is added below.
+		shift
+		REM_PORT=$1
+		;;
+	"--ssh-ph-exec")
+		shift
+		PH_EXEC=$1
+		;;
+	"--ssh-phs-exec")
+		shift
+		PHS_EXEC=$1
+		;;
+	"--ssh-port")
+		shift
+		PORT=$1
+		;;
+	"--ssh-log")
+		shift
+		LOG=$1
+		;;
+	"--help")
+		printf "${usage}"
+		exit 0
+		;;
+	*)
+		PH_OPTS+=($1)
+		;;
+	esac
+	shift
+done
+
+# Replace p.haul positional "to" option with 127.0.0.1.
+REMOTE=${PH_OPTS[2]}
+PH_OPTS[2]="127.0.0.1"
+
+# Tell p.haul to connect to the local port
+PH_OPTS+=("--port ${LOC_PORT}")
+
+# Tell p.haul-service to bind on localhost, so it is not directly accesible
+# from the outer web.
+PHS_OPTS+=("--bind-port ${REM_PORT}")
+PHS_OPTS+=("--bind-addr \"127.0.0.1\"")
+
+# Use ssh multiplexing to speedup establishing additional ssh sessions and
+# to get control over all of them.
+CTL_SK="~/ph_ssh_${USER}_${REMOTE}_${PORT}"
+SSH_BASE="ssh -p ${PORT} ${USER}@${REMOTE} -S ${CTL_SK}"
+
+# Trap EXIT to stop ssh connection(i.e. all ssh sessions) on both normal
+# and error(see "set -e" above) exits.
+trap '${SSH_BASE} -S ${CTL_SK} -O exit &> /dev/null' EXIT
+
+echo "Start p.haul-service"
+${SSH_BASE} ${SERVER_FLAGS} ${PHS_EXEC} ${PHS_OPTS[@]} &> ${LOG} < /dev/null
+echo "Done"
+
+echo "Checking that p.haul-service is started"
+${SSH_BASE} "while netstat -lnt | awk '\$4 ~ /:${REM_PORT}$/ {exit 1}'; do echo 'Waiting...'; sleep 1; done"
+
+echo "Start ssh tunnel"
+${SSH_BASE} ${TUNNEL_FLAGS} -L 127.0.0.1:${LOC_PORT}:127.0.0.1:${REM_PORT}
+echo "Done"
+
+echo "Launch p.haul"
+${PH_EXEC} ${PH_OPTS[@]}
+echo "Done"
