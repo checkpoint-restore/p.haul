@@ -3,6 +3,8 @@ set -x
 CRIU_PATH="../../../criu/"
 CRIU_TESTS="${CRIU_PATH}/test/zdtm/"
 WDIR="$(pwd)/wdir"
+PH=$(realpath ../../p.haul)
+PHS=$(realpath ../../p.haul-service)
 
 rm -rf "$WDIR"
 mkdir "$WDIR"
@@ -19,15 +21,10 @@ echo "Tests started at ${PID}"
 export PATH="${PATH}:${CRIU_PATH}"
 which criu
 
-echo "Start phaul service"
-../../p.haul-service > "${WDIR}/ph-srv.log" 2>&1 &
-PHSPID=$!
-
 echo "Migrating"
-if ! ../../p.haul pid ${PID} "127.0.0.1" -v=4 --keep-images --dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"; then
+if ! ../../p.haul-ssh --ssh-ph-exec ${PH} --ssh-phs-exec ${PHS} pid ${PID} "127.0.0.1" -v=4 --keep-images --dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"; then
 	echo "Migration failed"
 	kill -TERM ${PID}
-	kill -TERM ${PHSPID}
 	exit 1
 fi
 
@@ -41,7 +38,6 @@ while kill -0 ${PID}; do
 	sleep ".${WTM}"
 	[ $WTM -lt 9 ] && ((WTM++))
 done
-kill -TERM ${PHSPID}
 
 if tail -n1 "${WDIR}/ct.log" | fgrep PASS; then
 	rm -rf "${WDIR}"
