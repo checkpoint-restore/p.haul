@@ -8,8 +8,8 @@ import struct
 import os
 import util
 import subprocess
-import rpc_pb2 as cr_rpc
-import stats_pb2 as crs
+import pycriu.rpc as cr_rpc
+import pycriu.images.stats_pb2 as crs
 
 criu_binary = "criu"
 

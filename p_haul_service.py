@@ -3,7 +3,7 @@
 #
 
 import xem_rpc
-import rpc_pb2 as cr_rpc
+import pycriu.rpc as cr_rpc
 import images
 import criu_api
 import p_haul_type
