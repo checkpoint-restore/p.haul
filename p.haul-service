@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import signal
-import xem_rpc
-import p_haul_service as ph_srv
 import argparse
+import phaul.xem_rpc as ph_xem_rpc
+import phaul.p_haul_service as ph_srv
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser("Process HAULer service server")
 	parser.add_argument("--bind-addr", help = "IP to bind to", type = str, default = "0.0.0.0")
-	parser.add_argument("--bind-port", help = "Port to bind to", type = int, default = xem_rpc.rpc_port)
+	parser.add_argument("--bind-port", help = "Port to bind to", type = int, default = ph_xem_rpc.rpc_port)
 
 	args = vars(parser.parse_args())
 
@@ -20,7 +20,7 @@ if __name__ == "__main__":
 		sfd.close()
 
 	print "Starting p.haul rpyc service"
-	t = xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, host)
+	t = ph_xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, host)
 
 	# FIXME: Setup stop handlers
 	sfd = t.get_stop_fd()
