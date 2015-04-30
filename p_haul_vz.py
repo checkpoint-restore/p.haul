@@ -1,5 +1,5 @@
 #
-# OpenVZ containers hauler module
+# Virtuozzo containers hauler module
 #
 
 import os
@@ -9,8 +9,7 @@ import util
 import fs_haul_shared
 import fs_haul_subtree
 
-name = "ovz"
-vzpid_dir = "/var/lib/vzctl/vepid/"
+name = "vz"
 vz_dir = "/vz"
 vzpriv_dir = "%s/private" % vz_dir
 vzroot_dir = "%s/root" % vz_dir
@@ -74,9 +73,11 @@ class p_haul_type:
 		pass
 
 	def root_task_pid(self):
-		pf = open(os.path.join(vzpid_dir, self._ctid))
-		pid = pf.read()
-		return int(pid)
+		# Expect first line of tasks file contain root pid of CT
+		path = "/sys/fs/cgroup/memory/{0}/tasks".format(self._ctid)
+		with open(path) as tasks:
+			pid = tasks.readline()
+			return int(pid)
 
 	def __ct_priv(self):
 		return "%s/%s" % (vzpriv_dir, self._ctid)
