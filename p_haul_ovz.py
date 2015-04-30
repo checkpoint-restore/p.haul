@@ -3,7 +3,7 @@
 #
 
 import os
-import shutil
+import shlex
 import p_haul_cgroup
 import util
 import fs_haul_shared
@@ -28,42 +28,33 @@ class p_haul_type:
 		# v_bridge is the bridge to which thie veth is attached
 		#
 		self._veths = []
-		self._cfg = []
+		self._cfg = ""
 
 	def __load_ct_config(self, path):
 		print "Loading config file from %s" % path
-		ifd = open(os.path.join(path, self.__ct_config()))
-		for line in ifd:
-			self._cfg.append(line)
 
-			if line.startswith("NETIF="):
-				#
-				# Parse and keep veth pairs, later we will
-				# equip restore request with this data and
-				# will use it while (un)locking the network
-				#
-				v_in = None
-				v_out = None
-				v_bridge = None
-				vs = line.strip().split("=", 1)[1].strip("\"")
-				for parm in vs.split(","):
-					pa = parm.split("=")
-					if pa[0] == "ifname":
-						v_in = pa[1]
-					elif pa[0] == "host_ifname":
-						v_out = pa[1]
-					elif pa[0] == "bridge":
-						v_bridge = pa[1]
+		with open(os.path.join(path, self.__ct_config())) as ifd:
+			self._cfg = ifd.read()
 
-				if v_in and v_out:
-					print "\tCollect %s -> %s (%s) veth" % (v_in, v_out, v_bridge)
-					veth = util.net_dev()
-					veth.name = v_in
-					veth.pair = v_out
-					veth.link = v_bridge
-					self._veths.append(veth)
-
-		ifd.close()
+		#
+		# Parse and keep veth pairs, later we will
+		# equip restore request with this data and
+		# will use it while (un)locking the network
+		#
+		config = parse_vz_config(self._cfg)
+		if "NETIF" in config:
+			v_in, v_out, v_bridge = None, None, None
+			for parm in config["NETIF"].split(","):
+				pa = parm.split("=")
+				if pa[0] == "ifname":
+					v_in = pa[1]
+				elif pa[0] == "host_ifname":
+					v_out = pa[1]
+				elif pa[0] == "bridge":
+					v_bridge = pa[1]
+			if v_in and v_out:
+				print "\tCollect %s -> %s (%s) veth" % (v_in, v_out, v_bridge)
+				self._veths.append(util.net_dev(v_in, v_out, v_bridge))
 
 	def __apply_cg_config(self):
 		print "Applying CT configs"
@@ -110,9 +101,8 @@ class p_haul_type:
 		print "Putting config file into %s" % vz_conf_dir
 
 		self.__load_ct_config(path)
-		ofd = open(os.path.join(vz_conf_dir, self.__ct_config()), "w")
-		ofd.writelines(self._cfg)
-		ofd.close()
+		with open(os.path.join(vz_conf_dir, self.__ct_config()), "w") as ofd:
+			ofd.write(self._cfg)
 
 		# Keep this name, we'll need one in prepare_ct()
 		self.cg_img = os.path.join(path, cg_image_name)
@@ -188,3 +178,11 @@ class p_haul_type:
 		#
 		return self._veths
 
+def parse_vz_config(body):
+	""" Parse shell-like virtuozzo config file"""
+
+	config_values = dict()
+	for token in shlex.split(body, comments=True):
+		name, sep, value = token.partition("=")
+		config_values[name] = value
+	return config_values

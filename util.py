@@ -3,10 +3,10 @@ import fcntl
 import errno
 
 class net_dev:
-	def init(self):
-		self.name = None
-		self.pair = None
-		self.link = None
+	def __init__(self, name=None, pair=None, link=None):
+		self.name = name
+		self.pair = pair
+		self.link = link
 
 def path_to_fs(path):
 	dev = os.stat(path)
