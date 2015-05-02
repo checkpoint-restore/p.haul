@@ -4,12 +4,11 @@
 #
 
 import socket
-import struct
 import os
 import util
 import subprocess
 import pycriu.rpc as cr_rpc
-import pycriu.images.stats_pb2 as crs
+import pycriu.images as images
 
 criu_binary = "criu"
 
@@ -82,23 +81,12 @@ class criu_conn:
 # Helper to read CRIU-generated statistics
 #
 
-CRIU_STATS_MAGIC = 0x57093306
-
 def criu_get_stats(img, file_name):
-	s = struct.Struct("I I")
-	f = open(os.path.join(img.work_dir(), file_name))
-	#
-	# Stats file is 4 butes of magic, then 4 bytes with
-	# stats packet size
-	#
-	v = s.unpack(f.read(s.size))
-	if v[0] != CRIU_STATS_MAGIC:
-		raise Exception("Magic is %x, expect %x" % (v[0], CRIU_STATS_MAGIC))
-
-	stats = crs.stats_entry()
-	stats.ParseFromString(f.read(v[1]))
-
-	return stats
+	with open(os.path.join(img.work_dir(), file_name)) as f:
+		stats_dict = images.load(f)
+		stats = images.stats_pb2.stats_entry()
+		images.pb2dict.dict2pb(stats_dict['entries'][0], stats)
+		return stats
 
 def criu_get_dstats(img):
 	stats = criu_get_stats(img, "stats-dump")
