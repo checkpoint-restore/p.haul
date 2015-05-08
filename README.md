@@ -21,12 +21,9 @@ Get p.haul ready
 
 2. Install protobuf-compiler and python-protobuf packages.
 
-3. Get the sources and run:
-
-$make
-
-This will generate rpc_pb2 and stats_pb2 python modules
-from rpc.proto and stats.proto.
+3. Install p.haul by running
+	$ python setup.py install
+   or just use it without installing.
 
 For more information read the P.Haul-related pages on the CRIU
 wiki (http://criu.org/Category:P.Haul).
