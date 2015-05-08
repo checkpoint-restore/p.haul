@@ -39,14 +39,7 @@ from one node ot another (nodes can be VMs).
 
    b) p.haul
 
-   * Make sure that p.haul/*.proto links point to respective
-     files in CRIU sources
-
-	# ls -l *.proto
-	... rpc.proto -> ../criu/protobuf/rpc.proto
-	... stats.proto -> ../criu/protobuf/stats.proto
-
-   * Compile CRIU RPC bindings with 'make'
+   * Compile and install CRIU RPC bindings with 'make install'
    * Create _local_ directory for images
 
 	# mkdir -p /var/local/p.haul-fs/
