@@ -29,8 +29,8 @@ from one node ot another (nodes can be VMs).
 
    a) CRIU
 
-   * Clone CRIU repository from git://github.com/xemul/criu,
-     checkout the 'p.haul' branch and compile it with 'make'
+   * Clone CRIU repository from git://github.com/xemul/criu
+     and compile it with 'make'
 
    * Make _local_ directory for service ($csdir)
    * Start CRIU service by root user
