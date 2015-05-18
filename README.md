@@ -27,3 +27,9 @@ Get p.haul ready
 
 For more information read the P.Haul-related pages on the CRIU
 wiki (http://criu.org/Category:P.Haul).
+
+BUGs
+======
+
+All BUGs are to be reported on the criu@openvz.org mailing list.
+To [un]subscribe goto http://lists.openvz.org/mailman/listinfo/criu)
