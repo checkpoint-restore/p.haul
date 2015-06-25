@@ -203,6 +203,7 @@ class phaul_iter_worker:
 		"""Prepare generic criu request"""
 		req = cr_rpc.criu_req()
 		req.type = typ
+		self.htype.adjust_criu_req(req)
 		return req
 
 	def __make_common_dump_req(self, typ):

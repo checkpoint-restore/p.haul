@@ -24,6 +24,10 @@ class p_haul_type:
 		self._pidfile = opts["dst_rpid"]
 		self._fs_root = opts["pid_root"]
 
+	def adjust_criu_req(self, req):
+		"""Add module-specific options to criu request"""
+		pass
+
 	# Report the pid of the root task of what we're
 	# goung to migrate
 	def root_task_pid(self):

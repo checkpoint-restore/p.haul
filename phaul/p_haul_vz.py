@@ -8,6 +8,7 @@ import p_haul_cgroup
 import util
 import fs_haul_shared
 import fs_haul_subtree
+import pycriu.rpc
 
 name = "vz"
 vz_dir = "/vz"
@@ -71,6 +72,14 @@ class p_haul_type:
 
 	def set_options(self, opts):
 		pass
+
+	def adjust_criu_req(self, req):
+		"""Add module-specific options to criu request"""
+		if req.type == pycriu.rpc.DUMP or req.type == pycriu.rpc.RESTORE:
+			# Setup options for external mounts resolution
+			req.opts.auto_ext_mnt = True
+			req.opts.ext_sharing = True
+			req.opts.ext_masters = True
 
 	def root_task_pid(self):
 		# Expect first line of tasks file contain root pid of CT

@@ -125,6 +125,7 @@ class phaul_service:
 		"""Prepare generic criu request"""
 		req = cr_rpc.criu_req()
 		req.type = typ
+		self.htype.adjust_criu_req(req)
 		return req
 
 	def __make_page_server_req(self):

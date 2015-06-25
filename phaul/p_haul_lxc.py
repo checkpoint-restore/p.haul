@@ -76,6 +76,10 @@ class p_haul_type:
 	def set_options(self, opts):
 		pass
 
+	def adjust_criu_req(self, req):
+		"""Add module-specific options to criu request"""
+		pass
+
 	def root_task_pid(self):
 		pid = -1;
 
