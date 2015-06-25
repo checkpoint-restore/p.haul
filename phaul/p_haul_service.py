@@ -53,18 +53,8 @@ class phaul_service:
 	def start_page_server(self):
 		print "Starting page server for iter %d" % self.dump_iter
 
-		req = cr_rpc.criu_req()
-		req.type = cr_rpc.PAGE_SERVER
-		req.keep_open = True
-		req.opts.ps.fd = self.criu.mem_sk_fileno()
-
-		req.opts.images_dir_fd = self.img.image_dir_fd()
-		req.opts.work_dir_fd = self.img.work_dir_fd()
-		p_img = self.img.prev_image_dir()
-		if p_img:
-			req.opts.parent_img = p_img
-
 		print "\tSending criu rpc req"
+		req = self.__make_page_server_req()
 		resp = self.criu.send_req(req)
 		if not resp.success:
 			raise Exception("Failed to start page server")
@@ -87,10 +77,7 @@ class phaul_service:
 
 	def rpc_check_cpuinfo(self):
 		print "Checking cpuinfo"
-		req = cr_rpc.criu_req()
-		req.type = cr_rpc.CPUINFO_CHECK
-		req.opts.images_dir_fd = self.img.work_dir_fd()
-		req.keep_open = True
+		req = self.__make_cpuinfo_check_req()
 		resp = self.criu.send_req(req)
 		print "   `-", resp.success
 		return resp.success
@@ -99,27 +86,8 @@ class phaul_service:
 		print "Restoring from images"
 		self.htype.put_meta_images(self.img.image_dir())
 
-		req = cr_rpc.criu_req()
-		req.type = cr_rpc.RESTORE
-		req.opts.images_dir_fd = self.img.image_dir_fd()
-		req.opts.work_dir_fd = self.img.work_dir_fd()
-		req.opts.notify_scripts = True
-
-		if self.htype.can_migrate_tcp():
-			req.opts.tcp_established = True
-
-		for veth in self.htype.veths():
-			v = req.opts.veths.add()
-			v.if_in = veth.name
-			v.if_out = veth.pair
-
-		nroot = self.htype.mount()
-		if nroot:
-			req.opts.root = nroot
-			print "Restore root set to %s" % req.opts.root
-
-		cc = self.criu
-		resp = cc.send_req(req)
+		req = self.__make_restore_req()
+		resp = self.criu.send_req(req)
 		while True:
 			if resp.type == cr_rpc.NOTIFY:
 				print "\t\tNotify (%s.%d)" % (resp.notify.script, resp.notify.pid)
@@ -137,7 +105,7 @@ class phaul_service:
 				elif resp.notify.script == "network-lock":
 					raise Exception("Locking network on restore?")
 
-				resp = cc.ack_notify()
+				resp = self.criu.ack_notify()
 				continue
 
 			if not resp.success:
@@ -152,3 +120,52 @@ class phaul_service:
 	def rpc_restore_time(self):
 		stats = criu_api.criu_get_rstats(self.img)
 		return stats.restore_time
+
+	def __make_req(self, typ):
+		"""Prepare generic criu request"""
+		req = cr_rpc.criu_req()
+		req.type = typ
+		return req
+
+	def __make_page_server_req(self):
+		"""Prepare page server criu request"""
+
+		req = self.__make_req(cr_rpc.PAGE_SERVER)
+		req.keep_open = True
+		req.opts.ps.fd = self.criu.mem_sk_fileno()
+		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.work_dir_fd = self.img.work_dir_fd()
+
+		p_img = self.img.prev_image_dir()
+		if p_img:
+			req.opts.parent_img = p_img
+
+		return req
+
+	def __make_cpuinfo_check_req(self):
+		"""Prepare cpuinfo check criu request"""
+		req = self.__make_req(cr_rpc.CPUINFO_CHECK)
+		req.keep_open = True
+		req.opts.images_dir_fd = self.img.work_dir_fd()
+		return req
+
+	def __make_restore_req(self):
+		"""Prepare restore criu request"""
+
+		req = self.__make_req(cr_rpc.RESTORE)
+		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.work_dir_fd = self.img.work_dir_fd()
+		req.opts.notify_scripts = True
+
+		if self.htype.can_migrate_tcp():
+			req.opts.tcp_established = True
+
+		for veth in self.htype.veths():
+			req.opts.veths.add(if_in = veth.name, if_out = veth.pair)
+
+		nroot = self.htype.mount()
+		if nroot:
+			req.opts.root = nroot
+			print "Restore root set to %s" % req.opts.root
+
+		return req

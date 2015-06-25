@@ -47,28 +47,6 @@ class phaul_iter_worker:
 		print "Setting up remote"
 		self.th.setup(p_type)
 
-
-	def make_dump_req(self, typ):
-		#
-		# Prepare generic request for (pre)dump
-		#
-
-		req = cr_rpc.criu_req()
-		req.type = typ
-		req.opts.pid = self.pid
-		req.opts.ps.fd = self.criu.mem_sk_fileno()
-		req.opts.track_mem = True
-
-		req.opts.images_dir_fd = self.img.image_dir_fd()
-		req.opts.work_dir_fd = self.img.work_dir_fd()
-		p_img = self.img.prev_image_dir()
-		if p_img:
-			req.opts.parent_img = p_img
-		if not self.fs.persistent_inodes():
-			req.opts.force_irmap = True
-
-		return req
-
 	def set_options(self, opts):
 		self.th.set_options(opts)
 		self.criu.verbose(opts["verbose"])
@@ -80,10 +58,7 @@ class phaul_iter_worker:
 		print "Checking CPU compatibility"
 
 		print "  `- Dumping CPU info"
-		req = cr_rpc.criu_req()
-		req.type = cr_rpc.CPUINFO_DUMP
-		req.opts.images_dir_fd = self.img.work_dir_fd()
-		req.keep_open = True
+		req = self.__make_cpuinfo_dump_req()
 		resp = self.criu.send_req(req)
 		if not resp.success:
 			raise Exception("Can't dump cpuinfo")
@@ -106,7 +81,6 @@ class phaul_iter_worker:
 		self.fs.start_migration()
 
 		print "Starting iterations"
-		cc = self.criu
 
 		while True:
 			print "* Iteration %d" % self.iteration
@@ -116,8 +90,8 @@ class phaul_iter_worker:
 
 			print "\tIssuing pre-dump command to service"
 
-			req = self.make_dump_req(cr_rpc.PRE_DUMP)
-			resp = cc.send_req(req)
+			req = self.__make_predump_req()
+			resp = self.criu.send_req(req)
 			if not resp.success:
 				raise Exception("Pre-dump failed")
 
@@ -168,15 +142,9 @@ class phaul_iter_worker:
 		self.img.new_image_dir()
 
 		print "\tIssuing dump command to service"
-		req = self.make_dump_req(cr_rpc.DUMP)
-		req.opts.notify_scripts = True
-		req.opts.file_locks = True
-		req.opts.evasive_devices = True
-		req.opts.link_remap = True
-		if self.htype.can_migrate_tcp():
-			req.opts.tcp_established = True
 
-		resp = cc.send_req(req)
+		req = self.__make_dump_req()
+		resp = self.criu.send_req(req)
 		while True:
 			if resp.type != cr_rpc.NOTIFY:
 				raise Exception("Dump failed")
@@ -195,7 +163,7 @@ class phaul_iter_worker:
 				self.htype.net_unlock()
 
 			print "\t\tNotify (%s)" % resp.notify.script
-			resp = cc.ack_notify()
+			resp = self.criu.ack_notify()
 
 		print "Dump complete"
 		self.th.end_iter()
@@ -219,7 +187,7 @@ class phaul_iter_worker:
 		# DUMP/success message
 		#
 
-		resp = cc.ack_notify()
+		resp = self.criu.ack_notify()
 		if not resp.success:
 			raise Exception("Dump screwed up")
 
@@ -229,4 +197,50 @@ class phaul_iter_worker:
 		self._mstat.iteration(stats)
 		self._mstat.stop(self)
 		self.img.close()
-		cc.close()
+		self.criu.close()
+
+	def __make_req(self, typ):
+		"""Prepare generic criu request"""
+		req = cr_rpc.criu_req()
+		req.type = typ
+		return req
+
+	def __make_common_dump_req(self, typ):
+		"""Prepare common criu request for pre-dump or dump"""
+
+		req = self.__make_req(typ)
+		req.opts.pid = self.pid
+		req.opts.ps.fd = self.criu.mem_sk_fileno()
+		req.opts.track_mem = True
+
+		req.opts.images_dir_fd = self.img.image_dir_fd()
+		req.opts.work_dir_fd = self.img.work_dir_fd()
+		p_img = self.img.prev_image_dir()
+		if p_img:
+			req.opts.parent_img = p_img
+		if not self.fs.persistent_inodes():
+			req.opts.force_irmap = True
+
+		return req
+
+	def __make_cpuinfo_dump_req(self):
+		"""Prepare cpuinfo dump criu request"""
+		req = self.__make_req(cr_rpc.CPUINFO_DUMP)
+		req.opts.images_dir_fd = self.img.work_dir_fd()
+		req.keep_open = True
+		return req
+
+	def __make_predump_req(self):
+		"""Prepare pre-dump criu request"""
+		return self.__make_common_dump_req(cr_rpc.PRE_DUMP)
+
+	def __make_dump_req(self):
+		"""Prepare dump criu request"""
+		req = self.__make_common_dump_req(cr_rpc.DUMP)
+		req.opts.notify_scripts = True
+		req.opts.file_locks = True
+		req.opts.evasive_devices = True
+		req.opts.link_remap = True
+		if self.htype.can_migrate_tcp():
+			req.opts.tcp_established = True
+		return req
