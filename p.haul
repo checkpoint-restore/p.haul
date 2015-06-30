@@ -11,7 +11,7 @@ import phaul.xem_rpc as ph_xem_rpc
 #
 # E.g.
 #
-# # p.haul ovz 100 10.0.0.1
+# # p.haul vz 100 10.0.0.1
 #
 # or
 #
@@ -19,7 +19,7 @@ import phaul.xem_rpc as ph_xem_rpc
 #
 
 parser = argparse.ArgumentParser("Process HAULer")
-parser.add_argument("type", help = "Type of hat to haul, e.g. ovz")
+parser.add_argument("type", help = "Type of hat to haul, e.g. vz or lxc")
 parser.add_argument("id", help = "ID of what to haul")
 parser.add_argument("to", help = "IP where to haul")
 parser.add_argument("-v", help = "Verbosity level", default = ph_criu_api.def_verb, type = int, dest = "verbose")

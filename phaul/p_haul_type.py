@@ -5,13 +5,11 @@
 #
 
 import p_haul_vz
-import p_haul_ovz
 import p_haul_pid
 import p_haul_lxc
 
 haul_types = {
 	p_haul_vz.name: p_haul_vz,
-	p_haul_ovz.name: p_haul_ovz,
 	p_haul_pid.name: p_haul_pid,
 	p_haul_lxc.name: p_haul_lxc,
 }
