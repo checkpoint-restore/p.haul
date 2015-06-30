@@ -126,23 +126,18 @@ class p_haul_type:
 	def prepare_ct(self, pid):
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
-	def __umount_root(self):
-		print "Umounting CT root"
-		os.system("umount %s" % self.__ct_root())
-		self._fs_mounted = False
-
 	def mount(self):
 		nroot = self.__ct_root()
 		print "Mounting CT root to %s" % nroot
-		if not os.access(nroot, os.F_OK):
-			os.makedirs(nroot)
-		os.system("mount --bind %s %s" % (self.__ct_priv(), nroot))
+		os.system("vzctl mount {0}".format(self._ctid))
 		self._fs_mounted = True
 		return nroot
 
 	def umount(self):
 		if self._fs_mounted:
-			self.__umount_root()
+			print "Umounting CT root"
+			os.system("vzctl umount {0}".format(self._ctid))
+			self._fs_mounted = False
 
 	def get_fs(self):
 		rootfs = util.path_to_fs(self.__ct_priv())
