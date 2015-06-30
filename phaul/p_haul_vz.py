@@ -75,7 +75,9 @@ class p_haul_type:
 	def adjust_criu_req(self, req):
 		"""Add module-specific options to criu request"""
 		if req.type == pycriu.rpc.DUMP or req.type == pycriu.rpc.RESTORE:
-			# Setup options for external mounts resolution
+			# Restore cgroups configuration
+			req.opts.manage_cgroups = True
+			# Automatically resolve external mounts
 			req.opts.auto_ext_mnt = True
 			req.opts.ext_sharing = True
 			req.opts.ext_masters = True
