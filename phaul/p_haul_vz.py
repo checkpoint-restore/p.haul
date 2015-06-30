@@ -11,15 +11,15 @@ import fs_haul_subtree
 import pycriu.rpc
 
 name = "vz"
-vz_dir = "/vz"
-vzpriv_dir = "%s/private" % vz_dir
-vzroot_dir = "%s/root" % vz_dir
+vz_global_conf = "/etc/vz/vz.conf"
 vz_conf_dir = "/etc/vz/conf/"
 cg_image_name = "ovzcg.img"
 
 class p_haul_type:
 	def __init__(self, ctid):
 		self._ctid = ctid
+		self._ct_priv = ""
+		self._ct_root = ""
 		#
 		# This list would contain (v_in, v_out, v_br) tuples where
 		# v_in is the name of veth device in CT
@@ -32,15 +32,17 @@ class p_haul_type:
 	def __load_ct_config(self, path):
 		print "Loading config file from %s" % path
 
+		# Read container config
 		with open(os.path.join(path, self.__ct_config())) as ifd:
 			self._cfg = ifd.read()
-
-		#
-		# Parse and keep veth pairs, later we will
-		# equip restore request with this data and
-		# will use it while (un)locking the network
-		#
 		config = parse_vz_config(self._cfg)
+
+		# Read global config
+		with open(vz_global_conf) as ifd:
+			global_config = parse_vz_config(ifd.read())
+
+		# Extract veth pairs, later we will equip restore request with this
+		# data and will use it while (un)locking the network
 		if "NETIF" in config:
 			v_in, v_out, v_bridge = None, None, None
 			for parm in config["NETIF"].split(","):
@@ -54,6 +56,20 @@ class p_haul_type:
 			if v_in and v_out:
 				print "\tCollect %s -> %s (%s) veth" % (v_in, v_out, v_bridge)
 				self._veths.append(util.net_dev(v_in, v_out, v_bridge))
+
+		# Extract private path from config
+		if "VE_PRIVATE" in config:
+			self._ct_priv = expand_veid_var(config["VE_PRIVATE"], self._ctid)
+		else:
+			self._ct_priv = expand_veid_var(global_config["VE_PRIVATE"],
+				self._ctid)
+
+		# Extract root path from config
+		if "VE_ROOT" in config:
+			self._ct_root = expand_veid_var(config["VE_ROOT"], self._ctid)
+		else:
+			self._ct_root = expand_veid_var(global_config["VE_ROOT"],
+				self._ctid)
 
 	def __apply_cg_config(self):
 		print "Applying CT configs"
@@ -89,12 +105,6 @@ class p_haul_type:
 			pid = tasks.readline()
 			return int(pid)
 
-	def __ct_priv(self):
-		return "%s/%s" % (vzpriv_dir, self._ctid)
-
-	def __ct_root(self):
-		return "%s/%s" % (vzroot_dir, self._ctid)
-
 	def __ct_config(self):
 		return "%s.conf" % self._ctid
 
@@ -127,11 +137,10 @@ class p_haul_type:
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
 	def mount(self):
-		nroot = self.__ct_root()
-		print "Mounting CT root to %s" % nroot
+		print "Mounting CT root to %s" % self._ct_root
 		os.system("vzctl mount {0}".format(self._ctid))
 		self._fs_mounted = True
-		return nroot
+		return self._ct_root
 
 	def umount(self):
 		if self._fs_mounted:
@@ -140,7 +149,7 @@ class p_haul_type:
 			self._fs_mounted = False
 
 	def get_fs(self):
-		rootfs = util.path_to_fs(self.__ct_priv())
+		rootfs = util.path_to_fs(self._ct_priv)
 		if not rootfs:
 			print "CT is on unknown FS"
 			return None
@@ -150,7 +159,7 @@ class p_haul_type:
 		if rootfs == "nfs":
 			return fs_haul_shared.p_haul_fs()
 		if rootfs == "ext3" or rootfs == "ext4":
-			return fs_haul_subtree.p_haul_fs(self.__ct_priv())
+			return fs_haul_subtree.p_haul_fs(self._ct_priv)
 
 		print "Unknown CT FS"
 		return None
@@ -180,10 +189,14 @@ class p_haul_type:
 		return self._veths
 
 def parse_vz_config(body):
-	""" Parse shell-like virtuozzo config file"""
+	"""Parse shell-like virtuozzo config file"""
 
 	config_values = dict()
 	for token in shlex.split(body, comments=True):
 		name, sep, value = token.partition("=")
 		config_values[name] = value
 	return config_values
+
+def expand_veid_var(value, ctid):
+	"""Replace shell-like VEID variable with actual container id"""
+	return value.replace("$VEID", ctid).replace("${VEID}", ctid)
