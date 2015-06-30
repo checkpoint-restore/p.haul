@@ -15,7 +15,6 @@ vz_dir = "/vz"
 vzpriv_dir = "%s/private" % vz_dir
 vzroot_dir = "%s/root" % vz_dir
 vz_conf_dir = "/etc/vz/conf/"
-vz_pidfiles = "/var/lib/vzctl/vepid/"
 cg_image_name = "ovzcg.img"
 
 class p_haul_type:
@@ -160,11 +159,6 @@ class p_haul_type:
 		return None
 
 	def restored(self, pid):
-		print "Writing pidfile"
-		pidfile = open(os.path.join(vz_pidfiles, self._ctid), 'w')
-		pidfile.write("%d" % pid)
-		pidfile.close()
-
 		self.__apply_cg_config()
 
 	def net_lock(self):
