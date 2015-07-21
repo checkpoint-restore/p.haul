@@ -1,0 +1,82 @@
+/*!
+ * Copyright (C) 2015 Red Hat Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  padding: 0px 16px;
+}
+
+* {
+  font-family: Overpass, "Open Sans", Arial, sans-serif;
+}
+
+p {
+  font-weight: lighter;
+}
+
+svg {
+  cursor: move;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #f5f5f5;
+  stroke: #dddddd;
+  stroke-width: 1px;
+}
+
+.node text.node-label {
+  fill: #333;
+  font-family: "Liberation Mono", monospace;
+  font-size: 10pt;
+}
+
+.active-node text.node-label {
+  fill: teal;
+  font-weight: bold;
+}
+
+.dragging-node text.node-label {
+  fill: #dddddd;
+}
+
+path.link {
+  fill: none;
+  /*stroke: #eeeeee;*/
+  stroke: rgba(191, 191, 191, 0.9);
+  stroke-width: 2;
+}
+
+.ghost {
+  border: solid 1px #ddd;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 2px;
+  padding: 1em;
+  font-size: 10pt;
+}
+
+.migration-target-active {
+  background-color: lightblue;
+}

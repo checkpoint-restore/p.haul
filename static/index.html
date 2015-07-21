@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+# Copyright (C) 2015 Red Hat Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-->
+
+<html lang="en" style="height: 100%">
+  <head>
+    <meta charset="utf-8" />
+    <script src="d3.v3.min.js" charset="utf-8"></script>
+    <script src="jquery-1.11.2.min.js" charset="utf-8"></script>
+    <script src="bootstrap.min.js" charset="utf-8"></script>
+    <script src="eventsource.min.js" charset="utf-8"></script>
+    <link href="bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="criugui.css" rel="stylesheet" type="text/css"/>
+    <title>P.HAUL GUI</title>
+  </head>
+  <body>
+    <div style="display: table; width: 100%; height: 100%;">
+      <h1>CRIU Process Migration GUI</h1>
+      <hr/>
+
+      <h2>Process Trees</h2>
+      <div class="row" id="pstree-container"></div>
+
+      <h2>Information</h2>
+      <div class="row">
+        <div class="col-md-5">
+          <div class="panel panel-default">
+            <div class="panel-heading">Process Info</div>
+
+            <div class="panel-body">
+              Hover over a tree node to see more information about that process.
+            </div>
+
+            <table class="table table-bordered">
+              <tr>
+                <th width="100px">Name</th>
+                <th width="50px">ID</th>
+                <th width="150px">Children</th>
+              </tr>
+              <tr>
+                <td id="process-name"></td>
+                <td id="process-id"></td>
+                <td id="process-children"></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-md-7" id="alerts"></div>
+      </div>
+    </div>
+
+    <script src="migrate.js" type="text/javascript" charset="utf-8"></script>
+    <script src="pstree.js" type="text/javascript" charset="utf-8"></script>
+    <script src="criugui.js" type="text/javascript" charset="utf-8"></script>
+  </body>
+</html>
