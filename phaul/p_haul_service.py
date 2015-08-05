@@ -86,7 +86,11 @@ class phaul_service:
 		print "Restoring from images"
 		self.htype.put_meta_images(self.img.image_dir())
 
-		req = self.__make_restore_req()
+		nroot = self.htype.mount()
+		if nroot:
+			print "Restore root set to %s" % nroot
+
+		req = self.__make_restore_req(nroot)
 		resp = self.criu.send_req(req)
 		while True:
 			if resp.type == cr_rpc.NOTIFY:
@@ -150,7 +154,7 @@ class phaul_service:
 		req.opts.images_dir_fd = self.img.work_dir_fd()
 		return req
 
-	def __make_restore_req(self):
+	def __make_restore_req(self, nroot):
 		"""Prepare restore criu request"""
 
 		req = self.__make_req(cr_rpc.RESTORE)
@@ -164,9 +168,7 @@ class phaul_service:
 		for veth in self.htype.veths():
 			req.opts.veths.add(if_in = veth.name, if_out = veth.pair)
 
-		nroot = self.htype.mount()
 		if nroot:
 			req.opts.root = nroot
-			print "Restore root set to %s" % req.opts.root
 
 		return req
