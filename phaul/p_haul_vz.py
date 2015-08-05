@@ -76,6 +76,17 @@ class p_haul_type:
 		# FIXME -- implement
 		pass
 
+	def __cg_set_veid(self):
+		"""Initialize veid in ve.veid for ve cgroup"""
+
+		veid_path = "/sys/fs/cgroup/ve/{0}/ve.veid".format(self._ctid)
+		with open(veid_path, "w") as f:
+			if self._ctid.isdigit():
+				veid = self._ctid
+			else:
+				veid = str(int(self._ctid.partition("-")[0], 16))
+			f.write(veid)
+
 	def init_src(self):
 		self._fs_mounted = True
 		self._bridged = True
@@ -128,12 +139,14 @@ class p_haul_type:
 		# Keep this name, we'll need one in prepare_ct()
 		self.cg_img = os.path.join(path, cg_image_name)
 
-	#
-	# Create cgroup hierarchy and put root task into it
-	# Hierarchy is unlimited, we will apply config limitations
-	# in ->restored->__apply_cg_config later
-	#
 	def prepare_ct(self, pid):
+		"""Create cgroup hierarchy and put root task into it.
+
+		Hierarchy is unlimited, we will apply config limitations in
+		__apply_cg_config later.
+		"""
+
+		self.__cg_set_veid()
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
 	def mount(self):
