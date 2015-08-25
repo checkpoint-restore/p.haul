@@ -1,3 +1,4 @@
+import ctypes
 import socket
 import select
 import threading
@@ -5,13 +6,20 @@ import traceback
 import util
 
 rpc_port = 12345
-rpc_sk_buf = 256
 
 RPC_CMD = 1
 RPC_CALL = 2
 
 RPC_RESP = 1
 RPC_EXC = 2
+
+libc = None
+
+def get_message_size(sk):
+	global libc
+	if not libc:
+		libc = ctypes.CDLL("libc.so.6")
+	return libc.recv(sk.fileno(), 0, 0, socket.MSG_PEEK | socket.MSG_TRUNC)
 
 #
 # Client
@@ -27,6 +35,7 @@ class _rpc_proxy_caller:
 		call = (self._fn_typ, self._fn_name, args)
 		raw_data = repr(call)
 		self._rpc_sk.send(raw_data)
+		rpc_sk_buf = get_message_size(self._rpc_sk)
 		raw_data = self._rpc_sk.recv(rpc_sk_buf)
 		resp = eval(raw_data)
 
@@ -81,6 +90,7 @@ class _rpc_server_sk:
 		return self.hash_name()
 
 	def work(self, mgr):
+		rpc_sk_buf = get_message_size(self._sk)
 		raw_data = self._sk.recv(rpc_sk_buf)
 		if not raw_data:
 			mgr.remove(self)
