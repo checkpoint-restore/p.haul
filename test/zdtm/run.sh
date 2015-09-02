@@ -1,13 +1,46 @@
 #!/bin/bash
+
+exit_cleanup () {
+	if [ "x${LOCAL_PHS_PID}" != "x" ]; then
+		kill -TERM ${LOCAL_PHS_PID}
+	fi
+	return 0
+}
+
 set -x
 CRIU_PATH="../../../criu/"
 CRIU_TESTS="${CRIU_PATH}/test/zdtm/"
 WDIR="$(pwd)/wdir"
 PH=$(realpath ../../p.haul)
 PHS=$(realpath ../../p.haul-service)
+PHSSH=$(realpath ../../p.haul-ssh)
+
+# setup EXIT trap
+trap exit_cleanup EXIT
+
+# process command line options
+while [ "${#}" -gt 0 ]; do
+	case $1 in
+	"--local")
+		LOCAL_PHS="true"
+		;;
+	esac
+	shift
+done
 
 rm -rf "$WDIR"
 mkdir "$WDIR"
+
+# run local p.haul server in background if --local option specified
+if [ "x${LOCAL_PHS}" == "xtrue" ]; then
+	echo "Run local p.haul service"
+	${PHS} &> "/tmp/phs.log" &
+	if [ ${?} -ne 0 ]; then
+		echo "Can't run local p.haul service"
+		exit 1
+	fi
+	LOCAL_PHS_PID=$!
+fi
 
 make ct_init
 if ! ./ct_init "${WDIR}/ct.log" "${WDIR}/init.pid" ./ct_init.py ${CRIU_TESTS} tests; then
@@ -22,7 +55,15 @@ export PATH="${PATH}:${CRIU_PATH}"
 which criu
 
 echo "Migrating"
-if ! ../../p.haul-ssh --ssh-ph-exec ${PH} --ssh-phs-exec ${PHS} pid ${PID} "127.0.0.1" -v=4 --keep-images --dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"; then
+if [ "x${LOCAL_PHS}" == "xtrue" ]; then
+	${PH} pid ${PID} "127.0.0.1" -v=4 --keep-images \
+		--dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"
+else
+	${PHSSH} --ssh-ph-exec ${PH} --ssh-phs-exec ${PHS} pid ${PID} "127.0.0.1" \
+		-v=4 --keep-images --dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"
+fi
+
+if [ ${?} -ne 0 ]; then
 	echo "Migration failed"
 	kill -TERM ${PID}
 	exit 1
