@@ -6,6 +6,7 @@ import xem_rpc
 import pycriu.rpc as cr_rpc
 import images
 import criu_api
+import criu_req
 import p_haul_type
 
 class phaul_service:
@@ -54,7 +55,7 @@ class phaul_service:
 		print "Starting page server for iter %d" % self.dump_iter
 
 		print "\tSending criu rpc req"
-		req = self.__make_page_server_req()
+		req = criu_req.make_page_server_req(self.htype, self.img, self.criu)
 		resp = self.criu.send_req(req)
 		if not resp.success:
 			raise Exception("Failed to start page server")
@@ -77,7 +78,7 @@ class phaul_service:
 
 	def rpc_check_cpuinfo(self):
 		print "Checking cpuinfo"
-		req = self.__make_cpuinfo_check_req()
+		req = criu_req.make_cpuinfo_check_req(self.htype, self.img)
 		resp = self.criu.send_req(req)
 		print "   `-", resp.success
 		return resp.success
@@ -90,7 +91,7 @@ class phaul_service:
 		if nroot:
 			print "Restore root set to %s" % nroot
 
-		req = self.__make_restore_req(nroot)
+		req = criu_req.make_restore_req(self.htype, self.img, nroot)
 		resp = self.criu.send_req(req)
 		while True:
 			if resp.type == cr_rpc.NOTIFY:
@@ -124,51 +125,3 @@ class phaul_service:
 	def rpc_restore_time(self):
 		stats = criu_api.criu_get_rstats(self.img)
 		return stats.restore_time
-
-	def __make_req(self, typ):
-		"""Prepare generic criu request"""
-		req = cr_rpc.criu_req()
-		req.type = typ
-		self.htype.adjust_criu_req(req)
-		return req
-
-	def __make_page_server_req(self):
-		"""Prepare page server criu request"""
-
-		req = self.__make_req(cr_rpc.PAGE_SERVER)
-		req.keep_open = True
-		req.opts.ps.fd = self.criu.mem_sk_fileno()
-		req.opts.images_dir_fd = self.img.image_dir_fd()
-		req.opts.work_dir_fd = self.img.work_dir_fd()
-
-		p_img = self.img.prev_image_dir()
-		if p_img:
-			req.opts.parent_img = p_img
-
-		return req
-
-	def __make_cpuinfo_check_req(self):
-		"""Prepare cpuinfo check criu request"""
-		req = self.__make_req(cr_rpc.CPUINFO_CHECK)
-		req.keep_open = True
-		req.opts.images_dir_fd = self.img.work_dir_fd()
-		return req
-
-	def __make_restore_req(self, nroot):
-		"""Prepare restore criu request"""
-
-		req = self.__make_req(cr_rpc.RESTORE)
-		req.opts.images_dir_fd = self.img.image_dir_fd()
-		req.opts.work_dir_fd = self.img.work_dir_fd()
-		req.opts.notify_scripts = True
-
-		if self.htype.can_migrate_tcp():
-			req.opts.tcp_established = True
-
-		for veth in self.htype.veths():
-			req.opts.veths.add(if_in = veth.name, if_out = veth.pair)
-
-		if nroot:
-			req.opts.root = nroot
-
-		return req

@@ -9,17 +9,9 @@ import util
 import subprocess
 import pycriu.rpc as cr_rpc
 import pycriu.images as images
+import criu_req
 
 criu_binary = "criu"
-
-req_types = {
-	cr_rpc.DUMP: "dump",
-	cr_rpc.PRE_DUMP: "pre_dump",
-	cr_rpc.PAGE_SERVER: "page_server",
-	cr_rpc.RESTORE: "restore",
-	cr_rpc.CPUINFO_DUMP: "cpuinfo-dump",
-	cr_rpc.CPUINFO_CHECK: "cpuinfo-check",
-}
 
 cpuinfo_img_name = "cpuinfo.img"
 
@@ -62,7 +54,7 @@ class criu_conn:
 
 	def send_req(self, req):
 		req.opts.log_level = self.verb
-		req.opts.log_file = "criu_%s.%d.log" % (req_types[req.type], self._iter)
+		req.opts.log_file = "criu_%s.%d.log" % (criu_req.get_name(req), self._iter)
 		self._cs.send(req.SerializeToString())
 		self._iter += 1
 		self._last_req = req.type
