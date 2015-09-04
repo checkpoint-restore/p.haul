@@ -86,40 +86,8 @@ class phaul_service:
 	def rpc_restore_from_images(self):
 		print "Restoring from images"
 		self.htype.put_meta_images(self.img.image_dir())
-
-		nroot = self.htype.mount()
-		if nroot:
-			print "Restore root set to %s" % nroot
-
-		req = criu_req.make_restore_req(self.htype, self.img, nroot)
-		resp = self.criu.send_req(req)
-		while True:
-			if resp.type == cr_rpc.NOTIFY:
-				print "\t\tNotify (%s.%d)" % (resp.notify.script, resp.notify.pid)
-				if resp.notify.script == "setup-namespaces":
-					#
-					# At that point we have only one task
-					# living in namespaces and waiting for
-					# us to ACK the notify. Htype might want
-					# to configure namespace (external net
-					# devices) and cgroups
-					#
-					self.htype.prepare_ct(resp.notify.pid)
-				elif resp.notify.script == "network-unlock":
-					self.htype.net_unlock()
-				elif resp.notify.script == "network-lock":
-					raise Exception("Locking network on restore?")
-
-				resp = self.criu.ack_notify()
-				continue
-
-			if not resp.success:
-				raise Exception("Restore failed")
-
-			print "Restore succeeded"
-			break
-
-		self.htype.restored(resp.restore.pid)
+		self.htype.final_restore(self.img, self.criu)
+		print "Restore succeeded"
 		self.restored = True
 
 	def rpc_restore_time(self):

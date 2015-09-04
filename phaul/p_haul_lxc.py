@@ -5,6 +5,7 @@
 import os
 import shutil
 import p_haul_cgroup
+import p_haul_module
 import util
 import fs_haul_shared
 import fs_haul_subtree
@@ -121,6 +122,9 @@ class p_haul_type:
 
 		# Keep this name, we'll need one in prepare_ct()
 		self.cg_img = os.path.join(dir, cg_image_name)
+
+	def final_restore(self, img, connection):
+		p_haul_module.final_restore(self, img, connection)
 
 	#
 	# Create cgroup hierarchy and put root task into it

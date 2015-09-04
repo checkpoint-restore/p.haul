@@ -20,7 +20,7 @@ def __get(id):
 		return h_type.p_haul_type(id[1])
 	else:
 		print "Unknown type. Try one of", haul_types.keys()
-	 	return None
+		return None
 
 def get_src(id):
 	ht = __get(id)

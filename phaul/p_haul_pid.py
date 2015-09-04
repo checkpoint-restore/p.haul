@@ -2,6 +2,7 @@
 # Individual process hauler
 #
 
+import p_haul_module
 import fs_haul_shared
 
 name = "pid"
@@ -10,7 +11,6 @@ class p_haul_type:
 	def __init__(self, id):
 		self.pid = int(id)
 		self._pidfile = None
-
 
 	#
 	# Initialize itself for source node or destination one
@@ -59,6 +59,9 @@ class p_haul_type:
 	# preserved.
 	def put_meta_images(self, dir):
 		pass
+
+	def final_restore(self, img, connection):
+		p_haul_module.final_restore(self, img, connection)
 
 	# Things are started to get restored, only the
 	# first task (with pid @pid) is created.
