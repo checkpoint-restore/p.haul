@@ -3,6 +3,7 @@
 #
 
 import os
+import subprocess
 import shlex
 import p_haul_cgroup
 import p_haul_module
@@ -15,6 +16,7 @@ name = "vz"
 vz_global_conf = "/etc/vz/vz.conf"
 vz_conf_dir = "/etc/vz/conf/"
 cg_image_name = "ovzcg.img"
+vzctl_bin = "vzctl"
 
 class p_haul_type:
 	def __init__(self, ctid):
@@ -140,8 +142,34 @@ class p_haul_type:
 		# Keep this name, we'll need one in prepare_ct()
 		self.cg_img = os.path.join(path, cg_image_name)
 
+	def __setup_restore_extra_args(self, path, img, connection):
+		"""Create temporary file with extra arguments for criu restore"""
+		extra_args = [
+			"VE_WORK_DIR={0}\n".format(img.work_dir()),
+			"VE_RESTORE_LOG_PATH={0}\n".format(
+				connection.get_log_name(pycriu.rpc.RESTORE))]
+		with open(path, "w") as f:
+			f.writelines(extra_args)
+
+	def __remove_restore_extra_args(self, path):
+		"""Remove temporary file with extra arguments for criu restore"""
+		if os.path.isfile(path):
+			os.remove(path)
+
 	def final_restore(self, img, connection):
-		p_haul_module.final_restore(self, img, connection)
+		"""Perform Virtuozzo-specific final restore"""
+		try:
+			# Setup restore extra arguments
+			args_path = os.path.join(img.image_dir(), "restore-extra-args")
+			self.__setup_restore_extra_args(args_path, img, connection)
+			# Run vzctl restore
+			proc = subprocess.Popen([vzctl_bin, "restore", self._ctid,
+				"--dumpfile", img.image_dir()])
+			if proc.wait() != 0:
+				raise Exception("Restore failed ({0})".format(proc.returncode))
+		finally:
+			# Remove restore extra arguments
+			self.__remove_restore_extra_args(args_path)
 
 	def prepare_ct(self, pid):
 		"""Create cgroup hierarchy and put root task into it.

@@ -13,9 +13,9 @@ _names = {
 	pycriu.rpc.CPUINFO_CHECK: "cpuinfo-check",
 }
 
-def get_name(req):
+def get_name(req_type):
 	"""Return printable request name"""
-	return _names[req.type]
+	return _names[req_type]
 
 def _make_req(typ, htype):
 	"""Prepare generic criu request"""

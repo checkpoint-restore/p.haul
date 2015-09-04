@@ -54,7 +54,7 @@ class criu_conn:
 
 	def send_req(self, req):
 		req.opts.log_level = self.verb
-		req.opts.log_file = "criu_%s.%d.log" % (criu_req.get_name(req), self._iter)
+		req.opts.log_file = self.get_log_name(req.type)
 		self._cs.send(req.SerializeToString())
 		self._iter += 1
 		self._last_req = req.type
@@ -68,6 +68,9 @@ class criu_conn:
 		self._cs.send(req.SerializeToString())
 
 		return self._recv_resp()
+
+	def get_log_name(self, req_type):
+		return "criu_%s.%d.log" % (criu_req.get_name(req_type), self._iter)
 
 #
 # Helper to read CRIU-generated statistics
