@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import sys
 import argparse
 import phaul.p_haul_iters as ph_iters
@@ -19,23 +20,24 @@ import phaul.xem_rpc as ph_xem_rpc
 #
 
 parser = argparse.ArgumentParser("Process HAULer")
-parser.add_argument("type", help = "Type of hat to haul, e.g. vz or lxc")
-parser.add_argument("id", help = "ID of what to haul")
-parser.add_argument("to", help = "IP where to haul")
-parser.add_argument("-v", help = "Verbosity level", default = ph_criu_api.def_verb, type = int, dest = "verbose")
-parser.add_argument("--keep-images", help = "Keep images after migration", default = False, action = 'store_true')
-parser.add_argument("--dst-rpid", help = "Write pidfile on restore", default = None)
-parser.add_argument("--img-path", help = "Dirctory where to put images", default = ph_images.def_path)
-parser.add_argument("--pid-root", help = "Path to tree's FS root")
-parser.add_argument("--force", help = "Don't do any sanity (CPU compat) checks", default = False, action = 'store_true')
-parser.add_argument("--port", help = "Port where to haul", type = int, default = ph_xem_rpc.rpc_port)
+parser.add_argument("type", help="Type of hat to haul, e.g. vz or lxc")
+parser.add_argument("id", help="ID of what to haul")
+parser.add_argument("to", help="IP where to haul")
+parser.add_argument("-v", help="Verbosity level", default=ph_criu_api.def_verb, type=int, dest="verbose")
+parser.add_argument("--keep-images", help="Keep images after migration", default=False, action='store_true')
+parser.add_argument("--dst-rpid", help="Write pidfile on restore", default=None)
+parser.add_argument("--img-path", help="Dirctory where to put images", default=ph_images.def_path)
+parser.add_argument("--pid-root", help="Path to tree's FS root")
+parser.add_argument("--force", help="Don't do any sanity (CPU compat) checks", default=False, action='store_true')
+parser.add_argument("--port", help="Port where to haul", type=int, default=ph_xem_rpc.rpc_port)
 
-args = vars(parser.parse_args())
+args = parser.parse_args()
 
-ph_type = (args.pop("type"), args.pop("id"))
-dst = (args.pop("to"), args.pop("port"))
+args_dict = vars(args)
+ph_type = (args_dict.pop("type"), args_dict.pop("id"))
+dst = (args_dict.pop("to"), args_dict.pop("port"))
 
 # Start the migration
 worker = ph_iters.phaul_iter_worker(ph_type, dst)
-worker.set_options(args)
+worker.set_options(args_dict)
 worker.start_migration()

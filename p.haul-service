@@ -5,29 +5,28 @@ import argparse
 import phaul.xem_rpc as ph_xem_rpc
 import phaul.p_haul_service as ph_srv
 
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser("Process HAULer service server")
-	parser.add_argument("--bind-addr", help = "IP to bind to", type = str, default = "0.0.0.0")
-	parser.add_argument("--bind-port", help = "Port to bind to", type = int, default = ph_xem_rpc.rpc_port)
+parser = argparse.ArgumentParser("Process HAULer service server")
+parser.add_argument("--bind-addr", help="IP to bind to", type=str, default="0.0.0.0")
+parser.add_argument("--bind-port", help="Port to bind to", type=int, default=ph_xem_rpc.rpc_port)
 
-	args = vars(parser.parse_args())
+args = parser.parse_args()
 
-	host = (args.pop("bind_addr"), args.pop("bind_port"))
+host = (args.bind_addr, args.bind_port)
 
-	sfd = None
-	def fin(foo, bar):
-		print "Stop by %d" % foo
-		sfd.close()
+sfd = None
+def fin(foo, bar):
+	print "Stop by %d" % foo
+	sfd.close()
 
-	print "Starting p.haul rpyc service"
-	t = ph_xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, host)
+print "Starting p.haul rpyc service"
+t = ph_xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, host)
 
-	# FIXME: Setup stop handlers
-	sfd = t.get_stop_fd()
-	signal.signal(signal.SIGTERM, fin)
-	signal.signal(signal.SIGINT, fin)
+# FIXME: Setup stop handlers
+sfd = t.get_stop_fd()
+signal.signal(signal.SIGTERM, fin)
+signal.signal(signal.SIGINT, fin)
 
-	t.start()
-	signal.pause()
-	t.join()
-	print "Bye!"
+t.start()
+signal.pause()
+t.join()
+print "Bye!"
