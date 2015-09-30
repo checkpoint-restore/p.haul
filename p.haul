@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import logging
 import phaul.p_haul_iters as ph_iters
 import phaul.images as ph_images
 import phaul.criu_api as ph_criu_api
@@ -30,8 +31,18 @@ parser.add_argument("--img-path", help="Dirctory where to put images", default=p
 parser.add_argument("--pid-root", help="Path to tree's FS root")
 parser.add_argument("--force", help="Don't do any sanity (CPU compat) checks", default=False, action='store_true')
 parser.add_argument("--port", help="Port where to haul", type=int, default=ph_xem_rpc.rpc_port)
+parser.add_argument("--log-file", help="Write logging messages to specified file")
 
 args = parser.parse_args()
+
+# Configure logging
+logging.basicConfig(filename=args.log_file, filemode="w", level=logging.INFO,
+	format="%(asctime)s.%(msecs)03d: %(message)s", datefmt="%H:%M:%S")
+
+# Setup hook to log uncaught exceptions
+def log_uncaught_exception(type, value, traceback):
+	logging.error(value, exc_info=(type, value, traceback))
+sys.excepthook = log_uncaught_exception
 
 args_dict = vars(args)
 ph_type = (args_dict.pop("type"), args_dict.pop("id"))
