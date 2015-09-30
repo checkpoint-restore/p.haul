@@ -5,6 +5,7 @@
 #
 
 import os
+import logging
 
 cg_root_dir = "/sys/fs/cgroup"
 cg_tasks_file = "tasks"
@@ -27,7 +28,7 @@ def cg_line_parse(ln):
 	return cname, cdir
 
 def dump_hier(pid, img):
-	print "\tSave CG for %d into %s" % (pid, img)
+	logging.info("\tSave CG for %d into %s", pid, img)
 	fd = open(img, "w")
 	cg = open("/proc/%d/cgroup" % pid)
 	for ln in cg:
@@ -60,7 +61,7 @@ def cpuset_allow_all(path):
 
 def restore_one_controller(pid, ln):
 	cg_path = os.path.join(cg_root_dir, ln.strip())
-	print "[%s]" % cg_path
+	logging.info("[%s]", cg_path)
 	if not os.access(cg_path, os.F_OK):
 		os.makedirs(cg_path)
 	if ln.startswith("cpuset"):
@@ -71,7 +72,7 @@ def restore_one_controller(pid, ln):
 	tf.close()
 
 def restore_hier(pid, img):
-	print "\tCreate hier for %d from %s" % (pid, img)
+	logging.info("\tCreate hier for %d from %s", pid, img)
 	fd = open(img)
 	for ln in fd:
 		restore_one_controller(pid, ln)

@@ -2,6 +2,7 @@
 # P.HAUL code, that helps on the target node (rpyc service)
 #
 
+import logging
 import xem_rpc
 import pycriu.rpc as cr_rpc
 import images
@@ -11,7 +12,7 @@ import p_haul_type
 
 class phaul_service:
 	def on_connect(self):
-		print "Connected"
+		logging.info("Connected")
 		self.dump_iter = 0
 		self.restored = False
 		self.criu = None
@@ -20,7 +21,7 @@ class phaul_service:
 		self.htype = None
 
 	def on_disconnect(self):
-		print "Disconnected"
+		logging.info("Disconnected")
 		if self.criu:
 			self.criu.close()
 
@@ -31,17 +32,17 @@ class phaul_service:
 			self.htype.umount()
 
 		if self.img:
-			print "Closing images"
+			logging.info("Closing images")
 			if not self.restored:
 				self.img.save_images()
 			self.img.close()
 
 	def on_socket_open(self, sk, uname):
 		self.data_sk = sk
-		print "Data socket (%s) accepted" % uname
+		logging.info("Data socket (%s) accepted", uname)
 
 	def rpc_setup(self, htype_id):
-		print "Setting up service side", htype_id
+		logging.info("Setting up service side %s", htype_id)
 		self.img = images.phaul_images("rst")
 		self.criu = criu_api.criu_conn(self.data_sk)
 		self.htype = p_haul_type.get_dst(htype_id)
@@ -52,15 +53,15 @@ class phaul_service:
 		self.htype.set_options(opts)
 
 	def start_page_server(self):
-		print "Starting page server for iter %d" % self.dump_iter
+		logging.info("Starting page server for iter %d", self.dump_iter)
 
-		print "\tSending criu rpc req"
+		logging.info("\tSending criu rpc req")
 		req = criu_req.make_page_server_req(self.htype, self.img, self.criu)
 		resp = self.criu.send_req(req)
 		if not resp.success:
 			raise Exception("Failed to start page server")
 
-		print "\tPage server started at %d" % resp.ps.pid
+		logging.info("\tPage server started at %d", resp.ps.pid)
 
 	def rpc_start_iter(self):
 		self.dump_iter += 1
@@ -77,17 +78,17 @@ class phaul_service:
 		self.img.stop_accept_images()
 
 	def rpc_check_cpuinfo(self):
-		print "Checking cpuinfo"
+		logging.info("Checking cpuinfo")
 		req = criu_req.make_cpuinfo_check_req(self.htype, self.img)
 		resp = self.criu.send_req(req)
-		print "   `-", resp.success
+		logging.info("\t`- %s", resp.success)
 		return resp.success
 
 	def rpc_restore_from_images(self):
-		print "Restoring from images"
+		logging.info("Restoring from images")
 		self.htype.put_meta_images(self.img.image_dir())
 		self.htype.final_restore(self.img, self.criu)
-		print "Restore succeeded"
+		logging.info("Restore succeeded")
 		self.restored = True
 
 	def rpc_restore_time(self):

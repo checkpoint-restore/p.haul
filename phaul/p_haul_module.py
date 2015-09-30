@@ -2,6 +2,7 @@
 # Generic functionality for p.haul modules
 #
 
+import logging
 import pycriu.rpc
 import criu_req
 
@@ -10,13 +11,13 @@ def final_restore(htype, img, connection):
 
 	nroot = htype.mount()
 	if nroot:
-		print "Restore root set to %s" % nroot
+		logging.info("Restore root set to %s", nroot)
 
 	req = criu_req.make_restore_req(htype, img, nroot)
 	resp = connection.send_req(req)
 	while True:
 		if resp.type == pycriu.rpc.NOTIFY:
-			print "\t\tNotify (%s.%d)" % (resp.notify.script, resp.notify.pid)
+			logging.info("\t\tNotify (%s.%d)", resp.notify.script, resp.notify.pid)
 			if resp.notify.script == "setup-namespaces":
 				#
 				# At that point we have only one task

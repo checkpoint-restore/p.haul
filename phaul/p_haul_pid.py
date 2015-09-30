@@ -2,6 +2,7 @@
 # Individual process hauler
 #
 
+import logging
 import p_haul_module
 import fs_haul_shared
 
@@ -71,7 +72,7 @@ class p_haul_type:
 	# Restoring done, the new top task has pid pid
 	def restored(self, pid):
 		if self._pidfile:
-			print "Writing rst pidfile"
+			logging.info("Writing rst pidfile")
 			open(self._pidfile, "w").writelines(["%d" % pid])
 
 	#

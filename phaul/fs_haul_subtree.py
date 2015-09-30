@@ -6,14 +6,14 @@
 
 import subprocess as sp
 import os
+import logging
 
 rsync_log_file = "rsync.log"
 
 class p_haul_fs:
 	def __init__(self, subtree_path):
-		print "Initialized subtree FS hauler (%s)" % subtree_path
+		logging.info("Initialized subtree FS hauler (%s)", subtree_path)
 		self.__root = subtree_path
-		pass
 
 	def set_target_host(self, thost):
 		self.__thost = thost
@@ -35,14 +35,14 @@ class p_haul_fs:
 			raise Exception("Rsync failed")
 
 	def start_migration(self):
-		print "Starting FS migration"
+		logging.info("Starting FS migration")
 		self.__run_rsync()
 
 	def next_iteration(self):
 		pass
 
 	def stop_migration(self):
-		print "Doing final FS sync"
+		logging.info("Doing final FS sync")
 		self.__run_rsync()
 
 	# When rsync-ing FS inodes number will change

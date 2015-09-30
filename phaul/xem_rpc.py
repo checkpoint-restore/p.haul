@@ -2,6 +2,7 @@ import socket
 import select
 import threading
 import traceback
+import logging
 import util
 
 rpc_port = 12345
@@ -33,7 +34,7 @@ class _rpc_proxy_caller:
 		if resp[0] == RPC_RESP:
 			return resp[1]
 		elif resp[0] == RPC_EXC:
-			print "Remote exception"
+			logging.info("Remote exception")
 			raise Exception(resp[1])
 		else:
 			raise Exception("Proto resp error")
@@ -180,7 +181,7 @@ class _rpc_server_manager:
 			for sk in r:
 				sk.work(self)
 
-		print "RPC Service stops"
+		logging.info("RPC Service stops")
 
 class rpc_threaded_srv(threading.Thread):
 	def __init__(self, srv_class, host):

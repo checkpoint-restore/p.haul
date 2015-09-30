@@ -4,6 +4,7 @@
 
 import os
 import shutil
+import logging
 import p_haul_cgroup
 import p_haul_module
 import util
@@ -29,7 +30,7 @@ class p_haul_type:
 		self._cfg = {}
 
 	def __load_ct_config(self):
-		print "Loading config file from %s" % self.__ct_config()
+		logging.info("Loading config file from %s", self.__ct_config())
 
 		self._cfg = {}
 		self._veths = []
@@ -60,7 +61,7 @@ class p_haul_type:
 		ifd.close()
 
 	def __apply_cg_config(self):
-		print "Applying CT configs"
+		logging.info("Applying CT configs")
 		# FIXME -- implement
 		pass
 
@@ -116,7 +117,7 @@ class p_haul_type:
 			 (cg_img, cg_image_name) ]
 
 	def put_meta_images(self, dir):
-		print "Putting config file into %s" % lxc_dir
+		logging.info("Putting config file into %s", lxc_dir)
 
 		shutil.copy(os.path.join(dir, "config"), self.__ct_config())
 
@@ -136,7 +137,7 @@ class p_haul_type:
 
 	def mount(self):
 		nroot = self.__ct_root()
-		print "Mounting CT root to %s" % nroot
+		logging.info("Mounting CT root to %s", nroot)
 		if not os.access(nroot, os.F_OK):
 			os.makedirs(nroot)
 		os.system("mount --bind %s %s" % (self.__ct_rootfs(), nroot))

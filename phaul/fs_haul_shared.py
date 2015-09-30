@@ -2,10 +2,11 @@
 # Shared FS hauler (noop)
 #
 
+import logging
+
 class p_haul_fs:
 	def __init__(self):
-		print "Initilized shared FS hauler"
-		pass
+		logging.info("Initilized shared FS hauler")
 
 	def set_target_host(self, thost):
 		pass

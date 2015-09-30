@@ -2,6 +2,7 @@
 # The P.HAUL core -- the class that drives migration
 #
 
+import logging
 import images
 import mstats
 import xem_rpc
@@ -27,11 +28,11 @@ class phaul_iter_worker:
 		self.iteration = 0
 		self.prev_stats = None
 
-		print "Connecting to target host"
+		logging.info("Connecting to target host")
 		self.th = xem_rpc.rpc_proxy(host)
 		self.data_sk = self.th.open_socket("datask")
 
-		print "Setting up local"
+		logging.info("Setting up local")
 		self.img = images.phaul_images("dmp")
 		self.criu = criu_api.criu_conn(self.data_sk)
 		self.htype = p_haul_type.get_src(p_type)
@@ -45,7 +46,7 @@ class phaul_iter_worker:
 		self.pid = self.htype.root_task_pid()
 		self.fs.set_target_host(host[0])
 
-		print "Setting up remote"
+		logging.info("Setting up remote")
 		self.th.setup(p_type)
 
 	def set_options(self, opts):
@@ -56,18 +57,18 @@ class phaul_iter_worker:
 		self.__force = opts["force"]
 
 	def validate_cpu(self):
-		print "Checking CPU compatibility"
+		logging.info("Checking CPU compatibility")
 
-		print "  `- Dumping CPU info"
+		logging.info("\t`- Dumping CPU info")
 		req = criu_req.make_cpuinfo_dump_req(self.htype, self.img)
 		resp = self.criu.send_req(req)
 		if not resp.success:
 			raise Exception("Can't dump cpuinfo")
 
-		print "  `- Sending CPU info"
+		logging.info("\t`- Sending CPU info")
 		self.img.send_cpuinfo(self.th, self.data_sk)
 
-		print "  `- Checking CPU info"
+		logging.info("\t`- Checking CPU info")
 		if not self.th.check_cpuinfo():
 			raise Exception("CPUs mismatch")
 
@@ -77,19 +78,19 @@ class phaul_iter_worker:
 		if not self.__force:
 			self.validate_cpu()
 
-		print "Preliminary FS migration"
+		logging.info("Preliminary FS migration")
 		self.fs.set_work_dir(self.img.work_dir())
 		self.fs.start_migration()
 
-		print "Starting iterations"
+		logging.info("Starting iterations")
 
 		while True:
-			print "* Iteration %d" % self.iteration
+			logging.info("* Iteration %d", self.iteration)
 
 			self.th.start_iter()
 			self.img.new_image_dir()
 
-			print "\tIssuing pre-dump command to service"
+			logging.info("\tIssuing pre-dump command to service")
 
 			req = criu_req.make_predump_req(
 				self.pid, self.htype, self.img, self.criu, self.fs)
@@ -97,7 +98,7 @@ class phaul_iter_worker:
 			if not resp.success:
 				raise Exception("Pre-dump failed")
 
-			print "\tPre-dump succeeded"
+			logging.info("\tPre-dump succeeded")
 
 			self.th.end_iter()
 
@@ -110,26 +111,26 @@ class phaul_iter_worker:
 			# and restore
 			#
 
-			print "Checking iteration progress:"
+			logging.info("Checking iteration progress:")
 
 			if stats.pages_written <= phaul_iter_min_size:
-				print "\t> Small dump"
+				logging.info("\t> Small dump")
 				break;
 
 			if self.prev_stats:
 				w_add = stats.pages_written - self.prev_stats.pages_written
 				w_add = w_add * 100 / self.prev_stats.pages_written
 				if w_add > phaul_iter_grow_max:
-					print "\t> Iteration grows"
+					logging.info("\t> Iteration grows")
 					break
 
 			if self.iteration >= phaul_iter_max:
-				print "\t> Too many iterations"
+				logging.info("\t> Too many iterations")
 				break
 
 			self.iteration += 1
 			self.prev_stats = stats
-			print "\t> Proceed to next iteration"
+			logging.info("\t> Proceed to next iteration")
 
 			self.fs.next_iteration()
 
@@ -138,12 +139,12 @@ class phaul_iter_worker:
 		# to target host and restore from them there
 		#
 
-		print "Final dump and restore"
+		logging.info("Final dump and restore")
 
 		self.th.start_iter()
 		self.img.new_image_dir()
 
-		print "\tIssuing dump command to service"
+		logging.info("\tIssuing dump command to service")
 
 		req = criu_req.make_dump_req(
 			self.pid, self.htype, self.img, self.criu, self.fs)
@@ -165,10 +166,10 @@ class phaul_iter_worker:
 			elif resp.notify.script == "network-unlock":
 				self.htype.net_unlock()
 
-			print "\t\tNotify (%s)" % resp.notify.script
+			logging.info("\t\tNotify (%s)", resp.notify.script)
 			resp = self.criu.ack_notify()
 
-		print "Dump complete"
+		logging.info("Dump complete")
 		self.th.end_iter()
 
 		#
@@ -177,11 +178,11 @@ class phaul_iter_worker:
 		# tasks on source node
 		#
 
-		print "Final FS and images sync"
+		logging.info("Final FS and images sync")
 		self.fs.stop_migration()
 		self.img.sync_imgs_to_target(self.th, self.htype, self.data_sk)
 
-		print "Asking target host to restore"
+		logging.info("Asking target host to restore")
 		self.th.restore_from_images()
 
 		#

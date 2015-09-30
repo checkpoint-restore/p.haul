@@ -27,10 +27,10 @@ host = (args.bind_addr, args.bind_port)
 
 sfd = None
 def fin(foo, bar):
-	print "Stop by %d" % foo
+	logging.info("Stop by %d", foo)
 	sfd.close()
 
-print "Starting p.haul rpyc service"
+logging.info("Starting p.haul rpyc service")
 t = ph_xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, host)
 
 # FIXME: Setup stop handlers
@@ -41,4 +41,4 @@ signal.signal(signal.SIGINT, fin)
 t.start()
 signal.pause()
 t.join()
-print "Bye!"
+logging.info("Bye!")

@@ -9,6 +9,7 @@ import time
 import shutil
 import time
 import threading
+import logging
 import util
 import criu_api
 
@@ -69,7 +70,7 @@ class phaul_images:
 		self._current_dir = None
 
 	def save_images(self):
-		print "Keeping images"
+		logging.info("Keeping images")
 		self._keep_on_close = True
 
 	def set_options(self, opts):
@@ -91,10 +92,10 @@ class phaul_images:
 			self._current_dir.close()
 
 		if not self._keep_on_close:
-			print "Removing images"
+			logging.info("Removing images")
 			shutil.rmtree(self._wdir.name())
 		else:
-			print "Images are kept in %s" % self._wdir.name()
+			logging.info("Images are kept in %s", self._wdir.name())
 		pass
 
 	def img_sync_time(self):
@@ -105,7 +106,7 @@ class phaul_images:
 			self._current_dir.close()
 		self.current_iter += 1
 		img_dir = "%s/%d" % (self._img_path, self.current_iter)
-		print "\tMaking directory %s" % img_dir
+		logging.info("\tMaking directory %s", img_dir)
 		os.mkdir(img_dir)
 		self._current_dir = opendir(img_dir)
 
@@ -133,7 +134,7 @@ class phaul_images:
 	def sync_imgs_to_target(self, th, htype, sock):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
-		print "Sending images to target"
+		logging.info("Sending images to target")
 
 		start = time.time()
 		cdir = self.image_dir()
@@ -141,11 +142,11 @@ class phaul_images:
 		th.start_accept_images(phaul_images.IMGDIR)
 		tf = img_tar(sock, cdir)
 
-		print "\tPack"
+		logging.info("\tPack")
 		for img in filter(lambda x: x.endswith(".img"), os.listdir(cdir)):
 			tf.add(img)
 
-		print "\tAdd htype images"
+		logging.info("\tAdd htype images")
 		for himg in htype.get_meta_images(cdir):
 			tf.add(himg[1], himg[0])
 
@@ -169,8 +170,8 @@ class phaul_images:
 
 		self.__acc_tar = untar_thread(sk, dirname)
 		self.__acc_tar.start()
-		print "Started images server"
+		logging.info("Started images server")
 
 	def stop_accept_images(self):
-		print "Waiting for images to unpack"
+		logging.info("Waiting for images to unpack")
 		self.__acc_tar.join()

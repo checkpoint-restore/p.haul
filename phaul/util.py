@@ -1,6 +1,7 @@
 import os
 import fcntl
 import errno
+import logging
 
 class net_dev:
 	def __init__(self, name=None, pair=None, link=None):
@@ -20,15 +21,15 @@ def path_to_fs(path):
 	return None
 
 def ifup(ifname):
-	print "\t\tUpping %s" % ifname
+	logging.info("\t\tUpping %s", ifname)
 	os.system("ip link set %s up" % ifname)
 
 def ifdown(ifname):
-	print "\t\tDowning %s" % ifname
+	logging.info("\t\tDowning %s", ifname)
 	os.system("ip link set %s down" % ifname)
 
 def bridge_add(ifname, brname):
-	print "\t\tAdd %s to %s" % (ifname, brname)
+	logging.info("\t\tAdd %s to %s", ifname, brname)
 	os.system("brctl addif %s %s" % (brname, ifname))
 
 def set_cloexec(sk):

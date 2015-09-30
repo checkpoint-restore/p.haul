@@ -5,8 +5,9 @@
 
 import socket
 import os
-import util
 import subprocess
+import logging
+import util
 import pycriu.rpc as cr_rpc
 import pycriu.images as images
 import criu_req
@@ -27,7 +28,7 @@ class criu_conn:
 		self.verb = def_verb
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		util.set_cloexec(css[1])
-		print "`- Passing (ctl:%d, data:%d) pair to CRIU" % (css[0].fileno(), mem_sk.fileno())
+		logging.info("`- Passing (ctl:%d, data:%d) pair to CRIU", css[0].fileno(), mem_sk.fileno())
 		self._swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
 		css[0].close()
 		self._cs = css[1]

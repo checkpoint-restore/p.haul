@@ -5,6 +5,7 @@
 import os
 import subprocess
 import shlex
+import logging
 import p_haul_cgroup
 import p_haul_module
 import util
@@ -33,7 +34,7 @@ class p_haul_type:
 		self._cfg = ""
 
 	def __load_ct_config(self, path):
-		print "Loading config file from %s" % path
+		logging.info("Loading config file from %s", path)
 
 		# Read container config
 		with open(os.path.join(path, self.__ct_config())) as ifd:
@@ -57,7 +58,7 @@ class p_haul_type:
 				elif pa[0] == "bridge":
 					v_bridge = pa[1]
 			if v_in and v_out:
-				print "\tCollect %s -> %s (%s) veth" % (v_in, v_out, v_bridge)
+				logging.info("\tCollect %s -> %s (%s) veth", v_in, v_out, v_bridge)
 				self._veths.append(util.net_dev(v_in, v_out, v_bridge))
 
 		# Extract private path from config
@@ -75,7 +76,7 @@ class p_haul_type:
 				self._ctid)
 
 	def __apply_cg_config(self):
-		print "Applying CT configs"
+		logging.info("Applying CT configs")
 		# FIXME -- implement
 		pass
 
@@ -133,7 +134,7 @@ class p_haul_type:
 			 (cg_img, cg_image_name) ]
 
 	def put_meta_images(self, path):
-		print "Putting config file into %s" % vz_conf_dir
+		logging.info("Putting config file into %s", vz_conf_dir)
 
 		self.__load_ct_config(path)
 		with open(os.path.join(vz_conf_dir, self.__ct_config()), "w") as ofd:
@@ -163,6 +164,7 @@ class p_haul_type:
 			args_path = os.path.join(img.image_dir(), "restore-extra-args")
 			self.__setup_restore_extra_args(args_path, img, connection)
 			# Run vzctl restore
+			logging.info("Starting vzctl restore")
 			proc = subprocess.Popen([vzctl_bin, "restore", self._ctid,
 				"--dumpfile", img.image_dir()])
 			if proc.wait() != 0:
@@ -182,31 +184,32 @@ class p_haul_type:
 		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
 	def mount(self):
-		print "Mounting CT root to %s" % self._ct_root
+		logging.info("Mounting CT root to %s", self._ct_root)
 		os.system("vzctl mount {0}".format(self._ctid))
 		self._fs_mounted = True
 		return self._ct_root
 
 	def umount(self):
 		if self._fs_mounted:
-			print "Umounting CT root"
+			logging.info("Umounting CT root")
+			logging.info("Starting vzctl umount")
 			os.system("vzctl umount {0}".format(self._ctid))
 			self._fs_mounted = False
 
 	def get_fs(self):
 		rootfs = util.path_to_fs(self._ct_priv)
 		if not rootfs:
-			print "CT is on unknown FS"
+			logging.info("CT is on unknown FS")
 			return None
 
-		print "CT is on %s" % rootfs
+		logging.info("CT is on %s", rootfs)
 
 		if rootfs == "nfs":
 			return fs_haul_shared.p_haul_fs()
 		if rootfs == "ext3" or rootfs == "ext4":
 			return fs_haul_subtree.p_haul_fs(self._ct_priv)
 
-		print "Unknown CT FS"
+		logging.info("Unknown CT FS")
 		return None
 
 	def restored(self, pid):

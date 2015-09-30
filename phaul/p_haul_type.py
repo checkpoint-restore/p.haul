@@ -4,6 +4,7 @@
 # See p_haul_pid for comments of how a class should look like.
 #
 
+import logging
 import p_haul_vz
 import p_haul_pid
 import p_haul_lxc
@@ -19,7 +20,7 @@ def __get(id):
 		h_type = haul_types[id[0]]
 		return h_type.p_haul_type(id[1])
 	else:
-		print "Unknown type. Try one of", haul_types.keys()
+		logging.info("Unknown type. Try one of %s", str(haul_types.keys()))
 		return None
 
 def get_src(id):
