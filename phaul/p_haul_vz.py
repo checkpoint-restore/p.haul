@@ -166,8 +166,11 @@ class p_haul_type:
 			# Run vzctl restore
 			logging.info("Starting vzctl restore")
 			proc = subprocess.Popen([vzctl_bin, "restore", self._ctid,
-				"--dumpfile", img.image_dir()])
-			if proc.wait() != 0:
+				"--dumpfile", img.image_dir()],
+				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+			proc_output = proc.communicate()[0]
+			logging.info(proc_output)
+			if proc.returncode != 0:
 				raise Exception("Restore failed ({0})".format(proc.returncode))
 		finally:
 			# Remove restore extra arguments
@@ -185,7 +188,11 @@ class p_haul_type:
 
 	def mount(self):
 		logging.info("Mounting CT root to %s", self._ct_root)
-		os.system("vzctl mount {0}".format(self._ctid))
+		logging.info("Starting vzctl mount")
+		proc = subprocess.Popen(["vzctl", "mount", self._ctid],
+			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		proc_output = proc.communicate()[0]
+		logging.info(proc_output)
 		self._fs_mounted = True
 		return self._ct_root
 
@@ -193,7 +200,10 @@ class p_haul_type:
 		if self._fs_mounted:
 			logging.info("Umounting CT root")
 			logging.info("Starting vzctl umount")
-			os.system("vzctl umount {0}".format(self._ctid))
+			proc = subprocess.Popen(["vzctl", "umount", self._ctid],
+				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+			proc_output = proc.communicate()[0]
+			logging.info(proc_output)
 			self._fs_mounted = False
 
 	def get_fs(self):
