@@ -1,4 +1,31 @@
-CRIU GUI Demo
+p.haul web-gui mode
+======
+
+The code in the webgui and webgui/static directories is based on
+
+ https://github.com/ThomasJClark/criu-gui-demo
+
+To use p.haul in web-gui mode the p.haul-wrap script has to be started
+on two hosts in web-gui mode:
+
+* host01# ./p.haul-wrap service --web-gui
+* host02# ./p.haul-wrap service --web-gui --web-partner host01
+
+This way host02 will register itself with host01 and both hosts
+will offer a web-interface at port 8080:
+
+ http://host01:8080/
+
+It it now possible to drag and drop a process from one host to another
+which will trigger a p.haul controlled process migration in the
+background.
+
+To use p.haul in webgui mode the following additional python modules
+are required: python-flask and python-psutil
+
+The following is the content from the original README.md
+
+CRIU GUI Demo (outdated)
 ======
 
 A web-based demonstration of process migration with CRIU.

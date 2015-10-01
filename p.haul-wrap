@@ -22,8 +22,19 @@ import thread
 default_rpc_port = 12345
 default_service_bind_addr = "0.0.0.0"
 
+def start_web_gui(partner, rpc_port):
+	"""Start web gui if requested"""
+	import webgui.p_haul_web_gui
+
+	thread.start_new_thread(webgui.p_haul_web_gui.start_web_gui,
+		(partner, rpc_port))
+
+
 def run_phaul_service(args, unknown_args):
 	"""Run p.haul-service"""
+
+	if args.web_gui:
+		start_web_gui(args.web_partner, args.bind_port)
 
 	print "Waiting for connection..."
 
@@ -95,6 +106,10 @@ service_parser.add_argument("--path", help="Path to p.haul-service script",
 service_parser.add_argument("--one-shot",
 	help="Do not run in loop to accept multiple connections",
 	default=False, action='store_true')
+service_parser.add_argument("--web-gui",
+	help="Start web gui", default = False, action = 'store_true')
+service_parser.add_argument("--web-partner",
+	help="Start web gui", type = str, default = None)
 
 # Initialize client mode arguments parser
 client_parser = subparsers.add_parser("client", help="Client mode")

@@ -16,12 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* Show two trees.
- * TODO: don't hardcode this. */
-var targetData = [
-    { name: "localhost", address: "http://127.0.0.1:8080" },
-    { name: "other machine", address: "http://some-other-machine-also-running-criugui.py:8080" },
-];
+var req = new XMLHttpRequest();
+
+req.open("GET", "/partners", false);
+req.send();
+
+var targetData = JSON.parse(req.responseText).results;
 
 var pstrees = d3.select("#pstree-container").selectAll("div").data(targetData);
 var enter = pstrees.enter().append("div")
@@ -31,11 +31,11 @@ var enter = pstrees.enter().append("div")
 
 enter.append("div")
     .classed("panel-heading", true)
-    .text(function(d) { return d.name; });
+    .text(function(d) { return d["name"]; });
 
 enter.append("svg")
     .classed("panel-body", true)
-    .attr({ width : "100%", height : "450" })
+    .attr({ width : "100%", height : "300" })
     .each(function(d) {
-      new PSTree(d3.select(this)).listen(d.address);
+      new PSTree(d3.select(this)).listen(d["address"]);
     });

@@ -14,29 +14,27 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import psutil
+import flask
 import json
-import web
+import psutil
 import time
 
+from webgui.p_haul_web_gui import APP
 
-class Procs:
+
+@APP.route('/procs')
+def procs():
     """
-        This class is responsible for listing the processes on this machine as
+        This function is responsible for listing the processes on this machine as
         a JSON object, where children processes are stored hierarchically
         beneath their parent processes.
     """
 
-    def GET(self):
+    def generate():
         """
             Respond to an HTTP GET request with a stream of events containing
             JSON strings.
         """
-
-        web.header("Content-Type", "text/event-stream")
-        web.header("Cache-Control", "no-cache")
-        web.header("Access-Control-Allow-Origin", "*")
-        web.header("Access-Control-Expose-Headers", "*")
 
         oldroot = {}
 
@@ -59,7 +57,7 @@ class Procs:
                 else:
                     flatprocs.append(proc)
 
-            self.unflatten(flatprocs, root)
+            unflatten(flatprocs, root)
 
             if root != oldroot:
                 yield "event: procs\n"
@@ -68,10 +66,10 @@ class Procs:
 
                 oldroot = root
 
-            # Poll at 100ms intervals
-            time.sleep(0.1)
+            # Poll at 1000ms intervals
+            time.sleep(1.0)
 
-    def unflatten(self, flatprocs, proc):
+    def unflatten(flatprocs, proc):
         """
             Utility to convert a flat list of processes with references to
             their parents' PIDs into a tree.
@@ -89,6 +87,13 @@ class Procs:
             if not remainder:
                 break
 
-            remainder = self.unflatten(remainder, childProc)
+            remainder = unflatten(remainder, childProc)
 
         return remainder
+
+    # This sends the actual answer
+    resp = flask.Response(flask.stream_with_context(generate()))
+    resp.headers['Content-Type'] = 'text/event-stream'
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Access-Control-Expose-Headers'] = '*'
+    return resp
