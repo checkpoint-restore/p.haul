@@ -39,9 +39,12 @@ class untar_thread(threading.Thread):
 		self.__dir = tdir
 
 	def run(self):
-		tf = tarfile.open(mode = "r|", fileobj = self.__sk.makefile())
-		tf.extractall(self.__dir)
-		tf.close()
+		try:
+			tf = tarfile.open(mode = "r|", fileobj = self.__sk.makefile())
+			tf.extractall(self.__dir)
+			tf.close()
+		except:
+			logging.exception("Exception in untar_thread")
 
 class img_tar:
 	def __init__(self, sk, dirname):

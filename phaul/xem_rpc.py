@@ -190,7 +190,10 @@ class rpc_threaded_srv(threading.Thread):
 		self._stop_fd = None
 
 	def run(self):
-		self._mgr.loop(self._stop_fd)
+		try:
+			self._mgr.loop(self._stop_fd)
+		except:
+			logging.exception("Exception in rpc_threaded_srv")
 
 	def get_stop_fd(self):
 		sks = socket.socketpair()
