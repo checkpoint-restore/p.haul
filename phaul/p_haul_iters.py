@@ -5,7 +5,7 @@
 import logging
 import images
 import mstats
-import xem_rpc
+import xem_rpc_client
 import pycriu
 import criu_api
 import criu_req
@@ -25,7 +25,7 @@ phaul_iter_grow_max = 10
 class phaul_iter_worker:
 	def __init__(self, p_type, host):
 		logging.info("Connecting to target host")
-		self.target_host = xem_rpc.rpc_proxy(host)
+		self.target_host = xem_rpc_client.rpc_proxy(host)
 		self.data_socket = self.target_host.open_socket("datask")
 
 		logging.info("Setting up local")

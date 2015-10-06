@@ -1,3 +1,7 @@
+#
+# RPC server implementation
+#
+
 import socket
 import select
 import threading
@@ -13,59 +17,6 @@ RPC_CALL = 2
 
 RPC_RESP = 1
 RPC_EXC = 2
-
-#
-# Client
-#
-
-class _rpc_proxy_caller:
-	def __init__(self, sk, typ, fname):
-		self._rpc_sk = sk
-		self._fn_typ = typ
-		self._fn_name = fname
-
-	def __call__(self, *args):
-		call = (self._fn_typ, self._fn_name, args)
-		raw_data = repr(call)
-		self._rpc_sk.send(raw_data)
-		raw_data = self._rpc_sk.recv(rpc_sk_buf)
-		resp = eval(raw_data)
-
-		if resp[0] == RPC_RESP:
-			return resp[1]
-		elif resp[0] == RPC_EXC:
-			logging.info("Remote exception")
-			raise Exception(resp[1])
-		else:
-			raise Exception("Proto resp error")
-
-class rpc_proxy:
-	def __init__(self, conn, *args):
-		self._srv = conn
-		self._rpc_sk = self._make_sk()
-		util.set_cloexec(self._rpc_sk)
-		_rpc_proxy_caller(self._rpc_sk, RPC_CMD, "init_rpc")(args)
-
-	def __getattr__(self, attr):
-		return _rpc_proxy_caller(self._rpc_sk, RPC_CALL, attr)
-
-	def _make_sk(self):
-		sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sk.connect(self._srv)
-		return sk
-
-	def open_socket(self, uname):
-		sk = self._make_sk()
-		host = _rpc_proxy_caller(sk, RPC_CMD, "get_name")()
-		c = _rpc_proxy_caller(self._rpc_sk, RPC_CMD, "pick_channel")
-		c(host, uname)
-		return sk
-
-
-
-#
-# Server
-#
 
 class _rpc_server_sk:
 	def __init__(self, sk):
