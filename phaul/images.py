@@ -32,6 +32,24 @@ class opendir:
 	def fileno(self):
 		return self._dirfd
 
+class _fileobj_wrap:
+	"""Helper class provides read/write interface for socket object
+
+	Current helper class wrap recv/send socket methods in read/write interface.
+	This functionality needed to workaround some problems of socket.makefile
+	method for sockets constructed from numerical file descriptors passed
+	through command line arguments.
+	"""
+
+	def __init__(self, sk):
+		self.__sk = sk
+
+	def read(self, size=0x10000):
+		return self.__sk.recv(size)
+
+	def write(self, str):
+		self.__sk.send(str)
+
 class untar_thread(threading.Thread):
 	def __init__(self, sk, tdir):
 		threading.Thread.__init__(self)
@@ -40,7 +58,7 @@ class untar_thread(threading.Thread):
 
 	def run(self):
 		try:
-			tf = tarfile.open(mode = "r|", fileobj = self.__sk.makefile())
+			tf = tarfile.open(mode="r|", fileobj=_fileobj_wrap(self.__sk))
 			tf.extractall(self.__dir)
 			tf.close()
 		except:
@@ -48,7 +66,7 @@ class untar_thread(threading.Thread):
 
 class img_tar:
 	def __init__(self, sk, dirname):
-		self.__tf = tarfile.open(mode = "w|", fileobj = sk.makefile())
+		self.__tf = tarfile.open(mode="w|", fileobj=_fileobj_wrap(sk))
 		self.__dir = dirname
 
 	def add(self, img, path = None):
@@ -134,7 +152,7 @@ class phaul_images:
 	# Images transfer
 	# Are there better ways for doing this?
 
-	def sync_imgs_to_target(self, target_host, htype, sock):
+	def sync_imgs_to_target(self, target_host, htype, sk):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
 		logging.info("Sending images to target")
@@ -143,7 +161,7 @@ class phaul_images:
 		cdir = self.image_dir()
 
 		target_host.start_accept_images(phaul_images.IMGDIR)
-		tf = img_tar(sock, cdir)
+		tf = img_tar(sk, cdir)
 
 		logging.info("\tPack")
 		for img in filter(lambda x: x.endswith(".img"), os.listdir(cdir)):
@@ -158,9 +176,9 @@ class phaul_images:
 
 		self.sync_time = time.time() - start
 
-	def send_cpuinfo(self, target_host, sock):
+	def send_cpuinfo(self, target_host, sk):
 		target_host.start_accept_images(phaul_images.WDIR)
-		tf = img_tar(sock, self.work_dir())
+		tf = img_tar(sk, self.work_dir())
 		tf.add(criu_api.cpuinfo_img_name)
 		tf.close()
 		target_host.stop_accept_images()
