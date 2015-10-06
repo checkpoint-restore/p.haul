@@ -8,8 +8,7 @@ import os
 import subprocess
 import logging
 import util
-import pycriu.rpc as cr_rpc
-import pycriu.images as images
+import pycriu
 import criu_req
 
 criu_binary = "criu"
@@ -46,9 +45,9 @@ class criu_conn:
 		self.verb = level
 
 	def _recv_resp(self):
-		resp = cr_rpc.criu_resp()
+		resp = pycriu.rpc.criu_resp()
 		resp.ParseFromString(self._cs.recv(1024))
-		if not resp.type in (cr_rpc.NOTIFY, self._last_req):
+		if not resp.type in (pycriu.rpc.NOTIFY, self._last_req):
 			raise Exception("CRIU RPC error (%d/%d)" % (resp.type, self._last_req))
 
 		return resp
@@ -63,8 +62,8 @@ class criu_conn:
 		return self._recv_resp()
 
 	def ack_notify(self, success = True):
-		req = cr_rpc.criu_req()
-		req.type = cr_rpc.NOTIFY
+		req = pycriu.rpc.criu_req()
+		req.type = pycriu.rpc.NOTIFY
 		req.notify_success = True
 		self._cs.send(req.SerializeToString())
 
@@ -79,9 +78,9 @@ class criu_conn:
 
 def criu_get_stats(img, file_name):
 	with open(os.path.join(img.work_dir(), file_name)) as f:
-		stats_dict = images.load(f)
-		stats = images.stats_pb2.stats_entry()
-		images.pb2dict.dict2pb(stats_dict['entries'][0], stats)
+		stats_dict = pycriu.images.load(f)
+		stats = pycriu.images.stats_pb2.stats_entry()
+		pycriu.images.pb2dict.dict2pb(stats_dict['entries'][0], stats)
 		return stats
 
 def criu_get_dstats(img):

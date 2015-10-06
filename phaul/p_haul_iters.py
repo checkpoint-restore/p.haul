@@ -6,7 +6,7 @@ import logging
 import images
 import mstats
 import xem_rpc
-import pycriu.rpc as cr_rpc
+import pycriu
 import criu_api
 import criu_req
 import p_haul_type
@@ -24,17 +24,13 @@ phaul_iter_grow_max = 10
 
 class phaul_iter_worker:
 	def __init__(self, p_type, host):
-		self._mstat = mstats.migration_stats()
-		self.iteration = 0
-		self.prev_stats = None
-
 		logging.info("Connecting to target host")
-		self.th = xem_rpc.rpc_proxy(host)
-		self.data_sk = self.th.open_socket("datask")
+		self.target_host = xem_rpc.rpc_proxy(host)
+		self.data_socket = self.target_host.open_socket("datask")
 
 		logging.info("Setting up local")
 		self.img = images.phaul_images("dmp")
-		self.criu = criu_api.criu_conn(self.data_sk)
+		self.criu_connection = criu_api.criu_conn(self.data_socket)
 		self.htype = p_haul_type.get_src(p_type)
 		if not self.htype:
 			raise Exception("No htype driver found")
@@ -47,11 +43,14 @@ class phaul_iter_worker:
 		self.fs.set_target_host(host[0])
 
 		logging.info("Setting up remote")
-		self.th.setup(p_type)
+		self.target_host.setup(p_type)
+
+	def get_target_host(self):
+		return self.target_host
 
 	def set_options(self, opts):
-		self.th.set_options(opts)
-		self.criu.verbose(opts["verbose"])
+		self.target_host.set_options(opts)
+		self.criu_connection.verbose(opts["verbose"])
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
 		self.__force = opts["force"]
@@ -61,19 +60,24 @@ class phaul_iter_worker:
 
 		logging.info("\t`- Dumping CPU info")
 		req = criu_req.make_cpuinfo_dump_req(self.htype, self.img)
-		resp = self.criu.send_req(req)
+		resp = self.criu_connection.send_req(req)
 		if not resp.success:
 			raise Exception("Can't dump cpuinfo")
 
 		logging.info("\t`- Sending CPU info")
-		self.img.send_cpuinfo(self.th, self.data_sk)
+		self.img.send_cpuinfo(self.target_host, self.data_socket)
 
 		logging.info("\t`- Checking CPU info")
-		if not self.th.check_cpuinfo():
+		if not self.target_host.check_cpuinfo():
 			raise Exception("CPUs mismatch")
 
 	def start_migration(self):
-		self._mstat.start()
+
+		migration_stats = mstats.migration_stats()
+		prev_dstats = None
+		iter_index = 0
+
+		migration_stats.start()
 
 		if not self.__force:
 			self.validate_cpu()
@@ -85,25 +89,25 @@ class phaul_iter_worker:
 		logging.info("Starting iterations")
 
 		while True:
-			logging.info("* Iteration %d", self.iteration)
+			logging.info("* Iteration %d", iter_index)
 
-			self.th.start_iter()
+			self.target_host.start_iter()
 			self.img.new_image_dir()
 
 			logging.info("\tIssuing pre-dump command to service")
 
 			req = criu_req.make_predump_req(
-				self.pid, self.htype, self.img, self.criu, self.fs)
-			resp = self.criu.send_req(req)
+				self.pid, self.htype, self.img, self.criu_connection, self.fs)
+			resp = self.criu_connection.send_req(req)
 			if not resp.success:
 				raise Exception("Pre-dump failed")
 
 			logging.info("\tPre-dump succeeded")
 
-			self.th.end_iter()
+			self.target_host.end_iter()
 
-			stats = criu_api.criu_get_dstats(self.img)
-			self._mstat.iteration(stats)
+			dstats = criu_api.criu_get_dstats(self.img)
+			migration_stats.iteration(dstats)
 
 			#
 			# Need to decide whether we do next iteration
@@ -113,23 +117,23 @@ class phaul_iter_worker:
 
 			logging.info("Checking iteration progress:")
 
-			if stats.pages_written <= phaul_iter_min_size:
+			if dstats.pages_written <= phaul_iter_min_size:
 				logging.info("\t> Small dump")
 				break;
 
-			if self.prev_stats:
-				w_add = stats.pages_written - self.prev_stats.pages_written
-				w_add = w_add * 100 / self.prev_stats.pages_written
+			if prev_dstats:
+				w_add = dstats.pages_written - prev_dstats.pages_written
+				w_add = w_add * 100 / prev_dstats.pages_written
 				if w_add > phaul_iter_grow_max:
 					logging.info("\t> Iteration grows")
 					break
 
-			if self.iteration >= phaul_iter_max:
+			if iter_index >= phaul_iter_max:
 				logging.info("\t> Too many iterations")
 				break
 
-			self.iteration += 1
-			self.prev_stats = stats
+			iter_index += 1
+			prev_dstats = dstats
 			logging.info("\t> Proceed to next iteration")
 
 			self.fs.next_iteration()
@@ -141,16 +145,16 @@ class phaul_iter_worker:
 
 		logging.info("Final dump and restore")
 
-		self.th.start_iter()
+		self.target_host.start_iter()
 		self.img.new_image_dir()
 
 		logging.info("\tIssuing dump command to service")
 
 		req = criu_req.make_dump_req(
-			self.pid, self.htype, self.img, self.criu, self.fs)
-		resp = self.criu.send_req(req)
+			self.pid, self.htype, self.img, self.criu_connection, self.fs)
+		resp = self.criu_connection.send_req(req)
 		while True:
-			if resp.type != cr_rpc.NOTIFY:
+			if resp.type != pycriu.rpc.NOTIFY:
 				raise Exception("Dump failed")
 
 			if resp.notify.script == "post-dump":
@@ -167,10 +171,10 @@ class phaul_iter_worker:
 				self.htype.net_unlock()
 
 			logging.info("\t\tNotify (%s)", resp.notify.script)
-			resp = self.criu.ack_notify()
+			resp = self.criu_connection.ack_notify()
 
 		logging.info("Dump complete")
-		self.th.end_iter()
+		self.target_host.end_iter()
 
 		#
 		# Dump is complete -- go to target node,
@@ -180,10 +184,11 @@ class phaul_iter_worker:
 
 		logging.info("Final FS and images sync")
 		self.fs.stop_migration()
-		self.img.sync_imgs_to_target(self.th, self.htype, self.data_sk)
+		self.img.sync_imgs_to_target(self.target_host, self.htype,
+			self.data_socket)
 
 		logging.info("Asking target host to restore")
-		self.th.restore_from_images()
+		self.target_host.restore_from_images()
 
 		#
 		# Ack the notify after restore -- CRIU would
@@ -191,14 +196,14 @@ class phaul_iter_worker:
 		# DUMP/success message
 		#
 
-		resp = self.criu.ack_notify()
+		resp = self.criu_connection.ack_notify()
 		if not resp.success:
 			raise Exception("Dump screwed up")
 
 		self.htype.umount()
 
-		stats = criu_api.criu_get_dstats(self.img)
-		self._mstat.iteration(stats)
-		self._mstat.stop(self)
+		dstats = criu_api.criu_get_dstats(self.img)
+		migration_stats.iteration(dstats)
+		migration_stats.stop(self)
 		self.img.close()
-		self.criu.close()
+		self.criu_connection.close()

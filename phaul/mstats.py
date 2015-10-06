@@ -13,7 +13,7 @@ class migration_stats:
 		self._start_time = time.time()
 
 	def stop(self, iters):
-		self._rst_time = iters.th.restore_time()
+		self._rst_time = iters.get_target_host().restore_time()
 		self._img_sync_time = iters.img.img_sync_time()
 		self._end_time = time.time()
 

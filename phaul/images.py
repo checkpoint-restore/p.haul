@@ -134,7 +134,7 @@ class phaul_images:
 	# Images transfer
 	# Are there better ways for doing this?
 
-	def sync_imgs_to_target(self, th, htype, sock):
+	def sync_imgs_to_target(self, target_host, htype, sock):
 		# Pre-dump doesn't generate any images (yet?)
 		# so copy only those from the top dir
 		logging.info("Sending images to target")
@@ -142,7 +142,7 @@ class phaul_images:
 		start = time.time()
 		cdir = self.image_dir()
 
-		th.start_accept_images(phaul_images.IMGDIR)
+		target_host.start_accept_images(phaul_images.IMGDIR)
 		tf = img_tar(sock, cdir)
 
 		logging.info("\tPack")
@@ -154,16 +154,16 @@ class phaul_images:
 			tf.add(himg[1], himg[0])
 
 		tf.close()
-		th.stop_accept_images()
+		target_host.stop_accept_images()
 
 		self.sync_time = time.time() - start
 
-	def send_cpuinfo(self, th, sock):
-		th.start_accept_images(phaul_images.WDIR)
+	def send_cpuinfo(self, target_host, sock):
+		target_host.start_accept_images(phaul_images.WDIR)
 		tf = img_tar(sock, self.work_dir())
 		tf.add(criu_api.cpuinfo_img_name)
 		tf.close()
-		th.stop_accept_images()
+		target_host.stop_accept_images()
 
 	def start_accept_images(self, dir_id, sk):
 		if dir_id == phaul_images.WDIR:
