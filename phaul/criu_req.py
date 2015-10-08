@@ -11,6 +11,7 @@ _names = {
 	pycriu.rpc.RESTORE: "restore",
 	pycriu.rpc.CPUINFO_DUMP: "cpuinfo-dump",
 	pycriu.rpc.CPUINFO_CHECK: "cpuinfo-check",
+	pycriu.rpc.FEATURE_CHECK: "feature-check",
 }
 
 def get_name(req_type):
@@ -37,7 +38,6 @@ def _make_common_dump_req(typ, pid, htype, img, connection, fs):
 	req = _make_req(typ, htype)
 	req.opts.pid = pid
 	req.opts.ps.fd = connection.mem_sk_fileno()
-	req.opts.track_mem = True
 
 	req.opts.images_dir_fd = img.image_dir_fd()
 	req.opts.work_dir_fd = img.work_dir_fd()
@@ -106,3 +106,12 @@ def make_restore_req(htype, img, nroot):
 		req.opts.root = nroot
 
 	return req
+
+def make_dirty_tracking_req(htype, img):
+	"""Check if dirty memory tracking is supported."""
+	req = _make_req(pycriu.rpc.FEATURE_CHECK, htype)
+	req.features.mem_track = True
+	req.keep_open = True
+	req.opts.images_dir_fd = img.work_dir_fd()
+	return req
+

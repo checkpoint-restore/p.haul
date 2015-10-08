@@ -86,9 +86,23 @@ class phaul_iter_worker:
 		self.fs.set_work_dir(self.img.work_dir())
 		self.fs.start_migration()
 
-		logging.info("Starting iterations")
+		logging.info("Checking for Dirty Tracking")
+		req = criu_req.make_dirty_tracking_req(self.htype, self.img)
+		resp = self.criu_connection.send_req(req)
 
-		while True:
+		pre_dump = False
+		if resp.success:
+			if resp.HasField('features'):
+				if resp.features.HasField('mem_track'):
+					if resp.features.mem_track:
+						logging.info("Starting iterations")
+						pre_dump = True
+			else:
+				self.criu_connection.memory_tracking(False)
+		else:
+			self.criu_connection.memory_tracking(False)
+
+		while pre_dump:
 			logging.info("* Iteration %d", iter_index)
 
 			self.target_host.start_iter()

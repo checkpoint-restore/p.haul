@@ -25,6 +25,7 @@ class criu_conn:
 	def __init__(self, mem_sk):
 		self._iter = 0
 		self.verb = def_verb
+		self._track_mem = True
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		util.set_cloexec(css[1])
 		logging.info("`- Passing (ctl:%d, data:%d) pair to CRIU", css[0].fileno(), mem_sk.fileno())
@@ -55,6 +56,7 @@ class criu_conn:
 	def send_req(self, req):
 		req.opts.log_level = self.verb
 		req.opts.log_file = self.get_log_name(req.type)
+		req.opts.track_mem = self._track_mem
 		self._cs.send(req.SerializeToString())
 		self._iter += 1
 		self._last_req = req.type
@@ -71,6 +73,9 @@ class criu_conn:
 
 	def get_log_name(self, req_type):
 		return "criu_%s.%d.log" % (criu_req.get_name(req_type), self._iter)
+
+	def memory_tracking(self, value):
+		self._track_mem = value
 
 #
 # Helper to read CRIU-generated statistics
