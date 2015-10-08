@@ -26,6 +26,7 @@ class criu_conn:
 		self._iter = 0
 		self.verb = def_verb
 		self._track_mem = True
+		self._shell_job = False
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		util.set_cloexec(css[1])
 		logging.info("`- Passing (ctl:%d, data:%d) pair to CRIU", css[0].fileno(), mem_sk.fileno())
@@ -57,6 +58,7 @@ class criu_conn:
 		req.opts.log_level = self.verb
 		req.opts.log_file = self.get_log_name(req.type)
 		req.opts.track_mem = self._track_mem
+		req.opts.shell_job = self._shell_job
 		self._cs.send(req.SerializeToString())
 		self._iter += 1
 		self._last_req = req.type
@@ -76,6 +78,9 @@ class criu_conn:
 
 	def memory_tracking(self, value):
 		self._track_mem = value
+
+	def shell_job(self, value):
+		self._shell_job = value
 
 #
 # Helper to read CRIU-generated statistics

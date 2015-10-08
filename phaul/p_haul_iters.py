@@ -51,6 +51,7 @@ class phaul_iter_worker:
 	def set_options(self, opts):
 		self.target_host.set_options(opts)
 		self.criu_connection.verbose(opts["verbose"])
+		self.criu_connection.shell_job(opts["shell_job"])
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
 		self.__force = opts["force"]

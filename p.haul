@@ -32,6 +32,8 @@ parser.add_argument("--pid-root", help="Path to tree's FS root")
 parser.add_argument("--force", help="Don't do any sanity (CPU compat) checks", default=False, action='store_true')
 parser.add_argument("--port", help="Port where to haul", type=int, default=ph_xem_rpc.rpc_port)
 parser.add_argument("--log-file", help="Write logging messages to specified file")
+parser.add_argument("-j", "--shell-job",help ="Allow migration of shell jobs",
+		    default=False, action='store_true')
 
 args = parser.parse_args()
 

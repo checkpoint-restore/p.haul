@@ -48,6 +48,7 @@ class phaul_service:
 
 	def rpc_set_options(self, opts):
 		self.criu_connection.verbose(opts["verbose"])
+		self.criu_connection.shell_job(opts["shell_job"])
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
 
