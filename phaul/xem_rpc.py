@@ -28,7 +28,7 @@ class _rpc_server_sk:
 	def work(self, mgr):
 		raw_data = self._sk.recv(rpc_sk_buf)
 		if not raw_data:
-			mgr.remove(self)
+			mgr.remove_poll_item(self)
 			if self._master:
 				self._master.on_disconnect()
 			return
@@ -74,12 +74,12 @@ class _rpc_server_manager:
 		self._poll_list = []
 		self._alive = True
 
-		self.add(_rpc_server_sk(connection.rpc_sk))
+		self.add_poll_item(_rpc_server_sk(connection.rpc_sk))
 
-	def add(self, item):
+	def add_poll_item(self, item):
 		self._poll_list.append(item)
 
-	def remove(self, item):
+	def remove_poll_item(self, item):
 		self._poll_list.remove(item)
 
 	def make_master(self):
@@ -90,7 +90,7 @@ class _rpc_server_manager:
 
 	def loop(self, stop_fd):
 		if stop_fd:
-			self.add(_rpc_stop_fd(stop_fd))
+			self.add_poll_item(_rpc_stop_fd(stop_fd))
 
 		while self._alive:
 			r, w, x = select.select(self._poll_list, [], [])
