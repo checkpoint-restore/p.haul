@@ -10,22 +10,22 @@ import criu_req
 import p_haul_type
 
 class phaul_service:
-	def on_connect(self):
-		logging.info("Connected")
-		self.dump_iter = 0
-		self.restored = False
+	def __init__(self, mem_sk, fs_sk):
 		self.criu_connection = None
-		self.data_socket = None
+		self.data_socket = mem_sk
+		self._fs_sk = fs_sk
 		self.img = None
 		self.htype = None
+		self.dump_iter = 0
+		self.restored = False
+
+	def on_connect(self):
+		logging.info("Connected")
 
 	def on_disconnect(self):
 		logging.info("Disconnected")
 		if self.criu_connection:
 			self.criu_connection.close()
-
-		if self.data_socket:
-			self.data_socket.close()
 
 		if self.htype and not self.restored:
 			self.htype.umount()
@@ -35,10 +35,6 @@ class phaul_service:
 			if not self.restored:
 				self.img.save_images()
 			self.img.close()
-
-	def on_socket_open(self, sk, uname):
-		self.data_socket = sk
-		logging.info("Data socket (%s) accepted", uname)
 
 	def rpc_setup(self, htype_id):
 		logging.info("Setting up service side %s", htype_id)

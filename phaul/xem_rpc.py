@@ -9,7 +9,6 @@ import traceback
 import logging
 import util
 
-rpc_port = 12345
 rpc_sk_buf = 16384
 
 RPC_CMD = 1
@@ -26,19 +25,12 @@ class _rpc_server_sk:
 	def fileno(self):
 		return self._sk.fileno()
 
-	def hash_name(self):
-		return self._sk.getpeername()
-
-	def get_name(self, mgr):
-		return self.hash_name()
-
 	def work(self, mgr):
 		raw_data = self._sk.recv(rpc_sk_buf)
 		if not raw_data:
 			mgr.remove(self)
 			if self._master:
 				self._master.on_disconnect()
-			self._sk.close()
 			return
 
 		data = eval(raw_data)
@@ -62,29 +54,8 @@ class _rpc_server_sk:
 		self._sk.send(raw_data)
 
 	def init_rpc(self, mgr, args):
-		util.set_cloexec(self)
 		self._master = mgr.make_master()
 		self._master.on_connect(*args)
-
-	def pick_channel(self, mgr, hash_name, uname):
-		sk = mgr.pick_sk(hash_name)
-		if sk:
-			self._master.on_socket_open(sk._sk, uname)
-
-class _rpc_server_ask:
-	def __init__(self, host):
-		sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sk.bind(host)
-		sk.listen(8)
-		self._sk = sk
-		util.set_cloexec(self)
-
-	def fileno(self):
-		return self._sk.fileno()
-
-	def work(self, mgr):
-		sk, addr = self._sk.accept()
-		mgr.add(_rpc_server_sk(sk))
 
 class _rpc_stop_fd:
 	def __init__(self, fd):
@@ -97,35 +68,29 @@ class _rpc_stop_fd:
 		mgr.stop()
 
 class _rpc_server_manager:
-	def __init__(self, srv_class, host):
+	def __init__(self, srv_class, connection):
 		self._srv_class = srv_class
-		self._sk_by_name = {}
-		self._poll_list = [_rpc_server_ask(host)]
+		self._connection = connection
+		self._poll_list = []
 		self._alive = True
 
-	def add(self, sk):
-		self._sk_by_name[sk.hash_name()] = sk
-		self._poll_list.append(sk)
+		self.add(_rpc_server_sk(connection.rpc_sk))
 
-	def remove(self, sk):
-		self._sk_by_name.pop(sk.hash_name())
-		self._poll_list.remove(sk)
+	def add(self, item):
+		self._poll_list.append(item)
 
-	def pick_sk(self, hash_name):
-		sk = self._sk_by_name.pop(hash_name, None)
-		if sk:
-			self._poll_list.remove(sk)
-		return sk
+	def remove(self, item):
+		self._poll_list.remove(item)
 
 	def make_master(self):
-		return self._srv_class()
+		return self._srv_class(self._connection.mem_sk, self._connection.fs_sk)
 
 	def stop(self):
 		self._alive = False
 
 	def loop(self, stop_fd):
 		if stop_fd:
-			self._poll_list.append(_rpc_stop_fd(stop_fd))
+			self.add(_rpc_stop_fd(stop_fd))
 
 		while self._alive:
 			r, w, x = select.select(self._poll_list, [], [])
@@ -135,9 +100,9 @@ class _rpc_server_manager:
 		logging.info("RPC Service stops")
 
 class rpc_threaded_srv(threading.Thread):
-	def __init__(self, srv_class, host):
+	def __init__(self, srv_class, connection):
 		threading.Thread.__init__(self)
-		self._mgr = _rpc_server_manager(srv_class, host)
+		self._mgr = _rpc_server_manager(srv_class, connection)
 		self._stop_fd = None
 
 	def run(self):

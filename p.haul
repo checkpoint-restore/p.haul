@@ -6,24 +6,29 @@ import logging
 import phaul.p_haul_iters as ph_iters
 import phaul.images as ph_images
 import phaul.criu_api as ph_criu_api
-import phaul.xem_rpc as ph_xem_rpc
+import phaul.p_haul_connection
 
 # Usage idea
-# p.haul <type> <id> <destination>
+# p.haul <type> <id> --fdrpc <fd> --fdmem <fd> --fdfs <fd>
+#
+# p.haul work over existing connections specified via command line arguments
+# as file descriptors. Three arguments required - --fdrpc for rpc calls,
+# --fdmem for c/r images migration and --fdfs for disk migration. For testing
+# purposed p.haul-wrap helper script can be used which establish required
+# connections with target host and call p.haul or p.haul-service.
 #
 # E.g.
-#
-# # p.haul vz 100 10.0.0.1
-#
-# or
-#
-# # p.haul lxc myct 10.0.0.2
+# p.haul vz 100 --fdrpc 3 --fdmem 4 --fdfs 5
+# p.haul lxc myct --fdrpc 3 --fdmem 4 --fdfs 5
 #
 
 parser = argparse.ArgumentParser("Process HAULer")
 parser.add_argument("type", help="Type of hat to haul, e.g. vz or lxc")
 parser.add_argument("id", help="ID of what to haul")
-parser.add_argument("to", help="IP where to haul")
+parser.add_argument("--to", help="IP where to haul")
+parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)
+parser.add_argument("--fdmem", help="File descriptor of memory socket", type=int, required=True)
+parser.add_argument("--fdfs", help="File descriptor of fs socket", type=int, required=True)
 parser.add_argument("-v", help="Verbosity level", default=ph_criu_api.def_verb, type=int, dest="verbose")
 parser.add_argument("--keep-images", help="Keep images after migration", default=False, action='store_true')
 parser.add_argument("--dst-rpid", help="Write pidfile on restore", default=None)
@@ -31,7 +36,6 @@ parser.add_argument("--img-path", help="Directory where to put images",
 		    default=ph_images.def_path)
 parser.add_argument("--pid-root", help="Path to tree's FS root")
 parser.add_argument("--force", help="Don't do any sanity (CPU compat) checks", default=False, action='store_true')
-parser.add_argument("--port", help="Port where to haul", type=int, default=ph_xem_rpc.rpc_port)
 parser.add_argument("--log-file", help="Write logging messages to specified file")
 parser.add_argument("-j", "--shell-job",help ="Allow migration of shell jobs",
 		    default=False, action='store_true')
@@ -47,11 +51,17 @@ def log_uncaught_exception(type, value, traceback):
 	logging.error(value, exc_info=(type, value, traceback))
 sys.excepthook = log_uncaught_exception
 
-args_dict = vars(args)
-ph_type = (args_dict.pop("type"), args_dict.pop("id"))
-dst = (args_dict.pop("to"), args_dict.pop("port"))
+logging.info("Starting p.haul")
+
+# Establish connection
+connection = phaul.p_haul_connection.establish(args.fdrpc, args.fdmem,
+	args.fdfs)
 
 # Start the migration
-worker = ph_iters.phaul_iter_worker(ph_type, dst)
-worker.set_options(args_dict)
+ph_type = args.type, args.id
+worker = ph_iters.phaul_iter_worker(ph_type, connection)
+worker.set_options(vars(args))
 worker.start_migration()
+
+# Close connection
+connection.close()

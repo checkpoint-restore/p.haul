@@ -8,7 +8,7 @@ class p_haul_fs:
 	def __init__(self):
 		logging.info("Initilized shared FS hauler")
 
-	def set_target_host(self, thost):
+	def set_options(self, opts):
 		pass
 
 	def set_work_dir(self, wdir):

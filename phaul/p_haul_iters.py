@@ -23,14 +23,14 @@ phaul_iter_min_size = 64
 phaul_iter_grow_max = 10
 
 class phaul_iter_worker:
-	def __init__(self, p_type, host):
-		logging.info("Connecting to target host")
-		self.target_host = xem_rpc_client.rpc_proxy(host)
-		self.data_socket = self.target_host.open_socket("datask")
+	def __init__(self, p_type, connection):
+		self.connection = connection
+		self.target_host = xem_rpc_client.rpc_proxy(self.connection.rpc_sk)
 
 		logging.info("Setting up local")
+		self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
 		self.img = images.phaul_images("dmp")
-		self.criu_connection = criu_api.criu_conn(self.data_socket)
+
 		self.htype = p_haul_type.get_src(p_type)
 		if not self.htype:
 			raise Exception("No htype driver found")
@@ -40,7 +40,6 @@ class phaul_iter_worker:
 			raise Exception("No FS driver found")
 
 		self.pid = self.htype.root_task_pid()
-		self.fs.set_target_host(host[0])
 
 		logging.info("Setting up remote")
 		self.target_host.setup(p_type)
@@ -54,6 +53,7 @@ class phaul_iter_worker:
 		self.criu_connection.shell_job(opts["shell_job"])
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
+		self.fs.set_options(opts)
 		self.__force = opts["force"]
 
 	def validate_cpu(self):
@@ -66,7 +66,7 @@ class phaul_iter_worker:
 			raise Exception("Can't dump cpuinfo")
 
 		logging.info("\t`- Sending CPU info")
-		self.img.send_cpuinfo(self.target_host, self.data_socket)
+		self.img.send_cpuinfo(self.target_host, self.connection.mem_sk)
 
 		logging.info("\t`- Checking CPU info")
 		if not self.target_host.check_cpuinfo():
@@ -200,7 +200,7 @@ class phaul_iter_worker:
 		logging.info("Final FS and images sync")
 		self.fs.stop_migration()
 		self.img.sync_imgs_to_target(self.target_host, self.htype,
-			self.data_socket)
+			self.connection.mem_sk)
 
 		logging.info("Asking target host to restore")
 		self.target_host.restore_from_images()

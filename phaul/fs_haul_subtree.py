@@ -14,9 +14,10 @@ class p_haul_fs:
 	def __init__(self, subtree_path):
 		logging.info("Initialized subtree FS hauler (%s)", subtree_path)
 		self.__root = subtree_path
+		self.__thost = None
 
-	def set_target_host(self, thost):
-		self.__thost = thost
+	def set_options(self, opts):
+		self.__thost = opts["to"]
 
 	def set_work_dir(self, wdir):
 		self.__wdir = wdir

@@ -29,24 +29,10 @@ class _rpc_proxy_caller:
 			raise Exception("Proto resp error")
 
 class rpc_proxy:
-	def __init__(self, conn, *args):
-		self._srv = conn
-		self._rpc_sk = self._make_sk()
-		util.set_cloexec(self._rpc_sk)
+	def __init__(self, sk, *args):
+		self._rpc_sk = sk
 		c = _rpc_proxy_caller(self._rpc_sk, xem_rpc.RPC_CMD, "init_rpc")
 		c(args)
 
 	def __getattr__(self, attr):
 		return _rpc_proxy_caller(self._rpc_sk, xem_rpc.RPC_CALL, attr)
-
-	def _make_sk(self):
-		sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sk.connect(self._srv)
-		return sk
-
-	def open_socket(self, uname):
-		sk = self._make_sk()
-		host = _rpc_proxy_caller(sk, xem_rpc.RPC_CMD, "get_name")()
-		c = _rpc_proxy_caller(self._rpc_sk, xem_rpc.RPC_CMD, "pick_channel")
-		c(host, uname)
-		return sk

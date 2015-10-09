@@ -6,10 +6,12 @@ import argparse
 import logging
 import phaul.xem_rpc as ph_xem_rpc
 import phaul.p_haul_service as ph_srv
+import phaul.p_haul_connection
 
 parser = argparse.ArgumentParser("Process HAULer service server")
-parser.add_argument("--bind-addr", help="IP to bind to", type=str, default="0.0.0.0")
-parser.add_argument("--bind-port", help="Port to bind to", type=int, default=ph_xem_rpc.rpc_port)
+parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)
+parser.add_argument("--fdmem", help="File descriptor of memory socket", type=int, required=True)
+parser.add_argument("--fdfs", help="File descriptor of fs socket", type=int, required=True)
 parser.add_argument("--log-file", help="Write logging messages to specified file")
 
 args = parser.parse_args()
@@ -23,15 +25,18 @@ def log_uncaught_exception(type, value, traceback):
 	logging.error(value, exc_info=(type, value, traceback))
 sys.excepthook = log_uncaught_exception
 
-host = (args.bind_addr, args.bind_port)
-
 sfd = None
 def fin(foo, bar):
 	logging.info("Stop by %d", foo)
 	sfd.close()
 
-logging.info("Starting p.haul rpyc service")
-t = ph_xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, host)
+logging.info("Starting p.haul service")
+
+# Establish connection
+connection = phaul.p_haul_connection.establish(args.fdrpc, args.fdmem,
+	args.fdfs)
+
+t = ph_xem_rpc.rpc_threaded_srv(ph_srv.phaul_service, connection)
 
 # FIXME: Setup stop handlers
 sfd = t.get_stop_fd()
@@ -42,3 +47,6 @@ t.start()
 signal.pause()
 t.join()
 logging.info("Bye!")
+
+# Close connection
+connection.close()
