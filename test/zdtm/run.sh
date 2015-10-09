@@ -13,6 +13,7 @@ CRIU_TESTS="${CRIU_PATH}/test/zdtm/"
 WDIR="$(pwd)/wdir"
 PH=$(realpath ../../p.haul)
 PHS=$(realpath ../../p.haul-service)
+PHWRAP=$(realpath ../../p.haul-wrap)
 PHSSH=$(realpath ../../p.haul-ssh)
 
 # setup EXIT trap
@@ -34,7 +35,7 @@ mkdir "$WDIR"
 # run local p.haul server in background if --local option specified
 if [ "x${LOCAL_PHS}" == "xtrue" ]; then
 	echo "Run local p.haul service"
-	${PHS} &> "/tmp/phs.log" &
+	${PHWRAP} service &> "/tmp/phs.log" &
 	if [ ${?} -ne 0 ]; then
 		echo "Can't run local p.haul service"
 		exit 1
@@ -56,11 +57,13 @@ which criu
 
 echo "Migrating"
 if [ "x${LOCAL_PHS}" == "xtrue" ]; then
-	${PH} pid ${PID} "127.0.0.1" -v=4 --keep-images \
+	${PHWRAP} client "127.0.0.1" pid ${PID} -v=4 --keep-images \
 		--dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"
 else
-	${PHSSH} --ssh-ph-exec ${PH} --ssh-phs-exec ${PHS} pid ${PID} "127.0.0.1" \
-		-v=4 --keep-images --dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"
+	${PHSSH} --ssh-ph-exec ${PH} --ssh-ph-wrap-exec ${PHWRAP} \
+		--ssh-phs-exec ${PHS} --ssh-phs-wrap-exec ${PHWRAP} \
+		"127.0.0.1" pid ${PID} -v=4 --keep-images \
+		--dst-rpid "${WDIR}/init2.pid" --img-path "${WDIR}"
 fi
 
 if [ ${?} -ne 0 ]; then
