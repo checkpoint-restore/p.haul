@@ -12,7 +12,7 @@ import p_haul_type
 class phaul_service:
 	def __init__(self, mem_sk, fs_sk):
 		self.criu_connection = None
-		self.data_socket = mem_sk
+		self._mem_sk = mem_sk
 		self._fs_sk = fs_sk
 		self.img = None
 		self.htype = None
@@ -39,7 +39,7 @@ class phaul_service:
 	def rpc_setup(self, htype_id):
 		logging.info("Setting up service side %s", htype_id)
 		self.img = images.phaul_images("rst")
-		self.criu_connection = criu_api.criu_conn(self.data_socket)
+		self.criu_connection = criu_api.criu_conn(self._mem_sk)
 		self.htype = p_haul_type.get_dst(htype_id)
 
 	def rpc_set_options(self, opts):
@@ -69,7 +69,7 @@ class phaul_service:
 		pass
 
 	def rpc_start_accept_images(self, dir_id):
-		self.img.start_accept_images(dir_id, self.data_socket)
+		self.img.start_accept_images(dir_id, self._mem_sk)
 
 	def rpc_stop_accept_images(self):
 		self.img.stop_accept_images()
