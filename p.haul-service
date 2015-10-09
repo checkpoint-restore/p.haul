@@ -25,10 +25,10 @@ def log_uncaught_exception(type, value, traceback):
 	logging.error(value, exc_info=(type, value, traceback))
 sys.excepthook = log_uncaught_exception
 
-sfd = None
+stop_fd = None
 def fin(foo, bar):
 	logging.info("Stop by %d", foo)
-	sfd.close()
+	stop_fd.close()
 
 logging.info("Starting p.haul service")
 
@@ -40,7 +40,7 @@ t = phaul.xem_rpc.rpc_threaded_srv(phaul.p_haul_service.phaul_service,
 	connection)
 
 # FIXME: Setup stop handlers
-sfd = t.get_stop_fd()
+stop_fd = t.init_stop_fd()
 signal.signal(signal.SIGTERM, fin)
 signal.signal(signal.SIGINT, fin)
 
