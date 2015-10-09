@@ -32,24 +32,6 @@ class opendir:
 	def fileno(self):
 		return self._dirfd
 
-class _fileobj_wrap:
-	"""Helper class provides read/write interface for socket object
-
-	Current helper class wrap recv/send socket methods in read/write interface.
-	This functionality needed to workaround some problems of socket.makefile
-	method for sockets constructed from numerical file descriptors passed
-	through command line arguments.
-	"""
-
-	def __init__(self, sk):
-		self.__sk = sk
-
-	def read(self, size=0x10000):
-		return self.__sk.recv(size)
-
-	def write(self, str):
-		self.__sk.send(str)
-
 class untar_thread(threading.Thread):
 	def __init__(self, sk, tdir):
 		threading.Thread.__init__(self)
@@ -58,7 +40,7 @@ class untar_thread(threading.Thread):
 
 	def run(self):
 		try:
-			tf = tarfile.open(mode="r|", fileobj=_fileobj_wrap(self.__sk))
+			tf = tarfile.open(mode="r|", fileobj=util.fileobj_wrap(self.__sk))
 			tf.extractall(self.__dir)
 			tf.close()
 		except:
@@ -66,7 +48,7 @@ class untar_thread(threading.Thread):
 
 class img_tar:
 	def __init__(self, sk, dirname):
-		self.__tf = tarfile.open(mode="w|", fileobj=_fileobj_wrap(sk))
+		self.__tf = tarfile.open(mode="w|", fileobj=util.fileobj_wrap(sk))
 		self.__dir = dirname
 
 	def add(self, img, path = None):

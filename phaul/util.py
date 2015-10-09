@@ -3,6 +3,24 @@ import fcntl
 import errno
 import logging
 
+class fileobj_wrap:
+	"""Helper class provides read/write interface for socket object
+
+	Current helper class wrap recv/send socket methods in read/write interface.
+	This functionality needed to workaround some problems of socket.makefile
+	method for sockets constructed from numerical file descriptors passed
+	through command line arguments.
+	"""
+
+	def __init__(self, sk):
+		self.__sk = sk
+
+	def read(self, size=0x10000):
+		return self.__sk.recv(size)
+
+	def write(self, str):
+		self.__sk.send(str)
+
 class net_dev:
 	def __init__(self, name=None, pair=None, link=None):
 		self.name = name
