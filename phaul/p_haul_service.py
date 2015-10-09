@@ -16,7 +16,7 @@ class phaul_service:
 		self._fs_sk = fs_sk
 		self.img = None
 		self.htype = None
-		self.dump_iter = 0
+		self.dump_iter_index = 0
 		self.restored = False
 
 	def on_connect(self):
@@ -49,7 +49,7 @@ class phaul_service:
 		self.htype.set_options(opts)
 
 	def start_page_server(self):
-		logging.info("Starting page server for iter %d", self.dump_iter)
+		logging.info("Starting page server for iter %d", self.dump_iter_index)
 
 		logging.info("\tSending criu rpc req")
 		req = criu_req.make_page_server_req(self.htype, self.img,
@@ -61,7 +61,7 @@ class phaul_service:
 		logging.info("\tPage server started at %d", resp.ps.pid)
 
 	def rpc_start_iter(self):
-		self.dump_iter += 1
+		self.dump_iter_index += 1
 		self.img.new_image_dir()
 		self.start_page_server()
 
