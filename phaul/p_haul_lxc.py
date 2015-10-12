@@ -130,8 +130,11 @@ class p_haul_type:
 		self._fs_mounted = True
 		return nroot
 
-	def get_fs(self):
+	def get_fs(self, fs_sk=None):
 		return fs_haul_shared.p_haul_fs()
+
+	def get_fs_receiver(self, fs_sk=None):
+		return None
 
 	def restored(self, pid):
 		self.__apply_cg_config()

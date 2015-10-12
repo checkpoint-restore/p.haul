@@ -16,6 +16,7 @@ class phaul_service:
 		self._fs_sk = fs_sk
 		self.img = None
 		self.htype = None
+		self.__fs_receiver = None
 		self.dump_iter_index = 0
 		self.restored = False
 
@@ -30,6 +31,10 @@ class phaul_service:
 		if self.htype and not self.restored:
 			self.htype.umount()
 
+		# Stop fs receiver if it is running
+		if self.__fs_receiver:
+			self.__fs_receiver.join()
+
 		if self.img:
 			logging.info("Closing images")
 			if not self.restored:
@@ -39,8 +44,14 @@ class phaul_service:
 	def rpc_setup(self, htype_id):
 		logging.info("Setting up service side %s", htype_id)
 		self.img = images.phaul_images("rst")
+
 		self.criu_connection = criu_api.criu_conn(self._mem_sk)
 		self.htype = p_haul_type.get_dst(htype_id)
+
+		# Create and start fs receiver if current p.haul module provide it
+		self.__fs_receiver = self.htype.get_fs_receiver(self._fs_sk)
+		if self.__fs_receiver:
+			self.__fs_receiver.start()
 
 	def rpc_set_options(self, opts):
 		self.criu_connection.verbose(opts["verbose"])

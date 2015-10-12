@@ -196,7 +196,8 @@ class p_haul_type:
 			logging.info(proc_output)
 			self._fs_mounted = False
 
-	def get_fs(self):
+	def get_fs(self, fs_sk=None):
+
 		rootfs = util.path_to_fs(self._ct_priv)
 		if not rootfs:
 			logging.info("CT is on unknown FS")
@@ -210,6 +211,9 @@ class p_haul_type:
 			return fs_haul_subtree.p_haul_fs(self._ct_priv)
 
 		logging.info("Unknown CT FS")
+		return None
+
+	def get_fs_receiver(self, fs_sk=None):
 		return None
 
 	def restored(self, pid):

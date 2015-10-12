@@ -39,7 +39,7 @@ class phaul_iter_worker:
 		if not self.htype:
 			raise Exception("No htype driver found")
 
-		self.fs = self.htype.get_fs()
+		self.fs = self.htype.get_fs(self.connection.fs_sk)
 		if not self.fs:
 			raise Exception("No FS driver found")
 
