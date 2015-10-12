@@ -7,6 +7,7 @@ import phaul.p_haul_iters
 import phaul.p_haul_connection
 import phaul.images
 import phaul.criu_api
+import phaul.p_haul_type
 
 # Usage idea
 # p.haul <type> <id> --fdrpc <fd> --fdmem <fd> --fdfs <fd>
@@ -23,7 +24,8 @@ import phaul.criu_api
 #
 
 parser = argparse.ArgumentParser("Process HAULer")
-parser.add_argument("type", help="Type of hat to haul, e.g. vz or lxc")
+parser.add_argument("type", choices=phaul.p_haul_type.get_haul_names(),
+	help="Type of hat to haul, e.g. vz or lxc")
 parser.add_argument("id", help="ID of what to haul")
 parser.add_argument("--to", help="IP where to haul")
 parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)
