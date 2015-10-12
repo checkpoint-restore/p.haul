@@ -6,7 +6,6 @@ import os
 import subprocess
 import shlex
 import logging
-import p_haul_cgroup
 import p_haul_module
 import util
 import fs_haul_shared
@@ -16,7 +15,6 @@ import pycriu.rpc
 name = "vz"
 vz_global_conf = "/etc/vz/vz.conf"
 vz_conf_dir = "/etc/vz/conf/"
-cg_image_name = "ovzcg.img"
 vzctl_bin = "vzctl"
 
 class p_haul_type:
@@ -124,24 +122,17 @@ class p_haul_type:
 		return "%s.conf" % self._ctid
 
 	#
-	# Meta-images for OVZ -- container config and info about CGroups
+	# Meta-images for OVZ -- container config
 	#
 	def get_meta_images(self, path):
-		cg_img = os.path.join(path, cg_image_name)
-		p_haul_cgroup.dump_hier(self.root_task_pid(), cg_img)
 		cfg_name = self.__ct_config()
-		return [ (os.path.join(vz_conf_dir, cfg_name), cfg_name), \
-			 (cg_img, cg_image_name) ]
+		return [(os.path.join(vz_conf_dir, cfg_name), cfg_name)]
 
 	def put_meta_images(self, path):
 		logging.info("Putting config file into %s", vz_conf_dir)
-
 		self.__load_ct_config(path)
 		with open(os.path.join(vz_conf_dir, self.__ct_config()), "w") as ofd:
 			ofd.write(self._cfg)
-
-		# Keep this name, we'll need one in prepare_ct()
-		self.cg_img = os.path.join(path, cg_image_name)
 
 	def __setup_restore_extra_args(self, path, img, connection):
 		"""Create temporary file with extra arguments for criu restore"""
@@ -184,7 +175,6 @@ class p_haul_type:
 		"""
 
 		self.__cg_set_veid()
-		p_haul_cgroup.restore_hier(pid, self.cg_img)
 
 	def mount(self):
 		logging.info("Mounting CT root to %s", self._ct_root)

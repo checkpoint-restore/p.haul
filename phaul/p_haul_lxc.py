@@ -5,7 +5,6 @@
 import os
 import shutil
 import logging
-import p_haul_cgroup
 import p_haul_module
 import util
 import fs_haul_shared
@@ -15,7 +14,6 @@ from subprocess import Popen, PIPE
 name = "lxc"
 lxc_dir = "/var/lib/lxc/"
 lxc_rootfs_dir = "/usr/lib64/lxc/rootfs"
-cg_image_name = "lxccg.img"
 
 class p_haul_type:
 	def __init__(self, name):
@@ -107,33 +105,21 @@ class p_haul_type:
 		return os.path.join(lxc_dir, self._ctname, "config")
 
 	#
-	# Meta-images for LXC -- container config and info about CGroups
+	# Meta-images for LXC -- container config
 	#
 	def get_meta_images(self, dir):
-		cg_img = os.path.join(dir, cg_image_name)
-		p_haul_cgroup.dump_hier(self.root_task_pid(), cg_img)
 		cfg_name = self.__ct_config()
-		return [ (cfg_name, "config"),
-			 (cg_img, cg_image_name) ]
+		return [(cfg_name, "config")]
 
 	def put_meta_images(self, dir):
 		logging.info("Putting config file into %s", lxc_dir)
-
 		shutil.copy(os.path.join(dir, "config"), self.__ct_config())
-
-		# Keep this name, we'll need one in prepare_ct()
-		self.cg_img = os.path.join(dir, cg_image_name)
 
 	def final_restore(self, img, connection):
 		p_haul_module.final_restore(self, img, connection)
 
-	#
-	# Create cgroup hierarchy and put root task into it
-	# Hierarchy is unlimited, we will apply config limitations
-	# in ->restored->__apply_cg_config later
-	#
 	def prepare_ct(self, pid):
-		p_haul_cgroup.restore_hier(pid, self.cg_img)
+		pass
 
 	def mount(self):
 		nroot = self.__ct_root()
