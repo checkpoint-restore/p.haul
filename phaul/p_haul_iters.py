@@ -11,6 +11,10 @@ import criu_api
 import criu_req
 import p_haul_type
 
+PRE_DUMP_AUTO_DETECT = None
+PRE_DUMP_DISABLE = False
+PRE_DUMP_ENABLE = True
+
 # Constants for iterations management
 #
 # Maximum number of iterations
@@ -41,6 +45,8 @@ class phaul_iter_worker:
 
 		self.pid = self.htype.root_task_pid()
 
+		self.pre_dump = PRE_DUMP_AUTO_DETECT
+
 		logging.info("Setting up remote")
 		self.target_host.setup(p_type)
 
@@ -55,6 +61,7 @@ class phaul_iter_worker:
 		self.htype.set_options(opts)
 		self.fs.set_options(opts)
 		self.__force = opts["force"]
+		self.pre_dump = opts["pre_dump"]
 
 	def validate_cpu(self):
 		logging.info("Checking CPU compatibility")
@@ -87,23 +94,29 @@ class phaul_iter_worker:
 		self.fs.set_work_dir(self.img.work_dir())
 		self.fs.start_migration()
 
-		logging.info("Checking for Dirty Tracking")
-		req = criu_req.make_dirty_tracking_req(self.htype, self.img)
-		resp = self.criu_connection.send_req(req)
+		if self.pre_dump == PRE_DUMP_AUTO_DETECT:
+			# pre-dump auto-detection
+			logging.info("Checking for Dirty Tracking")
+			req = criu_req.make_dirty_tracking_req(self.htype, self.img)
+			resp = self.criu_connection.send_req(req)
+			self.pre_dump = resp.success
+		elif self.pre_dump == PRE_DUMP_DISABLE:
+			self.pre_dump = False
+		else:
+			self.pre_dump = True
 
-		pre_dump = False
 		if resp.success:
 			if resp.HasField('features'):
 				if resp.features.HasField('mem_track'):
 					if resp.features.mem_track:
 						logging.info("Starting iterations")
-						pre_dump = True
+						self.pre_dump = True
 			else:
 				self.criu_connection.memory_tracking(False)
 		else:
 			self.criu_connection.memory_tracking(False)
 
-		while pre_dump:
+		while self.pre_dump:
 			logging.info("* Iteration %d", iter_index)
 
 			self.target_host.start_iter()
