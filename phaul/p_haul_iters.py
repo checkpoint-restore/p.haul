@@ -79,6 +79,22 @@ class phaul_iter_worker:
 		if not self.target_host.check_cpuinfo():
 			raise Exception("CPUs mismatch")
 
+	def pre_dump_check(self):
+		# pre-dump auto-detection
+		req = criu_req.make_dirty_tracking_req(
+			self.htype,self.img)
+		resp = self.criu_connection.send_req(req)
+		if not resp.success:
+			# Not able to do auto-detection, disable memory tracking
+			raise Exception()
+		if resp.HasField('features'):
+			return False
+		if resp.features.HasField('mem_track'):
+			return False
+		if resp.features.mem_track:
+			return True
+		return False
+
 	def start_migration(self):
 
 		migration_stats = mstats.migration_stats()
@@ -98,33 +114,22 @@ class phaul_iter_worker:
 		if self.pre_dump == PRE_DUMP_AUTO_DETECT:
 			# pre-dump auto-detection
 			try:
-				req = criu_req.make_dirty_tracking_req(
-						self.htype, self.img)
-				resp = self.criu_connection.send_req(req)
-				self.pre_dump = False
-				if not resp.success:
-					# Not able to do auto-detection, disable memory tracking
-					raise Exception()
-				if resp.HasField('features'):
-					if resp.features.HasField('mem_track'):
-						if resp.features.mem_track:
-							logging.info("\t`- Auto Enabled")
-							self.pre_dump = True
+				self.pre_dump = self.pre_dump_check()
+				if self.pre_dump:
+					logging.info("\t`- Auto Enabled")
 				else:
 					logging.info("\t`- Auto Disabled")
 
 			except:
 				# The available criu seems to not
 				# support memory tracking auto detection.
-				self.pre_dump = False
+				self.pre_dump = PRE_DUMP_DISABLE
 				logging.info("\t`- Auto detection not possible "
 						"- Disabled")
 
 		elif self.pre_dump == PRE_DUMP_DISABLE:
-			self.pre_dump = False
 			logging.info("\t`- Command-line disabled")
 		else:
-			self.pre_dump = True
 			logging.info("\t`- Command-line enabled")
 
 		if self.pre_dump:
