@@ -35,12 +35,12 @@ parser.add_argument("-v", help="Verbosity level", default=phaul.criu_api.def_ver
 parser.add_argument("--keep-images", help="Keep images after migration", default=False, action='store_true')
 parser.add_argument("--dst-rpid", help="Write pidfile on restore", default=None)
 parser.add_argument("--img-path", help="Directory where to put images",
-		    default=phaul.images.def_path)
+	default=phaul.images.def_path)
 parser.add_argument("--pid-root", help="Path to tree's FS root")
 parser.add_argument("--force", help="Don't do any sanity (CPU compat) checks", default=False, action='store_true')
 parser.add_argument("--log-file", help="Write logging messages to specified file")
 parser.add_argument("-j", "--shell-job",help ="Allow migration of shell jobs",
-		    default=False, action='store_true')
+	default=False, action='store_true')
 
 
 parser.add_argument('--no-pre-dump', dest='pre_dump', action='store_const',
