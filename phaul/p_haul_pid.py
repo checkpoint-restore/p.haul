@@ -6,8 +6,6 @@ import logging
 import p_haul_module
 import fs_haul_shared
 
-name = "pid"
-
 class p_haul_type:
 	def __init__(self, id):
 		self.pid = int(id)

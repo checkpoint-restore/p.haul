@@ -12,7 +12,6 @@ import fs_haul_shared
 import fs_haul_subtree
 import pycriu.rpc
 
-name = "vz"
 vz_global_conf = "/etc/vz/vz.conf"
 vz_conf_dir = "/etc/vz/conf/"
 vzctl_bin = "vzctl"

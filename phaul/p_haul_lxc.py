@@ -11,7 +11,6 @@ import fs_haul_shared
 import fs_haul_subtree
 from subprocess import Popen, PIPE
 
-name = "lxc"
 lxc_dir = "/var/lib/lxc/"
 lxc_rootfs_dir = "/usr/lib64/lxc/rootfs"
 
