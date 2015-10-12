@@ -4,15 +4,24 @@
 
 import pycriu.rpc
 
-_names = {
-	pycriu.rpc.DUMP: "dump",
-	pycriu.rpc.PRE_DUMP: "pre_dump",
-	pycriu.rpc.PAGE_SERVER: "page_server",
-	pycriu.rpc.RESTORE: "restore",
-	pycriu.rpc.CPUINFO_DUMP: "cpuinfo-dump",
-	pycriu.rpc.CPUINFO_CHECK: "cpuinfo-check",
-	pycriu.rpc.FEATURE_CHECK: "feature-check",
+def _build_names(name_strings):
+	names = {}
+	for key, value in name_strings.items():
+		if hasattr(pycriu.rpc, key):
+			names[getattr(pycriu.rpc, key)] = value
+	return names
+
+_name_strings = {
+	"DUMP": "dump",
+	"PRE_DUMP": "pre_dump",
+	"PAGE_SERVER": "page_server",
+	"RESTORE": "restore",
+	"CPUINFO_DUMP": "cpuinfo-dump",
+	"CPUINFO_CHECK": "cpuinfo-check",
+	"FEATURE_CHECK": "feature-check",
 }
+
+_names = _build_names(_name_strings)
 
 def get_name(req_type):
 	"""Return printable request name"""

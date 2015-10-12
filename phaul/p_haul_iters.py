@@ -94,25 +94,41 @@ class phaul_iter_worker:
 		self.fs.set_work_dir(self.img.work_dir())
 		self.fs.start_migration()
 
+		logging.info("Checking for Dirty Tracking")
 		if self.pre_dump == PRE_DUMP_AUTO_DETECT:
 			# pre-dump auto-detection
-			logging.info("Checking for Dirty Tracking")
-			req = criu_req.make_dirty_tracking_req(self.htype, self.img)
-			resp = self.criu_connection.send_req(req)
-			self.pre_dump = resp.success
+			try:
+				req = criu_req.make_dirty_tracking_req(
+						self.htype, self.img)
+				resp = self.criu_connection.send_req(req)
+				self.pre_dump = False
+				if not resp.success:
+					# Not able to do auto-detection, disable memory tracking
+					raise Exception()
+				if resp.HasField('features'):
+					if resp.features.HasField('mem_track'):
+						if resp.features.mem_track:
+							logging.info("\t`- Auto Enabled")
+							self.pre_dump = True
+				else:
+					logging.info("\t`- Auto Disabled")
+
+			except:
+				# The available criu seems to not
+				# support memory tracking auto detection.
+				self.pre_dump = False
+				logging.info("\t`- Auto detection not possible "
+						"- Disabled")
+
 		elif self.pre_dump == PRE_DUMP_DISABLE:
 			self.pre_dump = False
+			logging.info("\t`- Command-line disabled")
 		else:
 			self.pre_dump = True
+			logging.info("\t`- Command-line enabled")
 
-		if resp.success:
-			if resp.HasField('features'):
-				if resp.features.HasField('mem_track'):
-					if resp.features.mem_track:
-						logging.info("Starting iterations")
-						self.pre_dump = True
-			else:
-				self.criu_connection.memory_tracking(False)
+		if self.pre_dump:
+			logging.info("Starting iterations")
 		else:
 			self.criu_connection.memory_tracking(False)
 
