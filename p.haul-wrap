@@ -3,6 +3,7 @@
 import os
 import socket
 import argparse
+import thread
 
 # Usage
 # p.haul-wrap service
@@ -32,19 +33,25 @@ def run_phaul_service(args, unknown_args):
 	server_sk.bind(host)
 	server_sk.listen(8)
 	connection_sks = [None, None, None]
-	for i in range(len(connection_sks)):
-		connection_sks[i], dummy = server_sk.accept()
+	while True:
+		for i in range(len(connection_sks)):
+			connection_sks[i], dummy = server_sk.accept()
 
-	# Organize p.haul-service args
-	target_args = [args.path]
-	target_args.extend(unknown_args)
-	target_args.extend(["--fdrpc", str(connection_sks[0].fileno()),
-		"--fdmem", str(connection_sks[1].fileno()),
-		"--fdfs", str(connection_sks[2].fileno())])
+		# Organize p.haul-service args
+		target_args = [args.path]
+		target_args.extend(unknown_args)
+		target_args.extend(["--fdrpc", str(connection_sks[0].fileno()),
+			"--fdmem", str(connection_sks[1].fileno()),
+			"--fdfs", str(connection_sks[2].fileno())])
 
-	# Call p.haul-service
-	print "Exec p.haul-service: {0}".format(" ".join(target_args))
-	os.system(" ".join(target_args))
+		# Call p.haul-service
+		cmdline = " ".join(target_args)
+		print "Exec p.haul-service: {0}".format(cmdline)
+		if args.one_shot:
+			os.system(cmdline)
+			return
+		else:
+			thread.start_new_thread(os.system, tuple([cmdline]))
 
 
 def run_phaul_client(args, unknown_args):
@@ -85,6 +92,9 @@ service_parser.add_argument("--bind-port", help="Port to bind to", type=int,
 	default=default_rpc_port)
 service_parser.add_argument("--path", help="Path to p.haul-service script",
 	default=os.path.join(os.path.dirname(__file__), "p.haul-service"))
+service_parser.add_argument("--one-shot",
+	help="Do not run in loop to accept multiple connections",
+	default=False, action='store_true')
 
 # Initialize client mode arguments parser
 client_parser = subparsers.add_parser("client", help="Client mode")
@@ -97,4 +107,7 @@ client_parser.add_argument("--path", help="Path to p.haul script",
 
 # Parse arguments and run wrap in specified mode
 args, unknown_args = parser.parse_known_args()
-args.func(args, unknown_args)
+try:
+	args.func(args, unknown_args)
+except KeyboardInterrupt:
+	pass
