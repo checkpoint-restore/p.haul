@@ -43,10 +43,19 @@ def procs():
             root = {}
 
             for p in psutil.process_iter():
+                if callable(p.cmdline):
+                    name = os.path.basename(p.cmdline()[0])
+                    if name is '':
+                        name = p.name()
+                else:
+                    try:
+                        name = os.path.basename(p.cmdline[0])
+                    except:
+                        name = p.name
                 proc = {
                     # name and ppid are either functions or variables in
                     # different versions of psutil.
-                    "name": p.name() if callable(p.name) else p.name,
+                    "name": name,
                     "id": p.pid,
                     "parent": p.ppid() if callable(p.ppid) else p.ppid,
                     "children": [],
