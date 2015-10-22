@@ -160,7 +160,7 @@ class phaul_iter_worker:
 
 			if dstats.pages_written <= phaul_iter_min_size:
 				logging.info("\t> Small dump")
-				break;
+				break
 
 			if prev_dstats:
 				w_add = dstats.pages_written - prev_dstats.pages_written

@@ -7,7 +7,6 @@ import tempfile
 import tarfile
 import time
 import shutil
-import time
 import threading
 import logging
 import util

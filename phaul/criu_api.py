@@ -49,7 +49,7 @@ class criu_conn:
 	def _recv_resp(self):
 		resp = pycriu.rpc.criu_resp()
 		resp.ParseFromString(self._cs.recv(1024))
-		if not resp.type in (pycriu.rpc.NOTIFY, self._last_req):
+		if resp.type not in (pycriu.rpc.NOTIFY, self._last_req):
 			raise Exception("CRIU RPC error (%d/%d)" % (resp.type, self._last_req))
 
 		return resp

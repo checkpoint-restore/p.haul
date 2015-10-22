@@ -51,7 +51,6 @@ def bridge_add(ifname, brname):
 	os.system("brctl addif %s %s" % (brname, ifname))
 
 def set_cloexec(sk):
-	fd = sk.fileno()
 	flags = fcntl.fcntl(sk, fcntl.F_GETFD)
 	fcntl.fcntl(sk, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
 

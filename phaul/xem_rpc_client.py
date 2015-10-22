@@ -2,9 +2,7 @@
 # RPC client implementation
 #
 
-import socket
 import logging
-import util
 import xem_rpc
 
 class _rpc_proxy_caller:

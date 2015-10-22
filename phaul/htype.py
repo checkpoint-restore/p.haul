@@ -15,7 +15,7 @@ __haul_modules = {
 
 def __get(id):
 	hauler_name, haulee_id = id[0], id[1]
-	if not __haul_modules.has_key(hauler_name):
+	if hauler_name not in __haul_modules:
 		logging.error("Unknown type. Try one of %s", str(get_haul_names()))
 		return None
 

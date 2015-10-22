@@ -51,7 +51,7 @@ class p_haul_fs_receiver(threading.Thread):
 	def run(self):
 		try:
 			logging.info("Started fs receiver")
-			receiver = libploop.ploopcopy_receiver(self.__fname_path,
+			libploop.ploopcopy_receiver(self.__fname_path,
 				self.__fs_sk.fileno())
 		except:
 			logging.exception("Exception in p_haul_fs_receiver")

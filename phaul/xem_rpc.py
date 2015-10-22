@@ -7,7 +7,6 @@ import select
 import threading
 import traceback
 import logging
-import util
 
 rpc_sk_buf = 16384
 

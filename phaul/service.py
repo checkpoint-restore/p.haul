@@ -3,7 +3,6 @@
 #
 
 import logging
-import xem_rpc
 import images
 import criu_api
 import criu_req

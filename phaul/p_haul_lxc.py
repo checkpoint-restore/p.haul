@@ -8,7 +8,6 @@ import logging
 import criu_cr
 import util
 import fs_haul_shared
-import fs_haul_subtree
 from subprocess import Popen, PIPE
 
 lxc_dir = "/var/lib/lxc/"
@@ -80,7 +79,7 @@ class p_haul_type:
 		pass
 
 	def root_task_pid(self):
-		pid = -1;
+		pid = -1
 
 		pd = Popen(["lxc-info", "-n", self._ctname], stdout = PIPE)
 		for l in pd.stdout:
