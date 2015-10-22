@@ -4,7 +4,7 @@ import sys
 import argparse
 import logging
 import phaul.p_haul_iters
-import phaul.p_haul_connection
+import phaul.connection
 import phaul.images
 import phaul.criu_api
 import phaul.p_haul_type
@@ -69,8 +69,7 @@ sys.excepthook = log_uncaught_exception
 logging.info("Starting p.haul")
 
 # Establish connection
-connection = phaul.p_haul_connection.establish(args.fdrpc, args.fdmem,
-	args.fdfs)
+connection = phaul.connection.establish(args.fdrpc, args.fdmem, args.fdfs)
 
 # Start the migration
 ph_type = args.type, args.id

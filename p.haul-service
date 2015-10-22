@@ -6,7 +6,7 @@ import argparse
 import logging
 import phaul.xem_rpc
 import phaul.p_haul_service
-import phaul.p_haul_connection
+import phaul.connection
 
 parser = argparse.ArgumentParser("Process HAULer service server")
 parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)
@@ -33,8 +33,7 @@ def fin(foo, bar):
 logging.info("Starting p.haul service")
 
 # Establish connection
-connection = phaul.p_haul_connection.establish(args.fdrpc, args.fdmem,
-	args.fdfs)
+connection = phaul.connection.establish(args.fdrpc, args.fdmem, args.fdfs)
 
 t = phaul.xem_rpc.rpc_threaded_srv(phaul.p_haul_service.phaul_service,
 	connection)
