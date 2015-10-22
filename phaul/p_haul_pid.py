@@ -63,7 +63,7 @@ class p_haul_type:
 		pass
 
 	def final_restore(self, img, connection):
-		p_haul_module.final_restore(self, img, connection)
+		p_haul_module.criu_restore(self, img, connection)
 
 	# Things are started to get restored, only the
 	# first task (with pid @pid) is created.

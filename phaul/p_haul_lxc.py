@@ -115,7 +115,7 @@ class p_haul_type:
 		shutil.copy(os.path.join(dir, "config"), self.__ct_config())
 
 	def final_restore(self, img, connection):
-		p_haul_module.final_restore(self, img, connection)
+		p_haul_module.criu_restore(self, img, connection)
 
 	def prepare_ct(self, pid):
 		pass

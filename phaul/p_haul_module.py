@@ -6,7 +6,7 @@ import logging
 import pycriu.rpc
 import criu_req
 
-def final_restore(htype, img, connection):
+def criu_restore(htype, img, connection):
 	"""Perform final restore"""
 
 	nroot = htype.mount()
