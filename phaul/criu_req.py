@@ -27,16 +27,17 @@ def get_name(req_type):
 	"""Return printable request name"""
 	return _names[req_type]
 
-def _make_req(typ, htype):
+def _make_req(typ, htype = None):
 	"""Prepare generic criu request"""
 	req = pycriu.rpc.criu_req()
 	req.type = typ
-	htype.adjust_criu_req(req)
+	if htype:
+		htype.adjust_criu_req(req)
 	return req
 
-def make_cpuinfo_dump_req(htype, img):
+def make_cpuinfo_dump_req(img):
 	"""Prepare cpuinfo dump criu request (source side)"""
-	req = _make_req(pycriu.rpc.CPUINFO_DUMP, htype)
+	req = _make_req(pycriu.rpc.CPUINFO_DUMP)
 	req.opts.images_dir_fd = img.work_dir_fd()
 	req.keep_open = True
 	return req
@@ -75,10 +76,10 @@ def make_dump_req(pid, htype, img, connection, fs):
 		req.opts.tcp_established = True
 	return req
 
-def make_page_server_req(htype, img, connection):
+def make_page_server_req(img, connection):
 	"""Prepare page server criu request (destination side)"""
 
-	req = _make_req(pycriu.rpc.PAGE_SERVER, htype)
+	req = _make_req(pycriu.rpc.PAGE_SERVER)
 	req.keep_open = True
 	req.opts.ps.fd = connection.mem_sk_fileno()
 	req.opts.images_dir_fd = img.image_dir_fd()
@@ -90,9 +91,9 @@ def make_page_server_req(htype, img, connection):
 
 	return req
 
-def make_cpuinfo_check_req(htype, img):
+def make_cpuinfo_check_req(img):
 	"""Prepare cpuinfo check criu request (destination side)"""
-	req = _make_req(pycriu.rpc.CPUINFO_CHECK, htype)
+	req = _make_req(pycriu.rpc.CPUINFO_CHECK)
 	req.keep_open = True
 	req.opts.images_dir_fd = img.work_dir_fd()
 	return req
@@ -116,9 +117,9 @@ def make_restore_req(htype, img, nroot):
 
 	return req
 
-def make_dirty_tracking_req(htype, img):
+def make_dirty_tracking_req(img):
 	"""Check if dirty memory tracking is supported."""
-	req = _make_req(pycriu.rpc.FEATURE_CHECK, htype)
+	req = _make_req(pycriu.rpc.FEATURE_CHECK)
 	req.features.mem_track = True
 	req.keep_open = True
 	req.opts.images_dir_fd = img.work_dir_fd()

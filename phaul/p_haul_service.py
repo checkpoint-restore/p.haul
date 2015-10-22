@@ -63,8 +63,7 @@ class phaul_service:
 		logging.info("Starting page server for iter %d", self.dump_iter_index)
 
 		logging.info("\tSending criu rpc req")
-		req = criu_req.make_page_server_req(self.htype, self.img,
-			self.criu_connection)
+		req = criu_req.make_page_server_req(self.img, self.criu_connection)
 		resp = self.criu_connection.send_req(req)
 		if not resp.success:
 			raise Exception("Failed to start page server")
@@ -87,7 +86,7 @@ class phaul_service:
 
 	def rpc_check_cpuinfo(self):
 		logging.info("Checking cpuinfo")
-		req = criu_req.make_cpuinfo_check_req(self.htype, self.img)
+		req = criu_req.make_cpuinfo_check_req(self.img)
 		resp = self.criu_connection.send_req(req)
 		logging.info("\t`- %s", resp.success)
 		return resp.success

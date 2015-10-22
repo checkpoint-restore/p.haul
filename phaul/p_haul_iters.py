@@ -67,7 +67,7 @@ class phaul_iter_worker:
 		logging.info("Checking CPU compatibility")
 
 		logging.info("\t`- Dumping CPU info")
-		req = criu_req.make_cpuinfo_dump_req(self.htype, self.img)
+		req = criu_req.make_cpuinfo_dump_req(self.img)
 		resp = self.criu_connection.send_req(req)
 		if not resp.success:
 			raise Exception("Can't dump cpuinfo")
@@ -81,8 +81,7 @@ class phaul_iter_worker:
 
 	def pre_dump_check(self):
 		# pre-dump auto-detection
-		req = criu_req.make_dirty_tracking_req(
-			self.htype,self.img)
+		req = criu_req.make_dirty_tracking_req(self.img)
 		resp = self.criu_connection.send_req(req)
 		if not resp.success:
 			# Not able to do auto-detection, disable memory tracking
