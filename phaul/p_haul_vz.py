@@ -243,13 +243,6 @@ class p_haul_type:
 	def can_migrate_tcp(self):
 		return True
 
-	def veths(self):
-		#
-		# Caller wants to see list of tuples with [0] being name
-		# in CT and [1] being name on host. Just return existing
-		# tuples, the [2] with bridge name wouldn't hurt
-		#
-		return self._veths
 
 def parse_vz_config(body):
 	"""Parse shell-like virtuozzo config file"""
