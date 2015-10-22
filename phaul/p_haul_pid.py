@@ -62,6 +62,9 @@ class p_haul_type:
 	def put_meta_images(self, dir):
 		pass
 
+	def final_dump(self, pid, img, ccon, fs):
+		p_haul_module.criu_dump(self, pid, img, ccon, fs)
+
 	def final_restore(self, img, connection):
 		p_haul_module.criu_restore(self, img, connection)
 

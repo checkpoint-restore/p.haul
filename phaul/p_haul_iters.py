@@ -190,29 +190,7 @@ class phaul_iter_worker:
 		self.img.new_image_dir()
 
 		logging.info("\tIssuing dump command to service")
-
-		req = criu_req.make_dump_req(
-			self.pid, self.htype, self.img, self.criu_connection, self.fs)
-		resp = self.criu_connection.send_req(req)
-		while True:
-			if resp.type != pycriu.rpc.NOTIFY:
-				raise Exception("Dump failed")
-
-			if resp.notify.script == "post-dump":
-				#
-				# Dump is effectively over. Now CRIU
-				# waits for us to do whatever we want
-				# and keeps the tasks frozen.
-				#
-				break
-
-			elif resp.notify.script == "network-lock":
-				self.htype.net_lock()
-			elif resp.notify.script == "network-unlock":
-				self.htype.net_unlock()
-
-			logging.info("\t\tNotify (%s)", resp.notify.script)
-			resp = self.criu_connection.ack_notify()
+		self.htype.final_dump(self.pid, self.img, self.criu_connection, self.fs)
 
 		logging.info("Dump complete")
 		self.target_host.end_iter()

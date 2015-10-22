@@ -147,6 +147,9 @@ class p_haul_type:
 		if os.path.isfile(path):
 			os.remove(path)
 
+	def final_dump(self, pid, img, ccon, fs):
+		p_haul_module.criu_dump(self, pid, img, ccon, fs)
+
 	def final_restore(self, img, connection):
 		"""Perform Virtuozzo-specific final restore"""
 		try:
