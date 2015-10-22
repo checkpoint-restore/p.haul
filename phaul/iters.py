@@ -9,7 +9,7 @@ import xem_rpc_client
 import pycriu
 import criu_api
 import criu_req
-import p_haul_type
+import htype
 
 PRE_DUMP_AUTO_DETECT = None
 PRE_DUMP_DISABLE = False
@@ -35,7 +35,7 @@ class phaul_iter_worker:
 		self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
 		self.img = images.phaul_images("dmp")
 
-		self.htype = p_haul_type.get_src(p_type)
+		self.htype = htype.get_src(p_type)
 		if not self.htype:
 			raise Exception("No htype driver found")
 

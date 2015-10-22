@@ -7,7 +7,7 @@ import xem_rpc
 import images
 import criu_api
 import criu_req
-import p_haul_type
+import htype
 
 class phaul_service:
 	def __init__(self, connection):
@@ -46,7 +46,7 @@ class phaul_service:
 		self.img = images.phaul_images("rst")
 
 		self.criu_connection = criu_api.criu_conn(self._mem_sk)
-		self.htype = p_haul_type.get_dst(htype_id)
+		self.htype = htype.get_dst(htype_id)
 
 		# Create and start fs receiver if current p.haul module provide it
 		self.__fs_receiver = self.htype.get_fs_receiver(self._fs_sk)
