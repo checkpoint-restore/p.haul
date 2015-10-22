@@ -5,7 +5,7 @@ import signal
 import argparse
 import logging
 import phaul.xem_rpc
-import phaul.p_haul_service
+import phaul.service
 import phaul.connection
 
 parser = argparse.ArgumentParser("Process HAULer service server")
@@ -35,8 +35,7 @@ logging.info("Starting p.haul service")
 # Establish connection
 connection = phaul.connection.establish(args.fdrpc, args.fdmem, args.fdfs)
 
-t = phaul.xem_rpc.rpc_threaded_srv(phaul.p_haul_service.phaul_service,
-	connection)
+t = phaul.xem_rpc.rpc_threaded_srv(phaul.service.phaul_service, connection)
 
 # FIXME: Setup stop handlers
 stop_fd = t.init_stop_fd()
