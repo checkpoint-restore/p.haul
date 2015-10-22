@@ -115,22 +115,15 @@ class phaul_iter_worker:
 			# pre-dump auto-detection
 			try:
 				self.pre_dump = self.pre_dump_check()
-				if self.pre_dump:
-					logging.info("\t`- Auto Enabled")
-				else:
-					logging.info("\t`- Auto Disabled")
-
+				logging.info("\t`- Auto %s" % (self.pre_dump and 'enabled' or 'disabled'))
 			except:
 				# The available criu seems to not
 				# support memory tracking auto detection.
 				self.pre_dump = PRE_DUMP_DISABLE
 				logging.info("\t`- Auto detection not possible "
 						"- Disabled")
-
-		elif self.pre_dump == PRE_DUMP_DISABLE:
-			logging.info("\t`- Command-line disabled")
 		else:
-			logging.info("\t`- Command-line enabled")
+			logging.info("\t`- Command-line %s" % (self.pre_dump and 'enabled' or 'disabled'))
 
 		if self.pre_dump:
 			logging.info("Starting iterations")
