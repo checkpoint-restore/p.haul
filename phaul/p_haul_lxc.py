@@ -5,7 +5,7 @@
 import os
 import shutil
 import logging
-import p_haul_module
+import criu_cr
 import util
 import fs_haul_shared
 import fs_haul_subtree
@@ -115,10 +115,10 @@ class p_haul_type:
 		shutil.copy(os.path.join(dir, "config"), self.__ct_config())
 
 	def final_dump(self, pid, img, ccon, fs):
-		p_haul_module.criu_dump(self, pid, img, ccon, fs)
+		criu_cr.criu_dump(self, pid, img, ccon, fs)
 
 	def final_restore(self, img, connection):
-		p_haul_module.criu_restore(self, img, connection)
+		criu_cr.criu_restore(self, img, connection)
 
 	def prepare_ct(self, pid):
 		pass

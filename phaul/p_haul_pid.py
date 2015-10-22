@@ -3,7 +3,7 @@
 #
 
 import logging
-import p_haul_module
+import criu_cr
 import fs_haul_shared
 
 class p_haul_type:
@@ -63,10 +63,10 @@ class p_haul_type:
 		pass
 
 	def final_dump(self, pid, img, ccon, fs):
-		p_haul_module.criu_dump(self, pid, img, ccon, fs)
+		criu_cr.criu_dump(self, pid, img, ccon, fs)
 
 	def final_restore(self, img, connection):
-		p_haul_module.criu_restore(self, img, connection)
+		criu_cr.criu_restore(self, img, connection)
 
 	# Things are started to get restored, only the
 	# first task (with pid @pid) is created.

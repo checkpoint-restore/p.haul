@@ -6,7 +6,7 @@ import os
 import subprocess
 import shlex
 import logging
-import p_haul_module
+import criu_cr
 import util
 import fs_haul_shared
 import fs_haul_ploop
@@ -148,7 +148,7 @@ class p_haul_type:
 			os.remove(path)
 
 	def final_dump(self, pid, img, ccon, fs):
-		p_haul_module.criu_dump(self, pid, img, ccon, fs)
+		criu_cr.criu_dump(self, pid, img, ccon, fs)
 
 	def final_restore(self, img, connection):
 		"""Perform Virtuozzo-specific final restore"""
