@@ -83,7 +83,7 @@ class _rpc_server_manager:
 		self._poll_list.remove(item)
 
 	def make_master(self):
-		return self._srv_class(self._connection.mem_sk, self._connection.fs_sk)
+		return self._srv_class(self._connection)
 
 	def stop(self):
 		self._alive = False

@@ -10,10 +10,10 @@ import criu_req
 import p_haul_type
 
 class phaul_service:
-	def __init__(self, mem_sk, fs_sk):
+	def __init__(self, connection):
 		self.criu_connection = None
-		self._mem_sk = mem_sk
-		self._fs_sk = fs_sk
+		self._mem_sk = connection.mem_sk
+		self._fs_sk = connection.fs_sk
 		self.img = None
 		self.htype = None
 		self.__fs_receiver = None
