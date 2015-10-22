@@ -138,7 +138,7 @@ class phaul_iter_worker:
 			logging.info("\tIssuing pre-dump command to service")
 
 			req = criu_req.make_predump_req(
-				self.pid, self.htype, self.img, self.criu_connection, self.fs)
+				self.pid, self.img, self.criu_connection, self.fs)
 			resp = self.criu_connection.send_req(req)
 			if not resp.success:
 				raise Exception("Pre-dump failed")
