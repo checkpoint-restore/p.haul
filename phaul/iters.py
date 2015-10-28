@@ -113,7 +113,7 @@ class phaul_iter_worker:
 		if self.pre_dump == PRE_DUMP_AUTO_DETECT:
 			# pre-dump auto-detection
 			try:
-				self.pre_dump = self.pre_dump_check()
+				self.pre_dump = (self.pre_dump_check() and self.htype.can_pre_dump())
 				logging.info("\t`- Auto %s" % (self.pre_dump and 'enabled' or 'disabled'))
 			except:
 				# The available criu seems to not
@@ -132,7 +132,7 @@ class phaul_iter_worker:
 		while self.pre_dump:
 			logging.info("* Iteration %d", iter_index)
 
-			self.target_host.start_iter()
+			self.target_host.start_iter(True)
 			self.img.new_image_dir()
 
 			logging.info("\tIssuing pre-dump command to service")
@@ -186,7 +186,7 @@ class phaul_iter_worker:
 
 		logging.info("Final dump and restore")
 
-		self.target_host.start_iter()
+		self.target_host.start_iter(self.htype.dump_need_ps())
 		self.img.new_image_dir()
 
 		logging.info("\tIssuing dump command to service")

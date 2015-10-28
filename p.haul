@@ -25,7 +25,7 @@ import phaul.htype
 
 parser = argparse.ArgumentParser("Process HAULer")
 parser.add_argument("type", choices=phaul.htype.get_haul_names(),
-	help="Type of hat to haul, e.g. vz or lxc")
+	help="Type of hat to haul, e.g. vz, lxc, or docker")
 parser.add_argument("id", help="ID of what to haul")
 parser.add_argument("--to", help="IP where to haul")
 parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)

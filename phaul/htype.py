@@ -11,6 +11,7 @@ __haul_modules = {
 	"vz": "p_haul_vz",
 	"pid": "p_haul_pid",
 	"lxc": "p_haul_lxc",
+	"docker": "p_haul_docker",
 }
 
 def __get(id):

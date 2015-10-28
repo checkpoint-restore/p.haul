@@ -94,3 +94,9 @@ class p_haul_type:
 	# Get list of veth pairs if any
 	def veths(self):
 		return []
+
+	def can_pre_dump(self):
+		return True
+
+	def dump_need_ps(self):
+		return True

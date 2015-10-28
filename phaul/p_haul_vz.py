@@ -243,6 +243,11 @@ class p_haul_type:
 	def can_migrate_tcp(self):
 		return True
 
+	def can_pre_dump(self):
+		return True
+
+	def dump_need_ps(self):
+		return True
 
 def parse_vz_config(body):
 	"""Parse shell-like virtuozzo config file"""
