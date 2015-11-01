@@ -13,9 +13,9 @@ your running containers.
 
    The docker version that supports checkpoint and restore can be obtained by
 
-   # git clone https://github.com/boucher/docker.git
+   # git clone https://github.com/huikang/docker.git
    # cd docker.git
-   # git checkout cr-combined
+   # git checkout cr-combined-1006
 
    On both nodes, compile and store the the docker binary as
 
