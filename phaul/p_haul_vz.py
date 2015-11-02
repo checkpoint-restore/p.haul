@@ -158,8 +158,8 @@ class p_haul_type:
 			self.__setup_restore_extra_args(args_path, img, connection)
 			# Run vzctl restore
 			logging.info("Starting vzctl restore")
-			proc = subprocess.Popen([vzctl_bin, "restore", self._ctid,
-				"--dumpfile", img.image_dir()],
+			proc = subprocess.Popen([vzctl_bin, "--skiplock", "restore",
+				self._ctid, "--dumpfile", img.image_dir()],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
 			logging.info(proc_output)
@@ -181,7 +181,8 @@ class p_haul_type:
 	def mount(self):
 		logging.info("Mounting CT root to %s", self._ct_root)
 		logging.info("Starting vzctl mount")
-		proc = subprocess.Popen(["vzctl", "mount", self._ctid],
+		proc = subprocess.Popen(
+			[vzctl_bin, "--skiplock", "mount", self._ctid],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
 		logging.info(proc_output)
@@ -192,7 +193,8 @@ class p_haul_type:
 		if self._fs_mounted:
 			logging.info("Umounting CT root")
 			logging.info("Starting vzctl umount")
-			proc = subprocess.Popen(["vzctl", "umount", self._ctid],
+			proc = subprocess.Popen(
+				[vzctl_bin, "--skiplock", "umount", self._ctid],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
 			logging.info(proc_output)
