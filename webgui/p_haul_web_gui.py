@@ -56,7 +56,9 @@ def partners():
 @APP.route('/register', methods=['POST'])
 def register():
     global partner
+    global myself
 
+    myself = flask.request.form.get("partner")
     partner = flask.request.remote_addr
     return flask.jsonify({"your_ip": partner})
 
@@ -104,7 +106,9 @@ def start_web_gui(migration_partner, _rpc_port, _debug=False):
     if partner:
         try:
             myself = requests.post("http://%s:%d/register" %
-                                   (partner, default_port)).json()['your_ip']
+                                   (partner, default_port),
+                                   data={"partner": partner}
+                                   ).json()['your_ip']
         except:
             pass
     APP.run(host='0.0.0.0', port=default_port, debug=_debug, threaded=True)
