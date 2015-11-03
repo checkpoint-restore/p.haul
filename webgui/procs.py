@@ -18,6 +18,7 @@ import flask
 import json
 import psutil
 import time
+import os
 
 from webgui.p_haul_web_gui import APP
 
@@ -44,7 +45,8 @@ def procs():
 
             for p in psutil.process_iter():
                 if callable(p.cmdline):
-                    name = os.path.basename(p.cmdline()[0])
+                    if len(p.cmdline()) > 0:
+                        name = os.path.basename(p.cmdline()[0])
                     if name is '':
                         name = p.name()
                 else:
