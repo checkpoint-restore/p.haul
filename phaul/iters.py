@@ -10,6 +10,7 @@ import pycriu
 import criu_api
 import criu_req
 import htype
+import errno
 
 PRE_DUMP_AUTO_DETECT = None
 PRE_DUMP_DISABLE = False
@@ -64,11 +65,17 @@ class phaul_iter_worker:
 		self.pre_dump = opts["pre_dump"]
 
 	def validate_cpu(self):
+		if self.__force:
+			return
 		logging.info("Checking CPU compatibility")
 
 		logging.info("\t`- Dumping CPU info")
 		req = criu_req.make_cpuinfo_dump_req(self.img)
 		resp = self.criu_connection.send_req(req)
+		if resp.HasField('cr_errno') and (resp.cr_errno == errno.ENOTSUP):
+			logging.info("\t`- Dumping CPU info not supported")
+			self.__force = True
+			return
 		if not resp.success:
 			raise Exception("Can't dump cpuinfo")
 
@@ -102,8 +109,7 @@ class phaul_iter_worker:
 
 		migration_stats.start()
 
-		if not self.__force:
-			self.validate_cpu()
+		self.validate_cpu()
 
 		logging.info("Preliminary FS migration")
 		self.fs.set_work_dir(self.img.work_dir())
