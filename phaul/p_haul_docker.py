@@ -101,6 +101,7 @@ class p_haul_type:
 			stdout = logf, stderr = logf)
 		if ret != 0:
 			raise Exception("docker checkpoint failed")
+
 	#
 	# Meta-images for docker -- /var/run/docker
 	#

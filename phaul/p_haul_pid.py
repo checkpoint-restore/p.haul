@@ -16,6 +16,7 @@ class p_haul_type:
 	#
 	def init_src(self):
 		pass
+
 	def init_dst(self):
 		pass
 
