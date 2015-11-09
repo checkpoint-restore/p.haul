@@ -1,8 +1,10 @@
 import time
 import logging
 
+
 def usec2sec(usec):
 	return usec / 1000000.
+
 
 class migration_stats:
 	def __init__(self):

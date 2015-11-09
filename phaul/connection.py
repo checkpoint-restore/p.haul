@@ -7,6 +7,7 @@ import logging
 import socket
 import util
 
+
 class connection:
 	"""p.haul connection
 
@@ -24,6 +25,7 @@ class connection:
 		self.rpc_sk.close()
 		self.mem_sk.close()
 		self.fs_sk.close()
+
 
 def establish(fdrpc, fdmem, fdfs):
 	"""Construct required socket objects from file descriptors

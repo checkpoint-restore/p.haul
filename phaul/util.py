@@ -3,6 +3,7 @@ import fcntl
 import errno
 import logging
 
+
 class fileobj_wrap:
 	"""Helper class provides read/write interface for socket object
 
@@ -21,11 +22,13 @@ class fileobj_wrap:
 	def write(self, str):
 		self.__sk.send(str)
 
+
 class net_dev:
 	def __init__(self, name=None, pair=None, link=None):
 		self.name = name
 		self.pair = pair
 		self.link = link
+
 
 def path_to_fs(path):
 	dev = os.stat(path)
@@ -38,21 +41,26 @@ def path_to_fs(path):
 
 	return None
 
+
 def ifup(ifname):
 	logging.info("\t\tUpping %s", ifname)
 	os.system("ip link set %s up" % ifname)
+
 
 def ifdown(ifname):
 	logging.info("\t\tDowning %s", ifname)
 	os.system("ip link set %s down" % ifname)
 
+
 def bridge_add(ifname, brname):
 	logging.info("\t\tAdd %s to %s", ifname, brname)
 	os.system("brctl addif %s %s" % (brname, ifname))
 
+
 def set_cloexec(sk):
 	flags = fcntl.fcntl(sk, fcntl.F_GETFD)
 	fcntl.fcntl(sk, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
+
 
 def makedirs(dirpath):
 	try:

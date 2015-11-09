@@ -19,8 +19,10 @@ import thread
 # p.haul-wrap client 10.0.0.1 vz 100
 #
 
+
 default_rpc_port = 12345
 default_service_bind_addr = "0.0.0.0"
+
 
 def start_web_gui(partner, rpc_port):
 	"""Start web gui if requested"""
@@ -89,6 +91,7 @@ def run_phaul_client(args, unknown_args):
 	# Call p.haul
 	print "Exec p.haul: {0}".format(" ".join(target_args))
 	os.system(" ".join(target_args))
+
 
 # Initialize arguments parser
 parser = argparse.ArgumentParser("Process HAULer wrap")

@@ -10,6 +10,7 @@ import logging
 
 rsync_log_file = "rsync.log"
 
+
 class p_haul_fs:
 	def __init__(self, subtree_paths):
 		self.__roots = []

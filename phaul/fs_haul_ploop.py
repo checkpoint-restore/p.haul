@@ -6,6 +6,7 @@ import logging
 import threading
 import libploop
 
+
 class p_haul_fs:
 	def __init__(self, ddxml_path, fs_sk):
 		"""Initialize ploop disk hauler
@@ -35,6 +36,7 @@ class p_haul_fs:
 	def persistent_inodes(self):
 		"""Inode numbers do not change during ploop disk migration"""
 		return True
+
 
 class p_haul_fs_receiver(threading.Thread):
 	def __init__(self, fname_path, fs_sk):

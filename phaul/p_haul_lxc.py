@@ -10,8 +10,10 @@ import util
 import fs_haul_shared
 from subprocess import Popen, PIPE
 
+
 lxc_dir = "/var/lib/lxc/"
 lxc_rootfs_dir = "/usr/lib64/lxc/rootfs"
+
 
 class p_haul_type:
 	def __init__(self, name):

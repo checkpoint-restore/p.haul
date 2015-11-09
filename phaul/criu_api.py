@@ -17,9 +17,11 @@ cpuinfo_img_name = "cpuinfo.img"
 
 def_verb = 2
 
+
 #
 # Connection to CRIU service
 #
+
 
 class criu_conn:
 	def __init__(self, mem_sk):
@@ -82,9 +84,11 @@ class criu_conn:
 	def shell_job(self, value):
 		self._shell_job = value
 
+
 #
 # Helper to read CRIU-generated statistics
 #
+
 
 def criu_get_stats(img, file_name):
 	with open(os.path.join(img.work_dir(), file_name)) as f:
@@ -93,9 +97,11 @@ def criu_get_stats(img, file_name):
 		pycriu.images.pb2dict.dict2pb(stats_dict['entries'][0], stats)
 		return stats
 
+
 def criu_get_dstats(img):
 	stats = criu_get_stats(img, "stats-dump")
 	return stats.dump
+
 
 def criu_get_rstats(img):
 	stats = criu_get_stats(img, "stats-restore")

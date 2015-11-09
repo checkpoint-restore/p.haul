@@ -7,12 +7,14 @@
 import logging
 import importlib
 
+
 __haul_modules = {
 	"vz": "p_haul_vz",
 	"pid": "p_haul_pid",
 	"lxc": "p_haul_lxc",
 	"docker": "p_haul_docker",
 }
+
 
 def __get(id):
 	hauler_name, haulee_id = id[0], id[1]
@@ -28,14 +30,17 @@ def __get(id):
 
 	return hauler_module.p_haul_type(haulee_id)
 
+
 def get_haul_names():
 	"""Return list of available haulers"""
 	return __haul_modules.keys()
+
 
 def get_src(id):
 	ht = __get(id)
 	ht.init_src()
 	return ht
+
 
 def get_dst(id):
 	ht = __get(id)

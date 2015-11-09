@@ -8,6 +8,17 @@ import phaul.xem_rpc
 import phaul.service
 import phaul.connection
 
+
+def log_uncaught_exception(type, value, traceback):
+	logging.error(value, exc_info=(type, value, traceback))
+
+
+def fin(foo, bar):
+	global stop_fd
+	logging.info("Stop by %d", foo)
+	stop_fd.close()
+
+
 parser = argparse.ArgumentParser("Process HAULer service server")
 parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)
 parser.add_argument("--fdmem", help="File descriptor of memory socket", type=int, required=True)
@@ -21,14 +32,7 @@ logging.basicConfig(filename=args.log_file, filemode="w", level=logging.INFO,
 	format="%(asctime)s.%(msecs)03d: %(message)s", datefmt="%H:%M:%S")
 
 # Setup hook to log uncaught exceptions
-def log_uncaught_exception(type, value, traceback):
-	logging.error(value, exc_info=(type, value, traceback))
 sys.excepthook = log_uncaught_exception
-
-stop_fd = None
-def fin(foo, bar):
-	logging.info("Stop by %d", foo)
-	stop_fd.close()
 
 logging.info("Starting p.haul service")
 

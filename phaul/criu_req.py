@@ -4,12 +4,14 @@
 
 import pycriu.rpc
 
+
 def _build_names(name_strings):
 	names = {}
 	for key, value in name_strings.items():
 		if hasattr(pycriu.rpc, key):
 			names[getattr(pycriu.rpc, key)] = value
 	return names
+
 
 _name_strings = {
 	"DUMP": "dump",
@@ -23,9 +25,11 @@ _name_strings = {
 
 _names = _build_names(_name_strings)
 
+
 def get_name(req_type):
 	"""Return printable request name"""
 	return _names[req_type]
+
 
 def _make_req(typ, htype = None):
 	"""Prepare generic criu request"""
@@ -35,12 +39,14 @@ def _make_req(typ, htype = None):
 		htype.adjust_criu_req(req)
 	return req
 
+
 def make_cpuinfo_dump_req(img):
 	"""Prepare cpuinfo dump criu request (source side)"""
 	req = _make_req(pycriu.rpc.CPUINFO_DUMP)
 	req.opts.images_dir_fd = img.work_dir_fd()
 	req.keep_open = True
 	return req
+
 
 def _make_common_dump_req(typ, pid, htype, img, connection, fs):
 	"""Prepare common criu request for pre-dump or dump (source side)"""
@@ -59,10 +65,12 @@ def _make_common_dump_req(typ, pid, htype, img, connection, fs):
 
 	return req
 
+
 def make_predump_req(pid, img, connection, fs):
 	"""Prepare pre-dump criu request (source side)"""
 	return _make_common_dump_req(
 		pycriu.rpc.PRE_DUMP, pid, None, img, connection, fs)
+
 
 def make_dump_req(pid, htype, img, connection, fs):
 	"""Prepare dump criu request (source side)"""
@@ -75,6 +83,7 @@ def make_dump_req(pid, htype, img, connection, fs):
 	if htype.can_migrate_tcp():
 		req.opts.tcp_established = True
 	return req
+
 
 def make_page_server_req(img, connection):
 	"""Prepare page server criu request (destination side)"""
@@ -91,12 +100,14 @@ def make_page_server_req(img, connection):
 
 	return req
 
+
 def make_cpuinfo_check_req(img):
 	"""Prepare cpuinfo check criu request (destination side)"""
 	req = _make_req(pycriu.rpc.CPUINFO_CHECK)
 	req.keep_open = True
 	req.opts.images_dir_fd = img.work_dir_fd()
 	return req
+
 
 def make_restore_req(htype, img, nroot):
 	"""Prepare restore criu request (destination side)"""
@@ -116,6 +127,7 @@ def make_restore_req(htype, img, nroot):
 		req.opts.root = nroot
 
 	return req
+
 
 def make_dirty_tracking_req(img):
 	"""Check if dirty memory tracking is supported."""

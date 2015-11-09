@@ -12,9 +12,11 @@ import fs_haul_shared
 import fs_haul_ploop
 import pycriu.rpc
 
+
 vz_global_conf = "/etc/vz/vz.conf"
 vz_conf_dir = "/etc/vz/conf/"
 vzctl_bin = "vzctl"
+
 
 class p_haul_type:
 	def __init__(self, ctid):
@@ -251,6 +253,7 @@ class p_haul_type:
 	def dump_need_ps(self):
 		return True
 
+
 def parse_vz_config(body):
 	"""Parse shell-like virtuozzo config file"""
 
@@ -259,6 +262,7 @@ def parse_vz_config(body):
 		name, sep, value = token.partition("=")
 		config_values[name] = value
 	return config_values
+
 
 def expand_veid_var(value, ctid):
 	"""Replace shell-like VEID variable with actual container id"""

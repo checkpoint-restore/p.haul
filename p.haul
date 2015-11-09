@@ -23,6 +23,11 @@ import phaul.htype
 # p.haul lxc myct --fdrpc 3 --fdmem 4 --fdfs 5
 #
 
+
+def log_uncaught_exception(type, value, traceback):
+	logging.error(value, exc_info=(type, value, traceback))
+
+
 parser = argparse.ArgumentParser("Process HAULer")
 parser.add_argument("type", choices=phaul.htype.get_haul_names(),
 	help="Type of hat to haul, e.g. vz, lxc, or docker")
@@ -62,8 +67,6 @@ logging.basicConfig(filename=args.log_file, filemode="w", level=logging.INFO,
 	format="%(asctime)s.%(msecs)03d: %(message)s", datefmt="%H:%M:%S")
 
 # Setup hook to log uncaught exceptions
-def log_uncaught_exception(type, value, traceback):
-	logging.error(value, exc_info=(type, value, traceback))
 sys.excepthook = log_uncaught_exception
 
 logging.info("Starting p.haul")

@@ -14,6 +14,7 @@ import criu_api
 
 def_path = "/var/local/p.haul-fs/"
 
+
 class opendir:
 	def __init__(self, path):
 		self._dirname = path
@@ -31,6 +32,7 @@ class opendir:
 	def fileno(self):
 		return self._dirfd
 
+
 class untar_thread(threading.Thread):
 	def __init__(self, sk, tdir):
 		threading.Thread.__init__(self)
@@ -45,6 +47,7 @@ class untar_thread(threading.Thread):
 		except:
 			logging.exception("Exception in untar_thread")
 
+
 class img_tar:
 	def __init__(self, sk, dirname):
 		self.__tf = tarfile.open(mode="w|", fileobj=util.fileobj_wrap(sk))
@@ -58,6 +61,7 @@ class img_tar:
 
 	def close(self):
 		self.__tf.close()
+
 
 class phaul_images:
 	WDIR = 1

@@ -14,10 +14,12 @@ from subprocess import PIPE
 # TODO use docker-py
 # import docker
 
+
 # Some constants for docker
 docker_bin = "/usr/bin/docker-1.9.0-dev"
 docker_dir = "/var/lib/docker/"
 docker_run_meta_dir = "/var/run/docker/execdriver/native"
+
 
 class p_haul_type:
 	def __init__(self, ctid):

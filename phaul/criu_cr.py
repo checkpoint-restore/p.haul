@@ -6,6 +6,7 @@ import logging
 import pycriu.rpc
 import criu_req
 
+
 def criu_dump(htype, pid, img, criu_connection, fs):
 	req = criu_req.make_dump_req(pid, htype, img, criu_connection, fs)
 	resp = criu_connection.send_req(req)

@@ -26,6 +26,7 @@ phaul_iter_min_size = 64
 # this % more than previous
 phaul_iter_grow_max = 10
 
+
 class phaul_iter_worker:
 	def __init__(self, p_type, connection):
 		self.connection = connection

@@ -6,6 +6,7 @@ import logging
 import criu_cr
 import fs_haul_shared
 
+
 class p_haul_type:
 	def __init__(self, id):
 		self.pid = int(id)

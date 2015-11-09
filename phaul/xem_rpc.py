@@ -16,6 +16,7 @@ RPC_CALL = 2
 RPC_RESP = 1
 RPC_EXC = 2
 
+
 class _rpc_server_sk:
 	def __init__(self, sk):
 		self._sk = sk
@@ -56,6 +57,7 @@ class _rpc_server_sk:
 		self._master = mgr.make_master()
 		self._master.on_connect(*args)
 
+
 class _rpc_stop_fd:
 	def __init__(self, fd):
 		self._fd = fd
@@ -65,6 +67,7 @@ class _rpc_stop_fd:
 
 	def work(self, mgr):
 		mgr.stop()
+
 
 class _rpc_server_manager:
 	def __init__(self, srv_class, connection):
@@ -97,6 +100,7 @@ class _rpc_server_manager:
 				sk.work(self)
 
 		logging.info("RPC Service stops")
+
 
 class rpc_threaded_srv(threading.Thread):
 	def __init__(self, srv_class, connection):
