@@ -113,7 +113,7 @@ class p_haul_type:
 		# Create docker runtime meta dir on dst side
 		with open(os.path.join(dir, "state.json")) as data_file:
 			data = json.load(data_file)
-		self.full_ctid=data["id"]
+		self.full_ctid = data["id"]
 
 		self.__load_ct_config(docker_dir)
 		os.makedirs(self._ct_run_meta_dir)
