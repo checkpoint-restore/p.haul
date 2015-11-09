@@ -6,7 +6,6 @@ import logging
 import images
 import mstats
 import xem_rpc_client
-import pycriu
 import criu_api
 import criu_req
 import htype

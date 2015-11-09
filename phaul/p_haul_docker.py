@@ -5,8 +5,8 @@
 import os
 import logging
 import time
+import signal
 import fs_haul_subtree
-import pycriu.rpc
 import json
 import subprocess as sp
 from subprocess import PIPE
@@ -23,7 +23,7 @@ class p_haul_type:
 	def __init__(self, ctid):
 
 		# TODO ctid must > 3 digit; with docker-py, we can also resolve
-		#	  container name
+		#  container name
 		if len(ctid) < 3:
 			raise Exception("Docker container ID must be > 3 digits")
 
@@ -118,10 +118,10 @@ class p_haul_type:
 		self.__load_ct_config(docker_dir)
 		os.makedirs(self._ct_run_meta_dir)
 		pd = sp.Popen(["cp", os.path.join(dir, "state.json"), self._ct_run_meta_dir], stdout = PIPE)
-		status = pd.wait()
+		pd.wait()
 
 	def kill_last_docker_daemon(self):
-		p = sp.Popen(['pgrep', '-l' , docker_bin], stdout=sp.PIPE)
+		p = sp.Popen(['pgrep', '-l', docker_bin], stdout=sp.PIPE)
 		out, err = p.communicate()
 
 		for line in out.splitlines():
@@ -137,8 +137,8 @@ class p_haul_type:
 		self.kill_last_docker_daemon()
 
 		# start docker daemon in background
-		daemon = sp.Popen([docker_bin, "daemon", "-s", "aufs"],
-				 stdout = logf, stderr = logf)
+		sp.Popen([docker_bin, "daemon", "-s", "aufs"],
+			stdout = logf, stderr = logf)
 		# daemon.wait() TODO: docker daemon not return
 		time.sleep(2)
 
@@ -150,7 +150,7 @@ class p_haul_type:
 
 	def can_pre_dump(self):
 		# XXX: Do not do predump for docker right now. Add page-server
-		#	to docker C/R API, then we can enable the pre-dump
+		# to docker C/R API, then we can enable the pre-dump
 		return False
 
 	def dump_need_ps(self):
