@@ -28,6 +28,22 @@ Get p.haul ready
 For more information read the P.Haul-related pages on the CRIU
 wiki (http://criu.org/Category:P.Haul).
 
+How to contribute
+=======
+
+The p.haul patches should be sent to CRIU development mailing list which is
+located at https://openvz.org/mailman/listinfo/criu
+
+Before sending patches please make sure your code formatted according to
+project coding style (we use [PEP8](https://www.python.org/dev/peps/pep-0008/)
+with some exceptions) and your changes don't introduce linter warnings.
+
+How to run flake8 linter to verify p.haul:
+* $ yum install python-setuptools
+* $ easy_install pip
+* $ pip install flake8
+* $ make lint
+
 BUGs
 ======
 
