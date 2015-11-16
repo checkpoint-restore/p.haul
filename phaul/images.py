@@ -44,6 +44,8 @@ class untar_thread(threading.Thread):
 			tf = tarfile.open(mode="r|", fileobj=util.fileobj_wrap(self.__sk))
 			tf.extractall(self.__dir)
 			tf.close()
+			# Discard all remaining data in socket after tarfile closed
+			util.discard_sk_input(self.__sk)
 		except:
 			logging.exception("Exception in untar_thread")
 

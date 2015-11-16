@@ -2,6 +2,7 @@ import os
 import fcntl
 import errno
 import logging
+import socket
 
 
 class fileobj_wrap:
@@ -21,6 +22,21 @@ class fileobj_wrap:
 
 	def write(self, str):
 		self.__sk.send(str)
+
+
+def discard_sk_input(sk):
+	"""Read all data from socket and discard it
+
+	Current helper function needed to workaround tarfile library bug that
+	leads to ownerless garbage zero blocks in socket when tarfile constructed
+	with socket as file object to transfer tarballs over network.
+	"""
+	try:
+		while True:
+			sk.recv(0x10000, socket.MSG_DONTWAIT)
+	except socket.error as e:
+		if e.errno != errno.EWOULDBLOCK:
+			raise e
 
 
 class net_dev:
