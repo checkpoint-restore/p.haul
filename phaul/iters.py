@@ -192,7 +192,7 @@ class phaul_iter_worker:
 
 		logging.info("Final dump and restore")
 
-		self.target_host.start_iter(self.htype.dump_need_ps())
+		self.target_host.start_iter(self.htype.dump_need_page_server())
 		self.img.new_image_dir()
 
 		logging.info("\tIssuing dump command to service")

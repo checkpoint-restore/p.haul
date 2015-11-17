@@ -250,7 +250,7 @@ class p_haul_type:
 	def can_pre_dump(self):
 		return True
 
-	def dump_need_ps(self):
+	def dump_need_page_server(self):
 		return True
 
 

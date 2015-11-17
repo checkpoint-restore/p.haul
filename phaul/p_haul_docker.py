@@ -156,5 +156,5 @@ class p_haul_type:
 		# to docker C/R API, then we can enable the pre-dump
 		return False
 
-	def dump_need_ps(self):
+	def dump_need_page_server(self):
 		return False

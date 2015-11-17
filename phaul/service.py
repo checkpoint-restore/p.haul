@@ -70,10 +70,10 @@ class phaul_service:
 
 		logging.info("\tPage server started at %d", resp.ps.pid)
 
-	def rpc_start_iter(self, need_ps):
+	def rpc_start_iter(self, need_page_server):
 		self.dump_iter_index += 1
 		self.img.new_image_dir()
-		if need_ps:
+		if need_page_server:
 			self.start_page_server()
 
 	def rpc_end_iter(self):
