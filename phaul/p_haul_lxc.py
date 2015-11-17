@@ -165,3 +165,6 @@ class p_haul_type:
 		# tuples, the [2] with bridge name wouldn't hurt
 		#
 		return self._veths
+
+	def dump_need_page_server(self):
+		return True
