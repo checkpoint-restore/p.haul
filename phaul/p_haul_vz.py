@@ -209,13 +209,7 @@ class p_haul_type:
 		return None
 
 	def get_fs_receiver(self, fs_sk=None):
-		# Grab default private path from global config
-		with open(vz_global_conf) as ifd:
-			global_config = parse_vz_config(ifd.read())
-		default_private = expand_veid_var(global_config["VE_PRIVATE"],
-			self._ctid)
-		# Create receiver
-		fname_path = os.path.join(default_private, "root.hdd", "root.hds")
+		fname_path = os.path.join(self._ct_priv, "root.hdd", "root.hds")
 		return fs_haul_ploop.p_haul_fs_receiver(fname_path, fs_sk)
 
 	def restored(self, pid):
