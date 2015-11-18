@@ -30,15 +30,13 @@ class p_haul_type:
 		# v_bridge is the bridge to which thie veth is attached
 		#
 		self._veths = []
-		self._cfg = ""
 
 	def __load_ct_config(self, path):
 		logging.info("Loading config file from %s", path)
 
 		# Read container config
-		with open(os.path.join(path, self.__ct_config())) as ifd:
-			self._cfg = ifd.read()
-		config = parse_vz_config(self._cfg)
+		with open(self.__ct_config_path(path)) as ifd:
+			config = parse_vz_config(ifd.read())
 
 		# Read global config
 		with open(vz_global_conf) as ifd:
@@ -74,6 +72,14 @@ class p_haul_type:
 			self._ct_root = expand_veid_var(global_config["VE_ROOT"],
 				self._ctid)
 
+	def __load_ct_config_dst(self, path):
+		if not os.path.isfile(self.__ct_config_path(path)):
+			raise Exception("CT config missing on destination")
+		self.__load_ct_config(path)
+
+	def __ct_config_path(self, conf_dir):
+		return os.path.join(conf_dir, "{0}.conf".format(self._ctid))
+
 	def __apply_cg_config(self):
 		logging.info("Applying CT configs")
 		# FIXME -- implement
@@ -98,6 +104,7 @@ class p_haul_type:
 	def init_dst(self):
 		self._fs_mounted = False
 		self._bridged = False
+		self.__load_ct_config_dst(vz_conf_dir)
 
 	def set_options(self, opts):
 		pass
@@ -119,21 +126,11 @@ class p_haul_type:
 			pid = tasks.readline()
 			return int(pid)
 
-	def __ct_config(self):
-		return "%s.conf" % self._ctid
-
-	#
-	# Meta-images for OVZ -- container config
-	#
 	def get_meta_images(self, path):
-		cfg_name = self.__ct_config()
-		return [(os.path.join(vz_conf_dir, cfg_name), cfg_name)]
+		return []
 
 	def put_meta_images(self, path):
-		logging.info("Putting config file into %s", vz_conf_dir)
-		self.__load_ct_config(path)
-		with open(os.path.join(vz_conf_dir, self.__ct_config()), "w") as ofd:
-			ofd.write(self._cfg)
+		pass
 
 	def __setup_restore_extra_args(self, path, img, connection):
 		"""Create temporary file with extra arguments for criu restore"""
