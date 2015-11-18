@@ -80,11 +80,6 @@ class p_haul_type:
 	def __ct_config_path(self, conf_dir):
 		return os.path.join(conf_dir, "{0}.conf".format(self._ctid))
 
-	def __apply_cg_config(self):
-		logging.info("Applying CT configs")
-		# FIXME -- implement
-		pass
-
 	def __cg_set_veid(self):
 		"""Initialize veid in ve.veid for ve cgroup"""
 
@@ -169,12 +164,7 @@ class p_haul_type:
 			self.__remove_restore_extra_args(args_path)
 
 	def prepare_ct(self, pid):
-		"""Create cgroup hierarchy and put root task into it.
-
-		Hierarchy is unlimited, we will apply config limitations in
-		__apply_cg_config later.
-		"""
-
+		"""Create cgroup hierarchy and put root task into it."""
 		self.__cg_set_veid()
 
 	def mount(self):
@@ -229,7 +219,7 @@ class p_haul_type:
 		return fs_haul_ploop.p_haul_fs_receiver(fname_path, fs_sk)
 
 	def restored(self, pid):
-		self.__apply_cg_config()
+		pass
 
 	def net_lock(self):
 		for veth in self._veths:
