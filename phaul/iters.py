@@ -46,8 +46,6 @@ class phaul_iter_worker:
 
 		self.pid = self.htype.root_task_pid()
 
-		self.pre_dump = PRE_DUMP_AUTO_DETECT
-
 		logging.info("Setting up remote")
 		self.target_host.setup(p_type)
 
@@ -62,7 +60,7 @@ class phaul_iter_worker:
 		self.htype.set_options(opts)
 		self.fs.set_options(opts)
 		self.__force = opts["force"]
-		self.pre_dump = opts["pre_dump"]
+		self.__pre_dump = opts["pre_dump"]
 
 	def validate_cpu(self):
 		if self.__force:
@@ -116,26 +114,26 @@ class phaul_iter_worker:
 		self.fs.start_migration()
 
 		logging.info("Checking for Dirty Tracking")
-		if self.pre_dump == PRE_DUMP_AUTO_DETECT:
+		if self.__pre_dump == PRE_DUMP_AUTO_DETECT:
 			# pre-dump auto-detection
 			try:
-				self.pre_dump = (self.pre_dump_check() and self.htype.can_pre_dump())
-				logging.info("\t`- Auto %s" % (self.pre_dump and 'enabled' or 'disabled'))
+				self.__pre_dump = (self.pre_dump_check() and self.htype.can_pre_dump())
+				logging.info("\t`- Auto %s" % (self.__pre_dump and 'enabled' or 'disabled'))
 			except:
 				# The available criu seems to not
 				# support memory tracking auto detection.
-				self.pre_dump = PRE_DUMP_DISABLE
+				self.__pre_dump = PRE_DUMP_DISABLE
 				logging.info("\t`- Auto detection not possible "
 						"- Disabled")
 		else:
-			logging.info("\t`- Command-line %s" % (self.pre_dump and 'enabled' or 'disabled'))
+			logging.info("\t`- Command-line %s" % (self.__pre_dump and 'enabled' or 'disabled'))
 
-		if self.pre_dump:
+		if self.__pre_dump:
 			logging.info("Starting iterations")
 		else:
 			self.criu_connection.memory_tracking(False)
 
-		while self.pre_dump:
+		while self.__pre_dump:
 			logging.info("* Iteration %d", iter_index)
 
 			self.target_host.start_iter(True)
