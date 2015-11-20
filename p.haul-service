@@ -19,12 +19,14 @@ def fin(foo, bar):
 	stop_fd.close()
 
 
+# Initialize arguments parser
 parser = argparse.ArgumentParser("Process HAULer service server")
-parser.add_argument("--fdrpc", help="File descriptor of rpc socket", type=int, required=True)
-parser.add_argument("--fdmem", help="File descriptor of memory socket", type=int, required=True)
-parser.add_argument("--fdfs", help="File descriptor of fs socket", type=int, required=True)
+parser.add_argument("--fdrpc", type=int, required=True, help="File descriptor of rpc socket")
+parser.add_argument("--fdmem", type=int, required=True, help="File descriptor of memory socket")
+parser.add_argument("--fdfs", type=int, required=True, help="File descriptor of fs socket")
 parser.add_argument("--log-file", help="Write logging messages to specified file")
 
+# Parse arguments
 args = parser.parse_args()
 
 # Configure logging
