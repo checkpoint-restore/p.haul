@@ -53,14 +53,13 @@ class phaul_iter_worker:
 		return self.target_host
 
 	def set_options(self, opts):
+		self.__force = opts["force"]
+		self.__pre_dump = opts["pre_dump"]
 		self.target_host.set_options(opts)
-		self.criu_connection.verbose(opts["verbose"])
-		self.criu_connection.shell_job(opts["shell_job"])
+		self.criu_connection.set_options(opts)
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
 		self.fs.set_options(opts)
-		self.__force = opts["force"]
-		self.__pre_dump = opts["pre_dump"]
 
 	def validate_cpu(self):
 		if self.__force:

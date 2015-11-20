@@ -38,15 +38,16 @@ class criu_conn:
 		self._last_req = -1
 		self._mem_fd = mem_sk.fileno()
 
+	def set_options(self, opts):
+		self.verb = opts["verbose"]
+		self._shell_job = opts["shell_job"]
+
 	def close(self):
 		self._cs.close()
 		self._swrk.wait()
 
 	def mem_sk_fileno(self):
 		return self._mem_fd
-
-	def verbose(self, level):
-		self.verb = level
 
 	def _recv_resp(self):
 		resp = pycriu.rpc.criu_resp()
@@ -80,9 +81,6 @@ class criu_conn:
 
 	def memory_tracking(self, value):
 		self._track_mem = value
-
-	def shell_job(self, value):
-		self._shell_job = value
 
 
 #

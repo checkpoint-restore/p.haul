@@ -54,8 +54,7 @@ class phaul_service:
 			self.__fs_receiver.start()
 
 	def rpc_set_options(self, opts):
-		self.criu_connection.verbose(opts["verbose"])
-		self.criu_connection.shell_job(opts["shell_job"])
+		self.criu_connection.set_options(opts)
 		self.img.set_options(opts)
 		self.htype.set_options(opts)
 
