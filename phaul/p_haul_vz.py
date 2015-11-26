@@ -240,6 +240,11 @@ class p_haul_type:
 		return True
 
 
+def add_hauler_args(parser):
+	"""Add Virtuozzo specific command line arguments"""
+	parser.add_argument("--vz-dst-ctid", help="ctid at destination")
+
+
 def parse_vz_config(body):
 	"""Parse shell-like virtuozzo config file"""
 

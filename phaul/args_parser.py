@@ -2,6 +2,7 @@
 # p.haul command line arguments parsers
 #
 
+import sys
 import argparse
 import htype
 import images
@@ -36,6 +37,10 @@ def parse_client_args():
 		const=iters.PRE_DUMP_DISABLE, help='Force disable pre-dumps')
 	parser.add_argument('--pre-dump', dest='pre_dump', action='store_const',
 		const=iters.PRE_DUMP_ENABLE, help='Force enable pre-dumps')
+
+	# Add haulers specific arguments
+	if len(sys.argv) > 1 and sys.argv[1] in htype.get_haul_names():
+		htype.add_hauler_args(sys.argv[1], parser)
 
 	return parser.parse_args()
 
