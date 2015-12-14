@@ -66,11 +66,11 @@ class p_haul_type:
 	def umount(self):
 		pass
 
-	def get_fs(self, fs_sk=None):
+	def get_fs(self, fdfs=None):
 		# use rsync for rootfs and configuration directories
 		return fs_haul_subtree.p_haul_fs([self._ct_rootfs, self._ct_config_dir])
 
-	def get_fs_receiver(self, fs_sk=None):
+	def get_fs_receiver(self, fdfs=None):
 		return None
 
 	def get_full_ctid(self):

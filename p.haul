@@ -7,7 +7,7 @@ import phaul.iters
 import phaul.connection
 
 # Usage idea
-# p.haul <type> <id> --fdrpc <fd> --fdmem <fd> --fdfs <fd>
+# p.haul <type> <id> --fdrpc <fd> --fdmem <fd>
 #
 # p.haul work over existing connections specified via command line arguments
 # as file descriptors. Three arguments required - --fdrpc for rpc calls,
@@ -16,8 +16,8 @@ import phaul.connection
 # connections with target host and call p.haul or p.haul-service.
 #
 # E.g.
-# p.haul vz 100 --fdrpc 3 --fdmem 4 --fdfs 5
-# p.haul lxc myct --fdrpc 3 --fdmem 4 --fdfs 5
+# p.haul vz 100 --fdrpc 3 --fdmem 4 --fdfs root.hdd/root.hds:5
+# p.haul lxc myct --fdrpc 3 --fdmem 4
 #
 
 

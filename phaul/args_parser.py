@@ -22,7 +22,7 @@ def parse_client_args():
 	parser.add_argument("--to", help="IP where to haul")
 	parser.add_argument("--fdrpc", type=int, required=True, help="File descriptor of rpc socket")
 	parser.add_argument("--fdmem", type=int, required=True, help="File descriptor of memory socket")
-	parser.add_argument("--fdfs", type=int, required=True, help="File descriptor of fs socket")
+	parser.add_argument("--fdfs", help="Module specific definition of fs channel")
 	parser.add_argument("-v", default=criu_api.def_verb, type=int, dest="verbose", help="Verbosity level")
 	parser.add_argument("--keep-images", default=False, action='store_true', help="Keep images after migration")
 	parser.add_argument("--dst-rpid", default=None, help="Write pidfile on restore")
@@ -52,7 +52,8 @@ def parse_service_args():
 
 	parser.add_argument("--fdrpc", type=int, required=True, help="File descriptor of rpc socket")
 	parser.add_argument("--fdmem", type=int, required=True, help="File descriptor of memory socket")
-	parser.add_argument("--fdfs", type=int, required=True, help="File descriptor of fs socket")
+	parser.add_argument("--fdfs", help="Module specific definition of fs channel")
+
 	parser.add_argument("--log-file", help="Write logging messages to specified file")
 
 	return parser.parse_args()

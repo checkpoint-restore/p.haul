@@ -133,10 +133,10 @@ class p_haul_type:
 		self._fs_mounted = True
 		return nroot
 
-	def get_fs(self, fs_sk=None):
+	def get_fs(self, fdfs=None):
 		return fs_haul_shared.p_haul_fs()
 
-	def get_fs_receiver(self, fs_sk=None):
+	def get_fs_receiver(self, fdfs=None):
 		return None
 
 	def restored(self, pid):

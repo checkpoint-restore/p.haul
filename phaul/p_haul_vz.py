@@ -188,13 +188,48 @@ class p_haul_type:
 			logging.info(proc_output)
 			self._fs_mounted = False
 
-	def get_fs(self, fs_sk=None):
-		deltas = [(os.path.join(self._ct_priv, "root.hdd", "root.hds"), fs_sk)]
+	def get_fs(self, fdfs=None):
+		deltas = self.__parse_fdfs_arg(fdfs)
 		return fs_haul_ploop.p_haul_fs(deltas)
 
-	def get_fs_receiver(self, fs_sk=None):
-		deltas = [(os.path.join(self._ct_priv, "root.hdd", "root.hds"), fs_sk)]
+	def get_fs_receiver(self, fdfs=None):
+		deltas = self.__parse_fdfs_arg(fdfs)
 		return fs_haul_ploop.p_haul_fs_receiver(deltas)
+
+	def __parse_fdfs_arg(self, fdfs):
+		"""
+		Parse string containing list of ploop deltas with socket fds
+
+		String contain list of active ploop deltas with corresponding socket
+		file descriptors in format %delta_path1%:%socket_fd1%[,...]. Parse it
+		and return list of tuples.
+		"""
+
+		FDFS_DELTAS_SEPARATOR = ","
+		FDFS_PAIR_SEPARATOR = ":"
+
+		if not fdfs:
+			return []
+
+		deltas = []
+		for delta in fdfs.split(FDFS_DELTAS_SEPARATOR):
+			path, dummy, fd = delta.rpartition(FDFS_PAIR_SEPARATOR)
+			deltas.append((self.__get_ploop_delta_abspath(path), int(fd)))
+
+		return deltas
+
+	def __get_ploop_delta_abspath(self, delta_path):
+		"""
+		Transform delta path to absolute form
+
+		If delta path starts with a slash it is already in absolute form,
+		otherwise it is relative to containers private.
+		"""
+
+		if delta_path.startswith("/"):
+			return delta_path
+		else:
+			return os.path.join(self._ct_priv, delta_path)
 
 	def restored(self, pid):
 		pass

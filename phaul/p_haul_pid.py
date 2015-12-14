@@ -46,10 +46,10 @@ class p_haul_type:
 		pass
 
 	# Get driver for FS migration
-	def get_fs(self, fs_sk=None):
+	def get_fs(self, fdfs=None):
 		return fs_haul_shared.p_haul_fs()
 
-	def get_fs_receiver(self, fs_sk=None):
+	def get_fs_receiver(self, fdfs=None):
 		return None
 
 	# Get list of files which should be copied to

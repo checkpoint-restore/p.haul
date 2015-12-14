@@ -11,9 +11,8 @@ import htype
 
 class phaul_service:
 	def __init__(self, connection):
+		self.connection = connection
 		self.criu_connection = None
-		self._mem_sk = connection.mem_sk
-		self._fs_sk = connection.fs_sk
 		self.img = None
 		self.htype = None
 		self.__fs_receiver = None
@@ -45,11 +44,11 @@ class phaul_service:
 		logging.info("Setting up service side %s", htype_id)
 		self.img = images.phaul_images("rst")
 
-		self.criu_connection = criu_api.criu_conn(self._mem_sk)
+		self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
 		self.htype = htype.get_dst(htype_id)
 
 		# Create and start fs receiver if current p.haul module provide it
-		self.__fs_receiver = self.htype.get_fs_receiver(self._fs_sk)
+		self.__fs_receiver = self.htype.get_fs_receiver(self.connection.fdfs)
 		if self.__fs_receiver:
 			self.__fs_receiver.start_receive()
 
@@ -79,7 +78,7 @@ class phaul_service:
 		pass
 
 	def rpc_start_accept_images(self, dir_id):
-		self.img.start_accept_images(dir_id, self._mem_sk)
+		self.img.start_accept_images(dir_id, self.connection.mem_sk)
 
 	def rpc_stop_accept_images(self):
 		self.img.stop_accept_images()
