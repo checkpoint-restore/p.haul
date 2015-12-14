@@ -45,7 +45,7 @@ def run_phaul_service(args, unknown_args):
 	server_sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server_sk.bind(host)
 	server_sk.listen(8)
-	connection_sks = [None, None, None]
+	connection_sks = [None, None]
 	while True:
 		for i in range(len(connection_sks)):
 			connection_sks[i], dummy = server_sk.accept()
@@ -54,8 +54,7 @@ def run_phaul_service(args, unknown_args):
 		target_args = [args.path]
 		target_args.extend(unknown_args)
 		target_args.extend(["--fdrpc", str(connection_sks[0].fileno()),
-			"--fdmem", str(connection_sks[1].fileno()),
-			"--fdfs", str(connection_sks[2].fileno())])
+			"--fdmem", str(connection_sks[1].fileno())])
 
 		# Call p.haul-service
 		cmdline = " ".join(target_args)
@@ -75,7 +74,7 @@ def run_phaul_client(args, unknown_args):
 	# Establish connection
 	dest_host = args.to, args.port
 
-	connection_sks = [None, None, None]
+	connection_sks = [None, None]
 	for i in range(len(connection_sks)):
 		connection_sks[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		connection_sks[i].connect(dest_host)
@@ -85,8 +84,7 @@ def run_phaul_client(args, unknown_args):
 	target_args.extend(unknown_args)
 	target_args.extend(["--to", args.to,
 		"--fdrpc", str(connection_sks[0].fileno()),
-		"--fdmem", str(connection_sks[1].fileno()),
-		"--fdfs", str(connection_sks[2].fileno())])
+		"--fdmem", str(connection_sks[1].fileno())])
 
 	# Call p.haul
 	print "Exec p.haul: {0}".format(" ".join(target_args))
