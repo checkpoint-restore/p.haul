@@ -38,7 +38,7 @@ class p_haul_fs:
 		return True
 
 
-class p_haul_fs_receiver(threading.Thread):
+class p_haul_fs_receiver:
 	def __init__(self, fname_path, fs_sk):
 		"""Initialize ploop disk receiver
 
@@ -46,14 +46,24 @@ class p_haul_fs_receiver(threading.Thread):
 		and socket.
 		"""
 
+		self.__delta_receiver = delta_receiver(fname_path, fs_sk)
+
+	def start_receive(self):
+		self.__delta_receiver.start()
+
+	def stop_receive(self):
+		self.__delta_receiver.join()
+
+
+class delta_receiver(threading.Thread):
+	def __init__(self, delta_path, delta_fd):
+		"""Initialize ploop single active delta receiver"""
 		threading.Thread.__init__(self)
-		self.__fname_path = fname_path
-		self.__fs_sk = fs_sk
+		self.__path = delta_path
+		self.__fd = delta_fd
 
 	def run(self):
 		try:
-			logging.info("Started fs receiver")
-			libploop.ploopcopy_receiver(self.__fname_path,
-				self.__fs_sk.fileno())
+			libploop.ploopcopy_receiver(self.__path, self.__fd)
 		except:
-			logging.exception("Exception in p_haul_fs_receiver")
+			logging.exception("Exception in %s delta receiver", self.__path)

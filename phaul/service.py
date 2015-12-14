@@ -33,7 +33,7 @@ class phaul_service:
 
 		# Stop fs receiver if it is running
 		if self.__fs_receiver:
-			self.__fs_receiver.join()
+			self.__fs_receiver.stop_receive()
 
 		if self.img:
 			logging.info("Closing images")
@@ -51,7 +51,7 @@ class phaul_service:
 		# Create and start fs receiver if current p.haul module provide it
 		self.__fs_receiver = self.htype.get_fs_receiver(self._fs_sk)
 		if self.__fs_receiver:
-			self.__fs_receiver.start()
+			self.__fs_receiver.start_receive()
 
 	def rpc_set_options(self, opts):
 		self.criu_connection.set_options(opts)
