@@ -12,15 +12,21 @@ DDXML_FILENAME = "DiskDescriptor.xml"
 
 
 class p_haul_fs:
-	def __init__(self, ddxml_path, fs_sk):
-		"""Initialize ploop disk hauler
+	def __init__(self, deltas):
+		"""Initialize ploop disks hauler
 
-		Initialize ploop disk hauler with specified path to DiskDescriptor.xml
-		file and socket.
+		For each disk create libploop.ploopcopy object using path to disk
+		descriptor file and corresponding socket.
 		"""
 
-		logging.info("Initilized ploop hauler (%s)", ddxml_path)
-		self.__ploopcopy = libploop.ploopcopy(ddxml_path, fs_sk.fileno())
+		# Create libploop.ploopcopy objects, one per active ploop delta
+		self.__log_init_hauler(deltas)
+		self.__ploop_copies = []
+		for delta_path, delta_fd in deltas:
+			ddxml_path = self.__get_ddxml_path(delta_path)
+			self.__check_ddxml(ddxml_path)
+			self.__ploop_copies.append(
+				libploop.ploopcopy(ddxml_path, delta_fd))
 
 	def set_options(self, opts):
 		pass
@@ -29,13 +35,16 @@ class p_haul_fs:
 		pass
 
 	def start_migration(self):
-		self.__ploopcopy.copy_start()
+		for ploopcopy in self.__ploop_copies:
+			ploopcopy.copy_start()
 
 	def next_iteration(self):
-		self.__ploopcopy.copy_next_iteration()
+		for ploopcopy in self.__ploop_copies:
+			ploopcopy.copy_next_iteration()
 
 	def stop_migration(self):
-		self.__ploopcopy.copy_stop()
+		for ploopcopy in self.__ploop_copies:
+			ploopcopy.copy_stop()
 
 	def persistent_inodes(self):
 		"""Inode numbers do not change during ploop disk migration"""
@@ -57,20 +66,29 @@ class p_haul_fs:
 
 
 class p_haul_fs_receiver:
-	def __init__(self, fname_path, fs_sk):
-		"""Initialize ploop disk receiver
+	def __init__(self, deltas):
+		"""Initialize ploop disks receiver
 
-		Initialize ploop disk receiver with specified path to root.hds file
-		and socket.
+		For each disk create delta receiver object using path to active delta
+		of the ploop disk and corresponding socket.
 		"""
 
-		self.__delta_receiver = delta_receiver(fname_path, fs_sk)
+		# Create delta_receiver objects, one per active ploop delta
+		self.__log_init_receiver(deltas)
+		self.__delta_receivers = []
+		for delta_path, delta_fd in deltas:
+			self.__check_delta(delta_path)
+			self.__delta_receivers.append(delta_receiver(delta_path, delta_fd))
 
 	def start_receive(self):
-		self.__delta_receiver.start()
+		"""Start all delta receiver threads"""
+		for receiver in self.__delta_receivers:
+			receiver.start()
 
 	def stop_receive(self):
-		self.__delta_receiver.join()
+		"""Join all delta receiver threads"""
+		for receiver in self.__delta_receivers:
+			receiver.join()
 
 	def __log_init_receiver(self, deltas):
 		logging.info("Initialize ploop receiver")

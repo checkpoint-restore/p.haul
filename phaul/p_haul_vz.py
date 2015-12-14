@@ -8,7 +8,6 @@ import shlex
 import logging
 import criu_cr
 import util
-import fs_haul_shared
 import fs_haul_ploop
 import pycriu.rpc
 
@@ -190,32 +189,12 @@ class p_haul_type:
 			self._fs_mounted = False
 
 	def get_fs(self, fs_sk=None):
-		rootfs = self.__get_priv_fs_name()
-		logging.info("CT is on %s", rootfs)
-		if rootfs == "nfs":
-			return fs_haul_shared.p_haul_fs()
-		elif rootfs == "ext3" or rootfs == "ext4":
-			ddxml_path = os.path.join(self._ct_priv, "root.hdd",
-				"DiskDescriptor.xml")
-			return fs_haul_ploop.p_haul_fs(ddxml_path, fs_sk)
-		else:
-			logging.error("Unknown CT FS")
-			return None
+		deltas = [(os.path.join(self._ct_priv, "root.hdd", "root.hds"), fs_sk)]
+		return fs_haul_ploop.p_haul_fs(deltas)
 
 	def get_fs_receiver(self, fs_sk=None):
-		rootfs = self.__get_priv_fs_name()
-		logging.info("CT is on %s", rootfs)
-		if rootfs == "ext3" or rootfs == "ext4":
-			fname_path = os.path.join(self._ct_priv, "root.hdd", "root.hds")
-			return fs_haul_ploop.p_haul_fs_receiver(fname_path, fs_sk)
-		else:
-			return None
-
-	def __get_priv_fs_name(self):
-		rootfs = util.path_to_fs(self._ct_priv)
-		if not rootfs:
-			raise Exception("CT is on unknown FS")
-		return rootfs
+		deltas = [(os.path.join(self._ct_priv, "root.hdd", "root.hds"), fs_sk)]
+		return fs_haul_ploop.p_haul_fs_receiver(deltas)
 
 	def restored(self, pid):
 		pass
