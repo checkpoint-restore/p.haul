@@ -2,9 +2,13 @@
 # ploop disk hauler
 #
 
+import os
 import logging
 import threading
 import libploop
+
+
+DDXML_FILENAME = "DiskDescriptor.xml"
 
 
 class p_haul_fs:
@@ -37,6 +41,20 @@ class p_haul_fs:
 		"""Inode numbers do not change during ploop disk migration"""
 		return True
 
+	def __log_init_hauler(self, deltas):
+		logging.info("Initialize ploop hauler")
+		for delta in deltas:
+			logging.info("\t`- %s", delta[0])
+
+	def __get_ddxml_path(self, delta_path):
+		"""Get path to disk descriptor file by path to disk delta"""
+		return os.path.join(os.path.dirname(delta_path), DDXML_FILENAME)
+
+	def __check_ddxml(self, ddxml_path):
+		"""Check disk descriptor file exist"""
+		if not os.path.isfile(ddxml_path):
+			raise Exception("{0} file missing".format(ddxml_path))
+
 
 class p_haul_fs_receiver:
 	def __init__(self, fname_path, fs_sk):
@@ -53,6 +71,21 @@ class p_haul_fs_receiver:
 
 	def stop_receive(self):
 		self.__delta_receiver.join()
+
+	def __log_init_receiver(self, deltas):
+		logging.info("Initialize ploop receiver")
+		for delta in deltas:
+			logging.info("\t`- %s", delta[0])
+
+	def __check_delta(self, delta_path):
+		"""Check delta file don't exist and parent directory exist"""
+
+		delta_dir = os.path.dirname(delta_path)
+		if not os.path.isdir(delta_dir):
+			raise Exception("{0} directory missing".format(delta_dir))
+
+		if os.path.isfile(delta_path):
+			raise Exception("{0} already exist".format(delta_path))
 
 
 class delta_receiver(threading.Thread):
