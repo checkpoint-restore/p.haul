@@ -100,17 +100,19 @@ class phaul_iter_worker:
 
 	def start_migration(self):
 
-		migration_stats = mstats.migration_stats()
 		prev_dstats = None
 		iter_index = 0
 
-		migration_stats.start()
+		migration_stats = mstats.migration_stats()
+		migration_stats.handle_start()
+
+		self.fs.set_work_dir(self.img.work_dir())
 
 		self.validate_cpu()
 
 		logging.info("Preliminary FS migration")
-		self.fs.set_work_dir(self.img.work_dir())
-		self.fs.start_migration()
+		fsstats = self.fs.start_migration()
+		migration_stats.handle_fs_start(fsstats)
 
 		logging.info("Checking for Dirty Tracking")
 		if self.__pre_dump == PRE_DUMP_AUTO_DETECT:
@@ -133,25 +135,25 @@ class phaul_iter_worker:
 			self.criu_connection.memory_tracking(False)
 
 		while self.__pre_dump:
-			logging.info("* Iteration %d", iter_index)
 
+			logging.info("* Iteration %d", iter_index)
 			self.target_host.start_iter(True)
 			self.img.new_image_dir()
 
 			logging.info("\tIssuing pre-dump command to service")
-
 			req = criu_req.make_predump_req(
 				self.pid, self.img, self.criu_connection, self.fs)
 			resp = self.criu_connection.send_req(req)
 			if not resp.success:
 				raise Exception("Pre-dump failed")
-
 			logging.info("\tPre-dump succeeded")
+
+			fsstats = self.fs.next_iteration()
 
 			self.target_host.end_iter()
 
 			dstats = criu_api.criu_get_dstats(self.img)
-			migration_stats.iteration(dstats)
+			migration_stats.handle_iteration(dstats, fsstats)
 
 			#
 			# Need to decide whether we do next iteration
@@ -180,8 +182,6 @@ class phaul_iter_worker:
 			prev_dstats = dstats
 			logging.info("\t> Proceed to next iteration")
 
-			self.fs.next_iteration()
-
 		#
 		# Finish with iterations -- do full dump, send images
 		# to target host and restore from them there
@@ -205,7 +205,7 @@ class phaul_iter_worker:
 		#
 
 		logging.info("Final FS and images sync")
-		self.fs.stop_migration()
+		fsstats = self.fs.stop_migration()
 		self.img.sync_imgs_to_target(self.target_host, self.htype,
 			self.connection.mem_sk)
 
@@ -225,7 +225,7 @@ class phaul_iter_worker:
 		self.htype.umount()
 
 		dstats = criu_api.criu_get_dstats(self.img)
-		migration_stats.iteration(dstats)
-		migration_stats.stop(self)
+		migration_stats.handle_iteration(dstats, fsstats)
+		migration_stats.handle_stop(self)
 		self.img.close()
 		self.criu_connection.close()

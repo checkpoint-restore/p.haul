@@ -16,24 +16,39 @@ class migration_stats:
 		self._iter_fr_times = []
 		self._frozen_time = 0
 
-	def start(self):
+	def handle_start(self):
 		self._start_time = time.time()
 
-	def stop(self, iters):
+	def handle_fs_start(self, fsstats):
+		self.__print_fsstats(fsstats)
+
+	def handle_stop(self, iters):
 		self._rst_time = iters.get_target_host().restore_time()
 		self._img_sync_time = iters.img.img_sync_time()
 		self._end_time = time.time()
+		self.__print_overall_stats()
 
-		self._print_stats()
+	def handle_iteration(self, dstats, fsstats):
+		self._iter_fr_times.append("%.2lf" % usec2sec(dstats.frozen_time))
+		self._frozen_time += dstats.frozen_time
+		self.__print_dstats(dstats)
+		self.__print_fsstats(fsstats)
 
-	def iteration(self, stats):
-		logging.info("Dumped %d pages, %d skipped",
-			stats.pages_written, stats.pages_skipped_parent)
+	def __print_dstats(self, dstats):
+		if dstats:
+			logging.info("Dumped %d pages, %d skipped",
+				dstats.pages_written, dstats.pages_skipped_parent)
 
-		self._iter_fr_times.append("%.2lf" % usec2sec(stats.frozen_time))
-		self._frozen_time += stats.frozen_time
+	def __print_fsstats(self, fsstats):
+		if fsstats:
+			mbytes_xferred_str = ""
+			mbytes_xferred = fsstats.bytes_xferred >> 20
+			if mbytes_xferred != 0:
+				mbytes_xferred_str = " (~{0}Mb)".format(mbytes_xferred)
+			logging.info("Fs driver transfer %d bytes%s",
+				fsstats.bytes_xferred, mbytes_xferred_str)
 
-	def _print_stats(self):
+	def __print_overall_stats(self):
 		logging.info("Migration succeeded")
 		logging.info("\t   total time is ~%.2lf sec", self._end_time - self._start_time)
 		logging.info("\t  frozen time is ~%.2lf sec (%s)", usec2sec(self._frozen_time), str(self._iter_fr_times))
