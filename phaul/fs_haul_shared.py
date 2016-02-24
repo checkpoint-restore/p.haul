@@ -16,13 +16,13 @@ class p_haul_fs:
 		pass
 
 	def start_migration(self):
-		pass
+		return None
 
 	def next_iteration(self):
-		pass
+		return None
 
 	def stop_migration(self):
-		pass
+		return None
 
 	# Inode numbers do not change on this FS
 	# during migration

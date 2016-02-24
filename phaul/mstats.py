@@ -6,6 +6,11 @@ def usec2sec(usec):
 	return usec / 1000000.
 
 
+class fs_iter_stats:
+	def __init__(self, bytes_xferred):
+		self.bytes_xferred = bytes_xferred
+
+
 class migration_stats:
 	def __init__(self):
 		self._iter_fr_times = []

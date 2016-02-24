@@ -6,6 +6,7 @@ import os
 import logging
 import threading
 import libploop
+import mstats
 
 
 DDXML_FILENAME = "DiskDescriptor.xml"
@@ -35,16 +36,22 @@ class p_haul_fs:
 		pass
 
 	def start_migration(self):
+		total_xferred = 0
 		for ploopcopy in self.__ploop_copies:
-			ploopcopy.copy_start()
+			total_xferred += ploopcopy.copy_start()
+		return mstats.fs_iter_stats(total_xferred)
 
 	def next_iteration(self):
+		total_xferred = 0
 		for ploopcopy in self.__ploop_copies:
-			ploopcopy.copy_next_iteration()
+			total_xferred += ploopcopy.copy_next_iteration()
+		return mstats.fs_iter_stats(total_xferred)
 
 	def stop_migration(self):
+		total_xferred = 0
 		for ploopcopy in self.__ploop_copies:
-			ploopcopy.copy_stop()
+			total_xferred += ploopcopy.copy_stop()
+		return mstats.fs_iter_stats(total_xferred)
 
 	def persistent_inodes(self):
 		"""Inode numbers do not change during ploop disk migration"""
