@@ -17,6 +17,22 @@ vz_conf_dir = "/etc/vz/conf/"
 vzctl_bin = "vzctl"
 
 
+vz_cgroup_mount_map = {
+	"/sys/fs/cgroup/cpu,cpuacct": "cpu",
+	"/sys/fs/cgroup/cpuset": "cpuset",
+	"/sys/fs/cgroup/net_cls": "net_cls",
+	"/sys/fs/cgroup/memory": "memory",
+	"/sys/fs/cgroup/devices": "devices",
+	"/sys/fs/cgroup/blkio": "blkio",
+	"/sys/fs/cgroup/freezer": "freezer",
+	"/sys/fs/cgroup/beancounter": "beancounter",
+	"/sys/fs/cgroup/ve": "ve",
+	"/sys/fs/cgroup/perf_event": "perf_event",
+	"/sys/fs/cgroup/hugetlb": "hugetlb",
+	"/sys/fs/cgroup/systemd": "systemd",
+}
+
+
 class p_haul_type:
 	def __init__(self, ctid):
 		self._ctid = ctid
@@ -105,13 +121,20 @@ class p_haul_type:
 
 	def adjust_criu_req(self, req):
 		"""Add module-specific options to criu request"""
-		if req.type == pycriu.rpc.DUMP or req.type == pycriu.rpc.RESTORE:
+		if req.type == pycriu.rpc.DUMP:
+
+			# Specify root fs
+			req.opts.root = self._ct_root
+
 			# Restore cgroups configuration
 			req.opts.manage_cgroups = True
-			# Automatically resolve external mounts
-			req.opts.auto_ext_mnt = True
-			req.opts.ext_sharing = True
-			req.opts.ext_masters = True
+
+			# Setup mapping for external Virtuozzo specific cgroup mounts
+			for key, value in vz_cgroup_mount_map.items():
+				req.opts.ext_mnt.add(key=key, val=value)
+
+			# Increase ghost-limit up to 50Mb
+			req.opts.ghost_limit = 50 << 20
 
 	def root_task_pid(self):
 		# Expect first line of tasks file contain root pid of CT
