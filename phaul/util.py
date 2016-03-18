@@ -6,7 +6,7 @@ import socket
 import tarfile
 
 
-class fileobj_wrap:
+class tarfile_fileobj_wrap:
 	"""Helper class provides read/write interface for socket object
 
 	Current helper class wrap recv/send socket methods in read/write interface.
