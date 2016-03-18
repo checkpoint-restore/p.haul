@@ -20,8 +20,9 @@ class fileobj_wrap:
 	def read(self, size=0x10000):
 		return self.__sk.recv(size)
 
-	def write(self, str):
-		self.__sk.send(str)
+	def write(self, data):
+		self.__sk.sendall(data)
+		return len(data)
 
 
 def discard_sk_input(sk):
