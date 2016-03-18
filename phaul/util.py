@@ -3,6 +3,7 @@ import fcntl
 import errno
 import logging
 import socket
+import tarfile
 
 
 class fileobj_wrap:
@@ -16,28 +17,30 @@ class fileobj_wrap:
 
 	def __init__(self, sk):
 		self.__sk = sk
+		self.__nread = 0
 
 	def read(self, size=0x10000):
-		return self.__sk.recv(size)
+		data = self.__sk.recv(size)
+		self.__nread += len(data)
+		return data
 
 	def write(self, data):
 		self.__sk.sendall(data)
 		return len(data)
 
+	def discard_unread_input(self):
+		"""
+		Cleanup socket after tarfile
 
-def discard_sk_input(sk):
-	"""Read all data from socket and discard it
+		tarfile module always align data on source side according to RECORDSIZE
+		constant, but it don't read aligning bytes on target side in some cases
+		depending on received buffer size. Read aligning manually and discard.
+		"""
 
-	Current helper function needed to workaround tarfile library bug that
-	leads to ownerless garbage zero blocks in socket when tarfile constructed
-	with socket as file object to transfer tarballs over network.
-	"""
-	try:
-		while True:
-			sk.recv(0x10000, socket.MSG_DONTWAIT)
-	except socket.error as e:
-		if e.errno != errno.EWOULDBLOCK:
-			raise e
+		remainder = self.__nread % tarfile.RECORDSIZE
+		if remainder > 0:
+			self.__sk.recv(tarfile.RECORDSIZE - remainder, socket.MSG_WAITALL)
+			self.__nread += tarfile.RECORDSIZE - remainder
 
 
 class net_dev:
