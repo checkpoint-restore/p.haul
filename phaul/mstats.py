@@ -36,7 +36,7 @@ class migration_stats:
 
 	def __print_dstats(self, dstats):
 		if dstats:
-			logging.info("Dumped %d pages, %d skipped",
+			logging.info("\tDumped %d pages, %d skipped",
 				dstats.pages_written, dstats.pages_skipped_parent)
 
 	def __print_fsstats(self, fsstats):
@@ -45,7 +45,7 @@ class migration_stats:
 			mbytes_xferred = fsstats.bytes_xferred >> 20
 			if mbytes_xferred != 0:
 				mbytes_xferred_str = " (~{0}Mb)".format(mbytes_xferred)
-			logging.info("Fs driver transfer %d bytes%s",
+			logging.info("\tFs driver transfer %d bytes%s",
 				fsstats.bytes_xferred, mbytes_xferred_str)
 
 	def __print_overall_stats(self):
