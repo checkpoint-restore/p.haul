@@ -83,12 +83,10 @@ class phaul_iter_worker:
 		if not self.target_host.check_cpuinfo():
 			raise Exception("CPUs mismatch")
 
-	def __pre_dump_check(self):
-		# pre-dump auto-detection
+	def __check_support_mem_track(self):
 		req = criu_req.make_dirty_tracking_req(self.img)
 		resp = self.criu_connection.send_req(req)
 		if not resp.success:
-			# Not able to do auto-detection, disable memory tracking
 			raise Exception()
 		if resp.HasField('features'):
 			return False
@@ -97,6 +95,27 @@ class phaul_iter_worker:
 		if resp.features.mem_track:
 			return True
 		return False
+
+	def __check_use_pre_dumps(self):
+		logging.info("Checking for Dirty Tracking")
+		use_pre_dumps = False
+		if self.__pre_dump == PRE_DUMP_AUTO_DETECT:
+			try:
+				# Detect is memory tracking supported
+				use_pre_dumps = (self.__check_support_mem_track() and
+					self.htype.can_pre_dump())
+				logging.info("\t`- Auto %s",
+					(use_pre_dumps and "enabled" or "disabled"))
+			except:
+				# Memory tracking auto detection not supported
+				use_pre_dumps = False
+				logging.info("\t`- Auto detection not possible - Disabled")
+		else:
+			use_pre_dumps = self.__pre_dump
+			logging.info("\t`- Explicitly %s",
+				(use_pre_dumps and "enabled" or "disabled"))
+		self.criu_connection.memory_tracking(use_pre_dumps)
+		return use_pre_dumps
 
 	def start_migration(self):
 
@@ -110,31 +129,13 @@ class phaul_iter_worker:
 
 		self.__validate_cpu()
 
+		use_pre_dumps = self.__check_use_pre_dumps()
+
 		logging.info("Preliminary FS migration")
 		fsstats = self.fs.start_migration()
 		migration_stats.handle_fs_start(fsstats)
 
-		logging.info("Checking for Dirty Tracking")
-		if self.__pre_dump == PRE_DUMP_AUTO_DETECT:
-			# pre-dump auto-detection
-			try:
-				self.__pre_dump = (self.__pre_dump_check() and self.htype.can_pre_dump())
-				logging.info("\t`- Auto %s" % (self.__pre_dump and 'enabled' or 'disabled'))
-			except:
-				# The available criu seems to not
-				# support memory tracking auto detection.
-				self.__pre_dump = PRE_DUMP_DISABLE
-				logging.info("\t`- Auto detection not possible "
-						"- Disabled")
-		else:
-			logging.info("\t`- Command-line %s" % (self.__pre_dump and 'enabled' or 'disabled'))
-
-		if self.__pre_dump:
-			logging.info("Starting iterations")
-		else:
-			self.criu_connection.memory_tracking(False)
-
-		while self.__pre_dump:
+		while use_pre_dumps:
 
 			logging.info("* Iteration %d", iter_index)
 			self.target_host.start_iter(True)
