@@ -31,7 +31,7 @@ class criu_conn:
 		self._shell_job = False
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		util.set_cloexec(css[1])
-		logging.info("\t`- Passing (ctl:%d, data:%d) pair to CRIU", css[0].fileno(), mem_sk.fileno())
+		logging.info("Passing (ctl:%d, data:%d) pair to CRIU", css[0].fileno(), mem_sk.fileno())
 		self._swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
 		css[0].close()
 		self._cs = css[1]

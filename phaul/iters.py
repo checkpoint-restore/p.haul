@@ -22,6 +22,16 @@ PRE_DUMP_DISABLE = False
 PRE_DUMP_ENABLE = True
 
 
+def is_live_mode(mode):
+	"""Check is migration running in live mode"""
+	return mode == MIGRATION_MODE_LIVE
+
+
+def is_restart_mode(mode):
+	"""Check is migration running in restart mode"""
+	return mode == MIGRATION_MODE_RESTART
+
+
 class iter_consts:
 	"""Constants for iterations management"""
 
@@ -45,9 +55,6 @@ class phaul_iter_worker:
 		self.target_host = xem_rpc_client.rpc_proxy(self.connection.rpc_sk)
 
 		logging.info("Setting up local")
-		self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
-		self.img = images.phaul_images("dmp")
-
 		self.htype = htype.get_src(p_type)
 		if not self.htype:
 			raise Exception("No htype driver found")
@@ -56,8 +63,14 @@ class phaul_iter_worker:
 		if not self.fs:
 			raise Exception("No FS driver found")
 
+		self.img = None
+		self.criu_connection = None
+		if is_live_mode(self.__mode):
+			self.img = images.phaul_images("dmp")
+			self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
+
 		logging.info("Setting up remote")
-		self.target_host.setup(p_type)
+		self.target_host.setup(p_type, mode)
 
 	def get_target_host(self):
 		return self.target_host
@@ -65,11 +78,13 @@ class phaul_iter_worker:
 	def set_options(self, opts):
 		self.__force = opts["force"]
 		self.__pre_dump = opts["pre_dump"]
-		self.target_host.set_options(opts)
-		self.criu_connection.set_options(opts)
-		self.img.set_options(opts)
 		self.htype.set_options(opts)
 		self.fs.set_options(opts)
+		if self.img:
+			self.img.set_options(opts)
+		if self.criu_connection:
+			self.criu_connection.set_options(opts)
+		self.target_host.set_options(opts)
 
 	def __validate_cpu(self):
 		if self.__force:
@@ -127,9 +142,9 @@ class phaul_iter_worker:
 
 	def start_migration(self):
 		logging.info("Start migration in %s mode", self.__mode)
-		if self.__mode == MIGRATION_MODE_LIVE:
+		if is_live_mode(self.__mode):
 			self.__start_live_migration()
-		elif self.__mode == MIGRATION_MODE_RESTART:
+		elif is_restart_mode(self.__mode):
 			self.__start_restart_migration()
 		else:
 			raise Exception("Unknown migration mode")
@@ -196,9 +211,9 @@ class phaul_iter_worker:
 		# Restore htype on target
 		logging.info("Asking target host to restore")
 		self.target_host.restore_from_images()
+		logging.info("Restored on target host")
 
 		# Ack previous dump request to terminate all frozen tasks
-		logging.info("Restored on target host")
 		resp = self.criu_connection.ack_notify()
 		if not resp.success:
 			raise Exception("Dump screwed up")
@@ -220,7 +235,53 @@ class phaul_iter_worker:
 		tree on source host and start it on target host.
 		"""
 
-		raise Exception("Not implemented")
+		migration_stats = mstats.restart_stats()
+		migration_stats.handle_start()
+
+		# Handle preliminary FS migration
+		logging.info("Preliminary FS migration")
+		fsstats = self.fs.start_migration()
+		migration_stats.handle_preliminary(fsstats)
+
+		iter_index = 0
+		prev_fsstats = None
+
+		while True:
+
+			# Handle FS migration iteration
+			logging.info("* Iteration %d", iter_index)
+			fsstats = self.fs.next_iteration()
+			migration_stats.handle_iteration(fsstats)
+
+			# Decide whether we continue iteration or stop and do final sync
+			if not self.__check_restart_iter_progress(iter_index, fsstats, prev_fsstats):
+				break
+
+			iter_index += 1
+			prev_fsstats = fsstats
+
+		# Stop htype on source and leave it mounted
+		logging.info("Final stop and start")
+		self.htype.stop(False)
+
+		try:
+			# Handle final FS sync on mounted htype
+			logging.info("Final FS sync")
+			fsstats = self.fs.stop_migration()
+			migration_stats.handle_iteration(fsstats)
+
+			# Start htype on target
+			logging.info("Asking target host to start")
+			self.target_host.start_htype()
+			logging.info("Started on target host")
+
+		except:
+			self.htype.start()
+			raise
+
+		logging.info("Migration succeeded")
+		self.htype.umount()
+		migration_stats.handle_stop()
 
 	def __check_live_iter_progress(self, index, dstats, prev_dstats):
 
@@ -231,9 +292,9 @@ class phaul_iter_worker:
 			return False
 
 		if prev_dstats:
-			w_add = dstats.pages_written - prev_dstats.pages_written
-			w_add = w_add * 100 / prev_dstats.pages_written
-			if w_add > iter_consts.MAX_ITER_GROW_RATE:
+			grow_rate = self.__calc_grow_rate(dstats.pages_written,
+				prev_dstats.pages_written)
+			if grow_rate > iter_consts.MAX_ITER_GROW_RATE:
 				logging.info("\t> Iteration grows")
 				return False
 
@@ -243,3 +304,29 @@ class phaul_iter_worker:
 
 		logging.info("\t> Proceed to next iteration")
 		return True
+
+	def __check_restart_iter_progress(self, index, fsstats, prev_fsstats):
+
+		logging.info("Checking iteration progress:")
+
+		if fsstats.bytes_xferred <= iter_consts.MIN_ITER_FS_XFER_BYTES:
+			logging.info("\t> Small fs transfer")
+			return False
+
+		if prev_fsstats:
+			grow_rate = self.__calc_grow_rate(fsstats.bytes_xferred,
+				prev_fsstats.bytes_xferred)
+			if grow_rate > iter_consts.MAX_ITER_GROW_RATE:
+				logging.info("\t> Iteration grows")
+				return False
+
+		if index >= iter_consts.MAX_ITERS_COUNT:
+			logging.info("\t> Too many iterations")
+			return False
+
+		logging.info("\t> Proceed to next iteration")
+		return True
+
+	def __calc_grow_rate(self, value, prev_value):
+		delta = value - prev_value
+		return delta * 100 / prev_value

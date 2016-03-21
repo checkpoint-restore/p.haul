@@ -7,15 +7,17 @@ import images
 import criu_api
 import criu_req
 import htype
+import iters
 
 
 class phaul_service:
 	def __init__(self, connection):
 		self.connection = connection
-		self.criu_connection = None
-		self.img = None
 		self.htype = None
 		self.__fs_receiver = None
+		self.criu_connection = None
+		self.img = None
+		self.__mode = iters.MIGRATION_MODE_LIVE
 		self.dump_iter_index = 0
 		self.restored = False
 
@@ -28,9 +30,11 @@ class phaul_service:
 			self.criu_connection.close()
 
 		if self.htype and not self.restored:
-			self.htype.umount()
+			if iters.is_live_mode(self.__mode):
+				self.htype.umount()
+			elif iters.is_restart_mode(self.__mode):
+				self.htype.stop(True)
 
-		# Stop fs receiver if it is running
 		if self.__fs_receiver:
 			self.__fs_receiver.stop_receive()
 
@@ -40,22 +44,27 @@ class phaul_service:
 				self.img.save_images()
 			self.img.close()
 
-	def rpc_setup(self, htype_id):
-		logging.info("Setting up service side %s", htype_id)
-		self.img = images.phaul_images("rst")
+	def rpc_setup(self, htype_id, mode):
 
-		self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
+		logging.info("Setting up service side %s", htype_id)
+		self.__mode = mode
+
 		self.htype = htype.get_dst(htype_id)
 
-		# Create and start fs receiver if current p.haul module provide it
 		self.__fs_receiver = self.htype.get_fs_receiver(self.connection.fdfs)
 		if self.__fs_receiver:
 			self.__fs_receiver.start_receive()
 
+		if iters.is_live_mode(self.__mode):
+			self.img = images.phaul_images("rst")
+			self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
+
 	def rpc_set_options(self, opts):
-		self.criu_connection.set_options(opts)
-		self.img.set_options(opts)
 		self.htype.set_options(opts)
+		if self.criu_connection:
+			self.criu_connection.set_options(opts)
+		if self.img:
+			self.img.set_options(opts)
 
 	def start_page_server(self):
 		logging.info("Starting page server for iter %d", self.dump_iter_index)
@@ -100,3 +109,9 @@ class phaul_service:
 	def rpc_restore_time(self):
 		stats = criu_api.criu_get_rstats(self.img)
 		return stats.restore_time
+
+	def rpc_start_htype(self):
+		logging.info("Starting")
+		self.htype.start()
+		logging.info("Start succeeded")
+		self.restored = True
