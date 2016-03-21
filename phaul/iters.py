@@ -12,6 +12,11 @@ import criu_req
 import htype
 import errno
 
+
+MIGRATION_MODE_LIVE = "live"
+MIGRATION_MODE_RESTART = "restart"
+MIGRATION_MODES = (MIGRATION_MODE_LIVE, MIGRATION_MODE_RESTART)
+
 PRE_DUMP_AUTO_DETECT = None
 PRE_DUMP_DISABLE = False
 PRE_DUMP_ENABLE = True
@@ -29,7 +34,8 @@ phaul_iter_grow_max = 10
 
 
 class phaul_iter_worker:
-	def __init__(self, p_type, connection):
+	def __init__(self, p_type, mode, connection):
+		self.__mode = mode
 		self.connection = connection
 		self.target_host = xem_rpc_client.rpc_proxy(self.connection.rpc_sk)
 
@@ -115,6 +121,21 @@ class phaul_iter_worker:
 		return use_pre_dumps
 
 	def start_migration(self):
+		logging.info("Start migration in %s mode", self.__mode)
+		if self.__mode == MIGRATION_MODE_LIVE:
+			self.__start_live_migration()
+		elif self.__mode == MIGRATION_MODE_RESTART:
+			self.__start_restart_migration()
+		else:
+			raise Exception("Unknown migration mode")
+
+	def __start_live_migration(self):
+		"""
+		Start migration in live mode
+
+		Migrate memory and fs to target host iteratively while possible,
+		checkpoint process tree on source host and restore it on target host.
+		"""
 
 		self.fs.set_work_dir(self.img.work_dir())
 		self.__validate_cpu()
@@ -148,7 +169,7 @@ class phaul_iter_worker:
 			migration_stats.handle_iteration(dstats, fsstats)
 
 			# Decide whether we continue iteration or stop and do final dump
-			if not self.__check_iter_progress(iter_index, dstats, prev_dstats):
+			if not self.__check_live_iter_progress(iter_index, dstats, prev_dstats):
 				break
 
 			iter_index += 1
@@ -185,7 +206,17 @@ class phaul_iter_worker:
 		self.img.close()
 		self.criu_connection.close()
 
-	def __check_iter_progress(self, index, dstats, prev_dstats):
+	def __start_restart_migration(self):
+		"""
+		Start migration in restart mode
+
+		Migrate fs to target host iteratively while possible, stop process
+		tree on source host and start it on target host.
+		"""
+
+		raise Exception("Not implemented")
+
+	def __check_live_iter_progress(self, index, dstats, prev_dstats):
 
 		logging.info("Checking iteration progress:")
 
