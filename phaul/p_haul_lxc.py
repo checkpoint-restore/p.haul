@@ -133,6 +133,15 @@ class p_haul_type:
 		self._fs_mounted = True
 		return nroot
 
+	def umount(self):
+		pass
+
+	def start(self):
+		pass
+
+	def stop(self, umount):
+		pass
+
 	def get_fs(self, fdfs=None):
 		return fs_haul_shared.p_haul_fs()
 
@@ -154,9 +163,6 @@ class p_haul_type:
 
 	def can_migrate_tcp(self):
 		return True
-
-	def umount(self):
-		pass
 
 	def veths(self):
 		#

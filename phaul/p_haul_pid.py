@@ -45,6 +45,12 @@ class p_haul_type:
 	def umount(self):
 		pass
 
+	def start(self):
+		pass
+
+	def stop(self, umount):
+		pass
+
 	# Get driver for FS migration
 	def get_fs(self, fdfs=None):
 		return fs_haul_shared.p_haul_fs()

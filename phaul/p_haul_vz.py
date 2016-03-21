@@ -191,7 +191,7 @@ class p_haul_type:
 
 	def mount(self):
 		logging.info("Mounting CT root to %s", self._ct_root)
-		logging.info("Starting vzctl mount")
+		logging.info("Running vzctl mount")
 		proc = subprocess.Popen(
 			[vzctl_bin, "--skiplock", "mount", self._ctid],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -203,13 +203,35 @@ class p_haul_type:
 	def umount(self):
 		if self._fs_mounted:
 			logging.info("Umounting CT root")
-			logging.info("Starting vzctl umount")
+			logging.info("Running vzctl umount")
 			proc = subprocess.Popen(
 				[vzctl_bin, "--skiplock", "umount", self._ctid],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
 			logging.info(proc_output)
 			self._fs_mounted = False
+
+	def start(self):
+		logging.info("Starting CT")
+		logging.info("Running vzctl start")
+		proc = subprocess.Popen(
+			[vzctl_bin, "--skiplock", "start", self._ctid],
+			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		proc_output = proc.communicate()[0]
+		logging.info(proc_output)
+		self._fs_mounted = True
+
+	def stop(self, umount):
+		logging.info("Stopping CT")
+		logging.info("Running vzctl stop")
+		args = [vzctl_bin, "--skiplock", "stop", self._ctid]
+		if not umount:
+			args.append("--skip-umount")
+		proc = subprocess.Popen(
+			args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		proc_output = proc.communicate()[0]
+		logging.info(proc_output)
+		self._fs_mounted = not umount
 
 	def get_fs(self, fdfs=None):
 		deltas = self.__parse_fdfs_arg(fdfs)
