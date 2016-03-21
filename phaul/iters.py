@@ -142,13 +142,13 @@ class phaul_iter_worker:
 		use_pre_dumps = self.__check_use_pre_dumps()
 		root_pid = self.htype.root_task_pid()
 
-		migration_stats = mstats.migration_stats()
+		migration_stats = mstats.live_stats()
 		migration_stats.handle_start()
 
 		# Handle preliminary FS migration
 		logging.info("Preliminary FS migration")
 		fsstats = self.fs.start_migration()
-		migration_stats.handle_fs_start(fsstats)
+		migration_stats.handle_preliminary(fsstats)
 
 		iter_index = 0
 		prev_dstats = None
@@ -201,6 +201,7 @@ class phaul_iter_worker:
 		dstats = criu_api.criu_get_dstats(self.img)
 		migration_stats.handle_iteration(dstats, fsstats)
 
+		logging.info("Migration succeeded")
 		self.htype.umount()
 		migration_stats.handle_stop(self)
 		self.img.close()
