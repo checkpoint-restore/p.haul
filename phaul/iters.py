@@ -61,7 +61,7 @@ class phaul_iter_worker:
 		self.htype.set_options(opts)
 		self.fs.set_options(opts)
 
-	def validate_cpu(self):
+	def __validate_cpu(self):
 		if self.__force:
 			return
 		logging.info("Checking CPU compatibility")
@@ -83,7 +83,7 @@ class phaul_iter_worker:
 		if not self.target_host.check_cpuinfo():
 			raise Exception("CPUs mismatch")
 
-	def pre_dump_check(self):
+	def __pre_dump_check(self):
 		# pre-dump auto-detection
 		req = criu_req.make_dirty_tracking_req(self.img)
 		resp = self.criu_connection.send_req(req)
@@ -108,7 +108,7 @@ class phaul_iter_worker:
 
 		self.fs.set_work_dir(self.img.work_dir())
 
-		self.validate_cpu()
+		self.__validate_cpu()
 
 		logging.info("Preliminary FS migration")
 		fsstats = self.fs.start_migration()
@@ -118,7 +118,7 @@ class phaul_iter_worker:
 		if self.__pre_dump == PRE_DUMP_AUTO_DETECT:
 			# pre-dump auto-detection
 			try:
-				self.__pre_dump = (self.pre_dump_check() and self.htype.can_pre_dump())
+				self.__pre_dump = (self.__pre_dump_check() and self.htype.can_pre_dump())
 				logging.info("\t`- Auto %s" % (self.__pre_dump and 'enabled' or 'disabled'))
 			except:
 				# The available criu seems to not
