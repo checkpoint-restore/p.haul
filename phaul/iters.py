@@ -7,6 +7,7 @@ import images
 import mstats
 import xem_rpc_client
 import criu_api
+import criu_cr
 import criu_req
 import htype
 import errno
@@ -140,12 +141,7 @@ class phaul_iter_worker:
 			self.img.new_image_dir()
 
 			logging.info("\tIssuing pre-dump command to service")
-			req = criu_req.make_predump_req(
-				self.pid, self.img, self.criu_connection, self.fs)
-			resp = self.criu_connection.send_req(req)
-			if not resp.success:
-				raise Exception("Pre-dump failed")
-			logging.info("\tPre-dump succeeded")
+			criu_cr.criu_predump(self.pid, self.img, self.criu_connection, self.fs)
 
 			fsstats = self.fs.next_iteration()
 
