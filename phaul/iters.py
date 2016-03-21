@@ -45,8 +45,6 @@ class phaul_iter_worker:
 		if not self.fs:
 			raise Exception("No FS driver found")
 
-		self.pid = self.htype.root_task_pid()
-
 		logging.info("Setting up remote")
 		self.target_host.setup(p_type)
 
@@ -118,109 +116,93 @@ class phaul_iter_worker:
 
 	def start_migration(self):
 
-		prev_dstats = None
-		iter_index = 0
+		self.fs.set_work_dir(self.img.work_dir())
+		self.__validate_cpu()
+		use_pre_dumps = self.__check_use_pre_dumps()
+		root_pid = self.htype.root_task_pid()
 
 		migration_stats = mstats.migration_stats()
 		migration_stats.handle_start()
 
-		self.fs.set_work_dir(self.img.work_dir())
-
-		self.__validate_cpu()
-
-		use_pre_dumps = self.__check_use_pre_dumps()
-
+		# Handle preliminary FS migration
 		logging.info("Preliminary FS migration")
 		fsstats = self.fs.start_migration()
 		migration_stats.handle_fs_start(fsstats)
 
+		iter_index = 0
+		prev_dstats = None
+
 		while use_pre_dumps:
 
+			# Handle predump
 			logging.info("* Iteration %d", iter_index)
 			self.target_host.start_iter(True)
 			self.img.new_image_dir()
-
-			logging.info("\tIssuing pre-dump command to service")
-			criu_cr.criu_predump(self.pid, self.img, self.criu_connection, self.fs)
-
-			fsstats = self.fs.next_iteration()
-
+			criu_cr.criu_predump(root_pid, self.img, self.criu_connection, self.fs)
 			self.target_host.end_iter()
+
+			# Handle FS migration iteration
+			fsstats = self.fs.next_iteration()
 
 			dstats = criu_api.criu_get_dstats(self.img)
 			migration_stats.handle_iteration(dstats, fsstats)
 
-			#
-			# Need to decide whether we do next iteration
-			# or stop on the existing and go do full dump
-			# and restore
-			#
-
-			logging.info("Checking iteration progress:")
-
-			if dstats.pages_written <= phaul_iter_min_size:
-				logging.info("\t> Small dump")
-				break
-
-			if prev_dstats:
-				w_add = dstats.pages_written - prev_dstats.pages_written
-				w_add = w_add * 100 / prev_dstats.pages_written
-				if w_add > phaul_iter_grow_max:
-					logging.info("\t> Iteration grows")
-					break
-
-			if iter_index >= phaul_iter_max:
-				logging.info("\t> Too many iterations")
+			# Decide whether we continue iteration or stop and do final dump
+			if not self.__check_iter_progress(iter_index, dstats, prev_dstats):
 				break
 
 			iter_index += 1
 			prev_dstats = dstats
-			logging.info("\t> Proceed to next iteration")
 
-		#
-		# Finish with iterations -- do full dump, send images
-		# to target host and restore from them there
-		#
-
+		# Dump htype on source and leave its tasks in frozen state
 		logging.info("Final dump and restore")
-
 		self.target_host.start_iter(self.htype.dump_need_page_server())
 		self.img.new_image_dir()
-
-		logging.info("\tIssuing dump command to service")
-		self.htype.final_dump(self.pid, self.img, self.criu_connection, self.fs)
-
-		logging.info("Dump complete")
+		self.htype.final_dump(root_pid, self.img, self.criu_connection, self.fs)
 		self.target_host.end_iter()
 
-		#
-		# Dump is complete -- go to target node,
-		# restore them there and kill (if required)
-		# tasks on source node
-		#
-
+		# Handle final FS and images sync on frozen htype
 		logging.info("Final FS and images sync")
 		fsstats = self.fs.stop_migration()
 		self.img.sync_imgs_to_target(self.target_host, self.htype,
 			self.connection.mem_sk)
 
+		# Restore htype on target
 		logging.info("Asking target host to restore")
 		self.target_host.restore_from_images()
 
-		#
-		# Ack the notify after restore -- CRIU would
-		# then terminate all tasks and send us back
-		# DUMP/success message
-		#
-
+		# Ack previous dump request to terminate all frozen tasks
+		logging.info("Restored on target host")
 		resp = self.criu_connection.ack_notify()
 		if not resp.success:
 			raise Exception("Dump screwed up")
 
-		self.htype.umount()
-
 		dstats = criu_api.criu_get_dstats(self.img)
 		migration_stats.handle_iteration(dstats, fsstats)
+
+		self.htype.umount()
 		migration_stats.handle_stop(self)
 		self.img.close()
 		self.criu_connection.close()
+
+	def __check_iter_progress(self, index, dstats, prev_dstats):
+
+		logging.info("Checking iteration progress:")
+
+		if dstats.pages_written <= phaul_iter_min_size:
+			logging.info("\t> Small dump")
+			return False
+
+		if prev_dstats:
+			w_add = dstats.pages_written - prev_dstats.pages_written
+			w_add = w_add * 100 / prev_dstats.pages_written
+			if w_add > phaul_iter_grow_max:
+				logging.info("\t> Iteration grows")
+				return False
+
+		if index >= phaul_iter_max:
+			logging.info("\t> Too many iterations")
+			return False
+
+		logging.info("\t> Proceed to next iteration")
+		return True
