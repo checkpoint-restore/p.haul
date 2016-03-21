@@ -21,16 +21,21 @@ PRE_DUMP_AUTO_DETECT = None
 PRE_DUMP_DISABLE = False
 PRE_DUMP_ENABLE = True
 
-# Constants for iterations management
-#
-# Maximum number of iterations
-phaul_iter_max = 8
-# If we dump less than this amount of pages we abort
-# iterations and go do the full dump
-phaul_iter_min_size = 64
-# Each iteration should dump less pages or at most
-# this % more than previous
-phaul_iter_grow_max = 10
+
+class iter_consts:
+	"""Constants for iterations management"""
+
+	# Maximum number of iterations
+	MAX_ITERS_COUNT = 8
+
+	# Minimum count of dumped pages needed to continue iteration
+	MIN_ITER_PAGES_COUNT = 64
+
+	# Minimum count of transferred fs bytes needed to continue iteration
+	MIN_ITER_FS_XFER_BYTES = 0x100000
+
+	# Maximum acceptable iteration grow rate in percents
+	MAX_ITER_GROW_RATE = 10
 
 
 class phaul_iter_worker:
@@ -221,18 +226,18 @@ class phaul_iter_worker:
 
 		logging.info("Checking iteration progress:")
 
-		if dstats.pages_written <= phaul_iter_min_size:
+		if dstats.pages_written <= iter_consts.MIN_ITER_PAGES_COUNT:
 			logging.info("\t> Small dump")
 			return False
 
 		if prev_dstats:
 			w_add = dstats.pages_written - prev_dstats.pages_written
 			w_add = w_add * 100 / prev_dstats.pages_written
-			if w_add > phaul_iter_grow_max:
+			if w_add > iter_consts.MAX_ITER_GROW_RATE:
 				logging.info("\t> Iteration grows")
 				return False
 
-		if index >= phaul_iter_max:
+		if index >= iter_consts.MAX_ITERS_COUNT:
 			logging.info("\t> Too many iterations")
 			return False
 
