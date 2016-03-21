@@ -88,13 +88,11 @@ class phaul_iter_worker:
 		resp = self.criu_connection.send_req(req)
 		if not resp.success:
 			raise Exception()
-		if resp.HasField('features'):
+		if not resp.HasField('features'):
 			return False
-		if resp.features.HasField('mem_track'):
+		if not resp.features.HasField('mem_track'):
 			return False
-		if resp.features.mem_track:
-			return True
-		return False
+		return resp.features.mem_track
 
 	def __check_use_pre_dumps(self):
 		logging.info("Checking for Dirty Tracking")
