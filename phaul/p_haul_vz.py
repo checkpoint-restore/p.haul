@@ -235,7 +235,7 @@ class p_haul_type:
 
 	def get_fs(self, fdfs=None):
 		deltas = self.__parse_fdfs_arg(fdfs)
-		return fs_haul_ploop.p_haul_fs(deltas)
+		return fs_haul_ploop.p_haul_fs(deltas, self._ct_priv)
 
 	def get_fs_receiver(self, fdfs=None):
 		deltas = self.__parse_fdfs_arg(fdfs)
@@ -259,22 +259,9 @@ class p_haul_type:
 		deltas = []
 		for delta in fdfs.split(FDFS_DELTAS_SEPARATOR):
 			path, dummy, fd = delta.rpartition(FDFS_PAIR_SEPARATOR)
-			deltas.append((self.__get_ploop_delta_abspath(path), int(fd)))
+			deltas.append((fs_haul_ploop.get_delta_abspath(path, self._ct_priv), int(fd)))
 
 		return deltas
-
-	def __get_ploop_delta_abspath(self, delta_path):
-		"""
-		Transform delta path to absolute form
-
-		If delta path starts with a slash it is already in absolute form,
-		otherwise it is relative to containers private.
-		"""
-
-		if delta_path.startswith("/"):
-			return delta_path
-		else:
-			return os.path.join(self._ct_priv, delta_path)
 
 	def restored(self, pid):
 		pass

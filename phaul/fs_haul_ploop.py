@@ -18,8 +18,22 @@ def get_ddxml_path(path):
 	return os.path.join(p, DDXML_FILENAME)
 
 
+def get_delta_abspath(delta_path, ct_priv):
+	"""
+	Transform delta path to absolute form
+
+	If delta path starts with a slash it is already in absolute form,
+	otherwise it is relative to containers private.
+	"""
+
+	if delta_path.startswith("/"):
+		return delta_path
+	else:
+		return os.path.join(ct_priv, delta_path)
+
+
 class p_haul_fs:
-	def __init__(self, deltas):
+	def __init__(self, deltas, ct_priv):
 		"""Initialize ploop disks hauler
 
 		For each disk create libploop.ploopcopy object using path to disk
@@ -28,6 +42,7 @@ class p_haul_fs:
 
 		# Create libploop.ploopcopy objects, one per active ploop delta
 		self.__log_init_hauler(deltas)
+		self.__ct_priv = ct_priv
 		self.__ploop_copies = []
 		for delta_path, delta_fd in deltas:
 			ddxml_path = get_ddxml_path(delta_path)
