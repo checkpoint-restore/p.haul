@@ -12,6 +12,12 @@ import mstats
 DDXML_FILENAME = "DiskDescriptor.xml"
 
 
+def get_ddxml_path(path):
+	"""Get path to disk descriptor file by path to disk delta or directory"""
+	p = path if os.path.isdir(path) else os.path.dirname(path)
+	return os.path.join(p, DDXML_FILENAME)
+
+
 class p_haul_fs:
 	def __init__(self, deltas):
 		"""Initialize ploop disks hauler
@@ -24,7 +30,7 @@ class p_haul_fs:
 		self.__log_init_hauler(deltas)
 		self.__ploop_copies = []
 		for delta_path, delta_fd in deltas:
-			ddxml_path = self.__get_ddxml_path(delta_path)
+			ddxml_path = get_ddxml_path(delta_path)
 			self.__check_ddxml(ddxml_path)
 			self.__ploop_copies.append(
 				libploop.ploopcopy(ddxml_path, delta_fd))
@@ -61,10 +67,6 @@ class p_haul_fs:
 		logging.info("Initialize ploop hauler")
 		for delta in deltas:
 			logging.info("\t`- %s", delta[0])
-
-	def __get_ddxml_path(self, delta_path):
-		"""Get path to disk descriptor file by path to disk delta"""
-		return os.path.join(os.path.dirname(delta_path), DDXML_FILENAME)
 
 	def __check_ddxml(self, ddxml_path):
 		"""Check disk descriptor file exist"""
