@@ -8,6 +8,7 @@ import logging
 import threading
 import libploop
 import mstats
+import iters
 
 
 DDXML_FILENAME = "DiskDescriptor.xml"
@@ -72,6 +73,7 @@ class p_haul_fs:
 		# Create libploop.ploopcopy objects, one per active ploop delta
 		self.__log_init_hauler(deltas)
 		self.__ct_priv = ct_priv
+		self.__shared_ploops = []
 		self.__ploop_copies = []
 		for delta_path, delta_fd in deltas:
 			ddxml_path = get_ddxml_path(delta_path)
@@ -79,8 +81,16 @@ class p_haul_fs:
 			self.__ploop_copies.append(
 				libploop.ploopcopy(ddxml_path, delta_fd))
 
+	def __parse_shared_ploops(self, shareds):
+		if not shareds:
+			return []
+		return (get_delta_abspath(s, self.__ct_priv) for s in shareds.split(","))
+
 	def set_options(self, opts):
-		pass
+		if iters.is_live_mode(opts.get("mode", None)):
+			shareds = self.__parse_shared_ploops(opts.get("vz_shared_disks", []))
+			for shared in shareds:
+				self.__shared_ploops.append(shared_ploop(shared))
 
 	def set_work_dir(self, wdir):
 		pass
