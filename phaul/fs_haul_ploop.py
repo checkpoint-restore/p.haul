@@ -111,7 +111,26 @@ class p_haul_fs:
 		total_xferred = 0
 		for ploopcopy in self.__ploop_copies:
 			total_xferred += ploopcopy.copy_stop()
+
+		for pl in self.__shared_ploops:
+			pl.prepare()
+
 		return mstats.fs_iter_stats(total_xferred)
+
+	def restore_shared_ploops(self):
+		for pl in self.__shared_ploops:
+			pl.restore()
+
+	def cleanup_shared_ploops(self):
+		for pl in self.__shared_ploops:
+			pl.cleanup()
+
+	def prepare_src_data(self, data):
+		if self.__shared_ploops:
+			data["shareds"] = []
+			for pl in self.__shared_ploops:
+				data["shareds"].append(pl.get_orig_info())
+		return data
 
 	def persistent_inodes(self):
 		"""Inode numbers do not change during ploop disk migration"""
