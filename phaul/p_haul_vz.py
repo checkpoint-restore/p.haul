@@ -174,7 +174,7 @@ class p_haul_type:
 			self.__setup_restore_extra_args(args_path, img, connection)
 			# Run vzctl restore
 			logging.info("Starting vzctl restore")
-			proc = subprocess.Popen([vzctl_bin, "--skiplock", "restore",
+			proc = subprocess.Popen([vzctl_bin, "--skipowner", "--skiplock", "restore",
 				self._ctid, "--dumpfile", img.image_dir()],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
@@ -193,7 +193,7 @@ class p_haul_type:
 		logging.info("Mounting CT root to %s", self._ct_root)
 		logging.info("Running vzctl mount")
 		proc = subprocess.Popen(
-			[vzctl_bin, "--skiplock", "mount", self._ctid],
+			[vzctl_bin, "--skipowner", "--skiplock", "mount", self._ctid],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
 		logging.info(proc_output)
@@ -205,7 +205,7 @@ class p_haul_type:
 			logging.info("Umounting CT root")
 			logging.info("Running vzctl umount")
 			proc = subprocess.Popen(
-				[vzctl_bin, "--skiplock", "umount", self._ctid],
+				[vzctl_bin, "--skipowner", "--skiplock", "umount", self._ctid],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
 			logging.info(proc_output)
@@ -215,7 +215,7 @@ class p_haul_type:
 		logging.info("Starting CT")
 		logging.info("Running vzctl start")
 		proc = subprocess.Popen(
-			[vzctl_bin, "--skiplock", "start", self._ctid],
+			[vzctl_bin, "--skipowner", "--skiplock", "start", self._ctid],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
 		logging.info(proc_output)
@@ -224,7 +224,7 @@ class p_haul_type:
 	def stop(self, umount):
 		logging.info("Stopping CT")
 		logging.info("Running vzctl stop")
-		args = [vzctl_bin, "--skiplock", "stop", self._ctid]
+		args = [vzctl_bin, "--skipowner", "--skiplock", "stop", self._ctid]
 		if not umount:
 			args.append("--skip-umount")
 		proc = subprocess.Popen(
