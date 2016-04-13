@@ -115,3 +115,6 @@ class phaul_service:
 		self.htype.start()
 		logging.info("Start succeeded")
 		self.restored = True
+
+	def rpc_migration_complete(self, src_data):
+		self.htype.target_cleanup(src_data)

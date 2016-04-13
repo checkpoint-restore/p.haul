@@ -138,6 +138,9 @@ class p_haul_type:
 			pid = int(line.split(None, 1)[0])
 			os.kill(pid, signal.SIGKILL)
 
+	def target_cleanup(self, src_data):
+		pass
+
 	def final_restore(self, img, criu):
 		logf = open("/tmp/docker_restore.log", "w+")
 

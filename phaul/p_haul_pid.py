@@ -73,6 +73,9 @@ class p_haul_type:
 	def final_dump(self, pid, img, ccon, fs):
 		criu_cr.criu_dump(self, pid, img, ccon, fs)
 
+	def target_cleanup(self, src_data):
+		pass
+
 	def final_restore(self, img, connection):
 		criu_cr.criu_restore(self, img, connection)
 

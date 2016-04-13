@@ -211,6 +211,11 @@ class p_haul_type:
 			logging.info(proc_output)
 			self._fs_mounted = False
 
+	def target_cleanup(self, src_data):
+		if "shareds" in src_data:
+			for ploop in src_data["shareds"]:
+				fs_haul_ploop.merge_ploop_snapshot(ploop["ddxml"], ploop["guid"])
+
 	def start(self):
 		logging.info("Starting CT")
 		logging.info("Running vzctl start")
