@@ -202,27 +202,32 @@ class phaul_iter_worker:
 		self.htype.final_dump(root_pid, self.img, self.criu_connection, self.fs)
 		self.target_host.end_iter()
 
-		# Handle final FS and images sync on frozen htype
-		logging.info("Final FS and images sync")
-		fsstats = self.fs.stop_migration()
-		self.img.sync_imgs_to_target(self.target_host, self.htype,
-			self.connection.mem_sk)
+		try:
+			# Handle final FS and images sync on frozen htype
+			logging.info("Final FS and images sync")
+			fsstats = self.fs.stop_migration()
 
-		# Restore htype on target
-		logging.info("Asking target host to restore")
-		self.target_host.restore_from_images()
-		logging.info("Restored on target host")
+			self.img.sync_imgs_to_target(self.target_host, self.htype,
+				self.connection.mem_sk)
+
+			# Restore htype on target
+			logging.info("Asking target host to restore")
+			self.target_host.restore_from_images()
+			logging.info("Restored on target host")
+		except:
+			self.htype.migration_fail(self.fs)
+			raise
 
 		# Ack previous dump request to terminate all frozen tasks
 		resp = self.criu_connection.ack_notify()
 		if not resp.success:
-			raise Exception("Dump screwed up")
+			logging.warning("Bad notification from target host")
 
 		dstats = criu_api.criu_get_dstats(self.img)
 		migration_stats.handle_iteration(dstats, fsstats)
 
 		logging.info("Migration succeeded")
-		self.htype.umount()
+		self.htype.migration_complete(self.fs, self.target_host)
 		migration_stats.handle_stop(self)
 		self.img.close()
 		self.criu_connection.close()
@@ -276,11 +281,12 @@ class phaul_iter_worker:
 			logging.info("Started on target host")
 
 		except:
+			self.htype.migration_fail(self.fs)
 			self.htype.start()
 			raise
 
 		logging.info("Migration succeeded")
-		self.htype.umount()
+		self.htype.migration_complete(self.fs, self.target_host)
 		migration_stats.handle_stop()
 
 	def __check_live_iter_progress(self, index, dstats, prev_dstats):
