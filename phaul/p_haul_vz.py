@@ -211,6 +211,14 @@ class p_haul_type:
 			logging.info(proc_output)
 			self._fs_mounted = False
 
+	def migration_complete(self, fs, target_host):
+		fs.cleanup_shared_ploops()
+		self.umount()
+		target_host.migration_complete(fs.prepare_src_data({}))
+
+	def migration_fail(self, fs):
+		fs.restore_shared_ploops()
+
 	def target_cleanup(self, src_data):
 		if "shareds" in src_data:
 			for ploop in src_data["shareds"]:

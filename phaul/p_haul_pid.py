@@ -73,6 +73,12 @@ class p_haul_type:
 	def final_dump(self, pid, img, ccon, fs):
 		criu_cr.criu_dump(self, pid, img, ccon, fs)
 
+	def migration_complete(self, fs, target_host):
+		pass
+
+	def migration_fail(self, fs):
+		pass
+
 	def target_cleanup(self, src_data):
 		pass
 
