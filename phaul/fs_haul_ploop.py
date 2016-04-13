@@ -3,6 +3,7 @@
 #
 
 import os
+import shutil
 import logging
 import threading
 import libploop
@@ -31,6 +32,34 @@ def get_delta_abspath(delta_path, ct_priv):
 	else:
 		return os.path.join(ct_priv, delta_path)
 
+
+def merge_ploop_snapshot(ddxml, guid):
+	libploop.snapshot(ddxml).delete(guid)
+
+
+class shared_ploop:
+	def __init__(self, path):
+		self.__backup_ddxml = get_ddxml_path(path) + ".copy"
+		self.__orig_ddxml = get_ddxml_path(path)
+
+	def prepare(self):
+		shutil.copyfile(self.__orig_ddxml, self.__backup_ddxml)
+		self.__orig_guid = libploop.snapshot(self.__orig_ddxml).create_offline()
+		self.__backup_guid = libploop.snapshot(self.__backup_ddxml).create()
+
+	def restore(self):
+		if self.__backup_guid:
+			os.rename(self.__backup_ddxml, self.__orig_ddxml)
+			merge_ploop_snapshot(self.__orig_ddxml, self.__backup_guid)
+
+	def cleanup(self):
+		if self.__orig_guid:
+			# TODO add delta removing when igor add it to libploop
+			os.remove(self.__backup_ddxml)
+			os.remove(self.__backup_ddxml + ".lck")
+
+	def get_orig_info(self):
+		return {"ddxml": self.__orig_ddxml, "guid": self.__orig_guid}
 
 class p_haul_fs:
 	def __init__(self, deltas, ct_priv):
