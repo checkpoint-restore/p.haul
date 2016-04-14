@@ -31,7 +31,11 @@ def parse_client_args():
 	parser.add_argument("--img-path", default=images.def_path,
 		help="Directory where to put images")
 	parser.add_argument("--pid-root", help="Path to tree's FS root")
-	parser.add_argument("--force", default=False, action='store_true', help="Don't do any sanity (CPU compat) checks")
+	parser.add_argument("--force", default=False, action='store_true', help="Don't do any sanity checks")
+	parser.add_argument("--skip-cpu-check", default=False, action='store_true',
+		help="Skip CPU compatibility check")
+	parser.add_argument("--skip-criu-check", default=False, action='store_true',
+		help="Skip criu compatibility check")
 	parser.add_argument("--log-file", help="Write logging messages to specified file")
 	parser.add_argument("-j", "--shell-job", default=False, action='store_true',
 		help="Allow migration of shell jobs")
