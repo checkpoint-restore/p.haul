@@ -5,6 +5,7 @@
 
 import socket
 import os
+import re
 import subprocess
 import logging
 import util
@@ -81,6 +82,15 @@ class criu_conn:
 
 	def memory_tracking(self, value):
 		self._track_mem = value
+
+
+def get_criu_version():
+	proc = subprocess.Popen([criu_binary, "-V"],
+		stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	proc_output = proc.communicate()[0]
+	if proc.returncode == 0:
+		match = re.match("Version:\s+(\S+)", proc_output)
+		return match.group(1) if match else None
 
 
 #
