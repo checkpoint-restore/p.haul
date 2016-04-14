@@ -3,6 +3,7 @@
 #
 
 import logging
+import distutils.version
 import images
 import criu_api
 import criu_req
@@ -98,6 +99,18 @@ class phaul_service:
 		resp = self.criu_connection.send_req(req)
 		logging.info("\t`- %s", resp.success)
 		return resp.success
+
+	def rpc_check_criu_version(self, source_version):
+		logging.info("Checking criu version")
+		target_version = criu_api.get_criu_version()
+		if not target_version:
+			logging.info("\t`- Can't get criu version")
+			return False
+		result = (distutils.version.LooseVersion(source_version) <=
+			distutils.version.LooseVersion(target_version))
+		logging.info("\t`- %s -> %s", source_version, target_version)
+		logging.info("\t`- %s", result)
+		return result
 
 	def rpc_restore_from_images(self):
 		logging.info("Restoring from images")
