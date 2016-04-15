@@ -301,7 +301,6 @@ class p_haul_type:
 
 def add_hauler_args(parser):
 	"""Add Virtuozzo specific command line arguments"""
-	parser.add_argument("--vz-dst-ctid", help="ctid at destination")
 	parser.add_argument("--vz-shared-disks", help="List of shared storage disks")
 
 

@@ -25,6 +25,7 @@ def parse_client_args():
 	parser.add_argument("--fdfs", help="Module specific definition of fs channel")
 	parser.add_argument("--mode", choices=iters.MIGRATION_MODES,
 		default=iters.MIGRATION_MODE_LIVE, help="Mode of migration")
+	parser.add_argument("--dst-id", help="ID at destination")
 	parser.add_argument("-v", default=criu_api.def_verb, type=int, dest="verbose", help="Verbosity level")
 	parser.add_argument("--keep-images", default=False, action='store_true', help="Keep images after migration")
 	parser.add_argument("--dst-rpid", default=None, help="Write pidfile on restore")
