@@ -42,7 +42,8 @@ connection = phaul.connection.establish(args.fdrpc, args.fdmem, args.fdfs)
 
 # Start the migration
 ph_type = args.type, args.id
-worker = phaul.iters.phaul_iter_worker(ph_type, args.mode, connection)
+worker = phaul.iters.phaul_iter_worker(ph_type, args.dst_id, args.mode,
+	connection)
 worker.set_options(vars(args))
 worker.start_migration()
 

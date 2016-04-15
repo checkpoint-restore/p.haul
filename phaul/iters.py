@@ -49,7 +49,7 @@ class iter_consts:
 
 
 class phaul_iter_worker:
-	def __init__(self, p_type, mode, connection):
+	def __init__(self, p_type, dst_id, mode, connection):
 		self.__mode = mode
 		self.connection = connection
 		self.target_host = xem_rpc_client.rpc_proxy(self.connection.rpc_sk)
@@ -70,7 +70,8 @@ class phaul_iter_worker:
 			self.criu_connection = criu_api.criu_conn(self.connection.mem_sk)
 
 		logging.info("Setting up remote")
-		self.target_host.setup(p_type, mode)
+		p_dst_type = (p_type[0], dst_id if dst_id else p_type[1])
+		self.target_host.setup(p_dst_type, mode)
 
 	def get_target_host(self):
 		return self.target_host
