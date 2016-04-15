@@ -175,7 +175,7 @@ class p_haul_type:
 			# Run vzctl restore
 			logging.info("Starting vzctl restore")
 			proc = subprocess.Popen([vzctl_bin, "--skipowner", "--skiplock", "restore",
-				self._ctid, "--dumpfile", img.image_dir()],
+				self._ctid, "--skip_arpdetect", "--dumpfile", img.image_dir()],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
 			logging.info(proc_output)
