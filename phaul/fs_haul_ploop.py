@@ -62,6 +62,7 @@ class shared_ploop:
 	def get_orig_info(self):
 		return {"ddxml": self.__orig_ddxml, "guid": self.__orig_guid}
 
+
 class p_haul_fs:
 	def __init__(self, deltas, ct_priv):
 		"""Initialize ploop disks hauler
