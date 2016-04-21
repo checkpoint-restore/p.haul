@@ -10,10 +10,6 @@ import phaul.service
 import phaul.connection
 
 
-def log_uncaught_exception(type, value, traceback):
-	logging.error(value, exc_info=(type, value, traceback))
-
-
 def fin(foo, bar):
 	global stop_fd
 	logging.info("Stop by %d", foo)
@@ -29,7 +25,7 @@ logging.basicConfig(filename=args.log_file, filemode="a", level=logging.INFO,
 	datefmt="%H:%M:%S")
 
 # Setup hook to log uncaught exceptions
-sys.excepthook = log_uncaught_exception
+sys.excepthook = phaul.util.log_uncaught_exception
 
 phaul.util.log_header()
 logging.info("Starting p.haul service")

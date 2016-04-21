@@ -80,6 +80,10 @@ def makedirs(dirpath):
 			raise
 
 
+def log_uncaught_exception(type, value, traceback):
+	logging.error(value, exc_info=(type, value, traceback))
+
+
 def log_header():
 	OFFSET_LINES_COUNT = 3
 	for i in range(OFFSET_LINES_COUNT):
