@@ -4,6 +4,7 @@ import sys
 import signal
 import logging
 import phaul.args_parser
+import phaul.util
 import phaul.xem_rpc
 import phaul.service
 import phaul.connection
@@ -30,6 +31,7 @@ logging.basicConfig(filename=args.log_file, filemode="a", level=logging.INFO,
 # Setup hook to log uncaught exceptions
 sys.excepthook = log_uncaught_exception
 
+phaul.util.log_header()
 logging.info("Starting p.haul service")
 
 # Establish connection

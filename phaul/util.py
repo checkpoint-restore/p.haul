@@ -78,3 +78,9 @@ def makedirs(dirpath):
 			pass
 		else:
 			raise
+
+
+def log_header():
+	OFFSET_LINES_COUNT = 3
+	for i in range(OFFSET_LINES_COUNT):
+		logging.info("")
