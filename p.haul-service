@@ -23,8 +23,9 @@ def fin(foo, bar):
 args = phaul.args_parser.parse_service_args()
 
 # Configure logging
-logging.basicConfig(filename=args.log_file, filemode="w", level=logging.INFO,
-	format="%(asctime)s.%(msecs)03d: %(message)s", datefmt="%H:%M:%S")
+logging.basicConfig(filename=args.log_file, filemode="a", level=logging.INFO,
+	format="%(asctime)s.%(msecs)03d: %(process)d: %(message)s",
+	datefmt="%H:%M:%S")
 
 # Setup hook to log uncaught exceptions
 sys.excepthook = log_uncaught_exception
