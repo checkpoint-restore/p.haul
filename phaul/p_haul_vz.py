@@ -178,7 +178,7 @@ class p_haul_type:
 				self._ctid, "--skip_arpdetect", "--dumpfile", img.image_dir()],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
-			logging.info(proc_output)
+			util.log_subprocess_output(proc_output)
 			if proc.returncode != 0:
 				raise Exception("Restore failed ({0})".format(proc.returncode))
 		finally:
@@ -196,7 +196,7 @@ class p_haul_type:
 			[vzctl_bin, "--skipowner", "--skiplock", "mount", self._ctid],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
-		logging.info(proc_output)
+		util.log_subprocess_output(proc_output)
 		self._fs_mounted = True
 		return self._ct_root
 
@@ -208,7 +208,7 @@ class p_haul_type:
 				[vzctl_bin, "--skipowner", "--skiplock", "umount", self._ctid],
 				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
-			logging.info(proc_output)
+			util.log_subprocess_output(proc_output)
 			self._fs_mounted = False
 
 	def migration_complete(self, fs, target_host):
@@ -231,7 +231,7 @@ class p_haul_type:
 			[vzctl_bin, "--skipowner", "--skiplock", "start", self._ctid],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
-		logging.info(proc_output)
+		util.log_subprocess_output(proc_output)
 		self._fs_mounted = True
 
 	def stop(self, umount):
@@ -243,7 +243,7 @@ class p_haul_type:
 		proc = subprocess.Popen(
 			args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
-		logging.info(proc_output)
+		util.log_subprocess_output(proc_output)
 		self._fs_mounted = not umount
 
 	def get_fs(self, fdfs=None):

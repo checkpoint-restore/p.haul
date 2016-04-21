@@ -88,3 +88,8 @@ def log_header():
 	OFFSET_LINES_COUNT = 3
 	for i in range(OFFSET_LINES_COUNT):
 		logging.info("")
+
+
+def log_subprocess_output(output):
+	for line in output.splitlines():
+		logging.info("\t> %s", line)
