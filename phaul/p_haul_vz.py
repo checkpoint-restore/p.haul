@@ -137,10 +137,9 @@ class p_haul_type:
 			req.opts.ghost_limit = 50 << 20
 
 	def root_task_pid(self):
-		# Expect first line of tasks file contain root pid of CT
-		path = "/sys/fs/cgroup/memory/{0}/tasks".format(self._ctid)
-		with open(path) as tasks:
-			pid = tasks.readline()
+		path = "/var/run/ve/{0}.init.pid".format(self._ctid)
+		with open(path) as pidfile:
+			pid = pidfile.read()
 			return int(pid)
 
 	def get_meta_images(self, path):
