@@ -7,6 +7,7 @@ import subprocess
 import shlex
 import logging
 import criu_cr
+import criu_api
 import util
 import fs_haul_ploop
 import pycriu.rpc
@@ -45,6 +46,7 @@ class p_haul_type:
 		# v_bridge is the bridge to which thie veth is attached
 		#
 		self._veths = []
+		self.__verbose = criu_api.def_verb
 
 	def __load_ct_config(self, path):
 		logging.info("Loading config file from %s", path)
@@ -117,7 +119,7 @@ class p_haul_type:
 		self.__load_ct_config_dst(vz_conf_dir)
 
 	def set_options(self, opts):
-		pass
+		self.__verbose = opts["verbose"]
 
 	def adjust_criu_req(self, req):
 		"""Add module-specific options to criu request"""
@@ -153,7 +155,8 @@ class p_haul_type:
 		extra_args = [
 			"VE_WORK_DIR={0}\n".format(img.work_dir()),
 			"VE_RESTORE_LOG_PATH={0}\n".format(
-				connection.get_log_name(pycriu.rpc.RESTORE))]
+				connection.get_log_name(pycriu.rpc.RESTORE)),
+			"VE_CRIU_LOGLEVEL={0}\n".format(self.__verbose)]
 		with open(path, "w") as f:
 			f.writelines(extra_args)
 
