@@ -150,21 +150,6 @@ class p_haul_type:
 	def put_meta_images(self, path):
 		pass
 
-	def __setup_restore_extra_args(self, path, img, connection):
-		"""Create temporary file with extra arguments for criu restore"""
-		extra_args = [
-			"VE_WORK_DIR={0}\n".format(img.work_dir()),
-			"VE_RESTORE_LOG_PATH={0}\n".format(
-				connection.get_log_name(pycriu.rpc.RESTORE)),
-			"VE_CRIU_LOGLEVEL={0}\n".format(self.__verbose)]
-		with open(path, "w") as f:
-			f.writelines(extra_args)
-
-	def __remove_restore_extra_args(self, path):
-		"""Remove temporary file with extra arguments for criu restore"""
-		if os.path.isfile(path):
-			os.remove(path)
-
 	def final_dump(self, pid, img, ccon, fs):
 		criu_cr.criu_dump(self, pid, img, ccon, fs)
 
@@ -186,6 +171,21 @@ class p_haul_type:
 		finally:
 			# Remove restore extra arguments
 			self.__remove_restore_extra_args(args_path)
+
+	def __setup_restore_extra_args(self, path, img, connection):
+		"""Create temporary file with extra arguments for criu restore"""
+		extra_args = [
+			"VE_WORK_DIR={0}\n".format(img.work_dir()),
+			"VE_RESTORE_LOG_PATH={0}\n".format(
+				connection.get_log_name(pycriu.rpc.RESTORE)),
+			"VE_CRIU_LOGLEVEL={0}\n".format(self.__verbose)]
+		with open(path, "w") as f:
+			f.writelines(extra_args)
+
+	def __remove_restore_extra_args(self, path):
+		"""Remove temporary file with extra arguments for criu restore"""
+		if os.path.isfile(path):
+			os.remove(path)
 
 	def prepare_ct(self, pid):
 		"""Create cgroup hierarchy and put root task into it."""
