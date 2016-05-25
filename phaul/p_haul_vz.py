@@ -16,6 +16,8 @@ import pycriu.rpc
 vz_global_conf = "/etc/vz/vz.conf"
 vz_conf_dir = "/etc/vz/conf/"
 vzctl_bin = "vzctl"
+cgget_bin = "cgget"
+cgexec_bin = "cgexec"
 
 
 vz_cgroup_mount_map = {
@@ -151,7 +153,56 @@ class p_haul_type:
 		pass
 
 	def final_dump(self, pid, img, ccon, fs):
+		"""Perform Virtuozzo-specific final dump"""
+		self.__pre_final_dump(img)
 		criu_cr.criu_dump(self, pid, img, ccon, fs)
+		self.__post_final_dump(img)
+
+	def __pre_final_dump(self, img):
+		"""Create extra images before final dump"""
+		extra_images = (
+			("vz_clock_bootbased.img", "ve.clock_bootbased"),
+			("vz_clock_monotonic.img", "ve.clock_monotonic"),
+			("vz_iptables_mask.img", "ve.iptables_mask"),
+			("vz_os_release.img", "ve.os_release"),
+			("vz_features.img", "ve.features"),
+			("vz_aio_max_nr.img", "ve.aio_max_nr"))
+		for image_name, var_name in extra_images:
+			self.__create_cgget_extra_image(img, image_name, var_name)
+
+	def __post_final_dump(self, img):
+		"""Create extra images after final dump"""
+		extra_images = (
+			("vz_core_pattern.img", ["cat", "/proc/sys/kernel/core_pattern"]),)
+		for image_name, exec_args in extra_images:
+			self.__create_cgexec_extra_image(img, image_name, exec_args)
+
+	def __create_cgget_extra_image(self, img, image_name, var_name):
+		"""Create extra image using cgget output"""
+		proc = subprocess.Popen(
+			[cgget_bin, "-n", "-v", "-r", var_name, self._ctid],
+			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		image_data = proc.communicate()[0]
+		if proc.returncode == 0:
+			self.__create_extra_image(img, image_name, image_data)
+		else:
+			logging.warning("cgget failed to create %s", image_name)
+
+	def __create_cgexec_extra_image(self, img, image_name, exec_args):
+		"""Create extra image using cgexec output"""
+		proc = subprocess.Popen(
+			[cgexec_bin, "-g", "ve:{0}".format(self._ctid)] + exec_args,
+			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		image_data = proc.communicate()[0]
+		if proc.returncode == 0:
+			self.__create_extra_image(img, image_name, image_data)
+		else:
+			logging.warning("cgexec failed to create %s", image_name)
+
+	def __create_extra_image(self, img, image_name, image_data):
+		image_path = os.path.join(img.image_dir(), image_name)
+		with open(image_path, "w") as f:
+			f.write(image_data)
 
 	def final_restore(self, img, connection):
 		"""Perform Virtuozzo-specific final restore"""
