@@ -220,31 +220,35 @@ class phaul_iter_worker:
 			# Handle final FS and images sync on frozen htype
 			logging.info("Final FS and images sync")
 			fsstats = self.fs.stop_migration()
-
 			self.img.sync_imgs_to_target(self.target_host, self.htype,
 				self.connection.mem_sk)
 
 			# Restore htype on target
 			logging.info("Asking target host to restore")
 			self.target_host.restore_from_images()
-			logging.info("Restored on target host")
+
 		except:
 			self.htype.migration_fail(self.fs)
 			raise
 
-		# Ack previous dump request to terminate all frozen tasks
-		resp = self.criu_connection.ack_notify()
-		if not resp.success:
-			logging.warning("Bad notification from target host")
+		# Restored on target, can't fail starting from this point
+		try:
+			# Ack previous dump request to terminate all frozen tasks
+			resp = self.criu_connection.ack_notify()
+			if not resp.success:
+				logging.warning("Bad notification from target host")
 
-		dstats = criu_api.criu_get_dstats(self.img)
-		migration_stats.handle_iteration(dstats, fsstats)
+			dstats = criu_api.criu_get_dstats(self.img)
+			migration_stats.handle_iteration(dstats, fsstats)
 
-		logging.info("Migration succeeded")
-		self.htype.migration_complete(self.fs, self.target_host)
-		migration_stats.handle_stop(self)
-		self.img.close()
-		self.criu_connection.close()
+			logging.info("Migration succeeded")
+			self.htype.migration_complete(self.fs, self.target_host)
+			migration_stats.handle_stop(self)
+			self.img.close()
+			self.criu_connection.close()
+
+		except Exception as e:
+			logging.warning("Exception during final cleanup: %s", e)
 
 	def __start_restart_migration(self):
 		"""
@@ -292,16 +296,19 @@ class phaul_iter_worker:
 			# Start htype on target
 			logging.info("Asking target host to start")
 			self.target_host.start_htype()
-			logging.info("Started on target host")
 
 		except:
 			self.htype.migration_fail(self.fs)
 			self.htype.start()
 			raise
 
-		logging.info("Migration succeeded")
-		self.htype.migration_complete(self.fs, self.target_host)
-		migration_stats.handle_stop()
+		# Started on target, can't fail starting from this point
+		try:
+			logging.info("Migration succeeded")
+			self.htype.migration_complete(self.fs, self.target_host)
+			migration_stats.handle_stop()
+		except Exception as e:
+			logging.warning("Exception during final cleanup: %s", e)
 
 	def __check_live_iter_progress(self, index, dstats, prev_dstats):
 
