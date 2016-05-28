@@ -31,8 +31,11 @@ wiki (http://criu.org/Category:P.Haul).
 How to contribute
 =======
 
-The p.haul patches should be sent to CRIU development mailing list which is
-located at https://openvz.org/mailman/listinfo/criu
+The p.haul patches should be sent to CRIU development mailing list
+(https://openvz.org/mailman/listinfo/criu) with "p.haul" prefix.
+Configure your local git repository using following command to
+set subject prefix automatically:
+* $ git config format.subjectprefix "PATCH p.haul"
 
 Before sending patches please make sure your code formatted according to
 project coding style (we use [PEP8](https://www.python.org/dev/peps/pep-0008/)
