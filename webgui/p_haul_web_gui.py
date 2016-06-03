@@ -77,7 +77,7 @@ def migrate():
 
     dest_host = partner, rpc_port
 
-    connection_sks = [None, None, None]
+    connection_sks = [None, None]
 
     for i in range(len(connection_sks)):
         connection_sks[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,8 +87,7 @@ def migrate():
     target_args = ['./p.haul', 'pid', pid, '-v', '4', '-j']
     target_args.extend(["--to", partner,
                         "--fdrpc", str(connection_sks[0].fileno()),
-                        "--fdmem", str(connection_sks[1].fileno()),
-                        "--fdfs", str(connection_sks[2].fileno())])
+                        "--fdmem", str(connection_sks[1].fileno())])
 
     # Call p.haul
     print "Exec p.haul: {0}".format(" ".join(target_args))
