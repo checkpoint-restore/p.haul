@@ -66,10 +66,10 @@ def _make_common_dump_req(typ, pid, htype, img, connection, fs):
 	return req
 
 
-def make_predump_req(pid, img, connection, fs):
+def make_predump_req(pid, htype, img, connection, fs):
 	"""Prepare pre-dump criu request (source side)"""
 	return _make_common_dump_req(
-		pycriu.rpc.PRE_DUMP, pid, None, img, connection, fs)
+		pycriu.rpc.PRE_DUMP, pid, htype, img, connection, fs)
 
 
 def make_dump_req(pid, htype, img, connection, fs):

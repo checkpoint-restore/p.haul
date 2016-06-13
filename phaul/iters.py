@@ -193,7 +193,8 @@ class phaul_iter_worker:
 			logging.info("* Iteration %d", iter_index)
 			self.target_host.start_iter(True)
 			self.img.new_image_dir()
-			criu_cr.criu_predump(root_pid, self.img, self.criu_connection, self.fs)
+			criu_cr.criu_predump(self.htype, root_pid, self.img,
+				self.criu_connection, self.fs)
 			self.target_host.end_iter()
 
 			# Handle FS migration iteration
