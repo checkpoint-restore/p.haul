@@ -125,6 +125,8 @@ class p_haul_type:
 
 	def adjust_criu_req(self, req):
 		"""Add module-specific options to criu request"""
+
+		# Specify dump specific options
 		if req.type == pycriu.rpc.DUMP:
 
 			# Specify root fs
@@ -139,6 +141,11 @@ class p_haul_type:
 
 			# Increase ghost-limit up to 50Mb
 			req.opts.ghost_limit = 50 << 20
+
+		# Specify freezer cgroup for both predump and dump requests
+		if req.type == pycriu.rpc.PRE_DUMP or req.type == pycriu.rpc.DUMP:
+			req.opts.freeze_cgroup = \
+				"/sys/fs/cgroup/freezer/{0}/".format(self._ctid)
 
 	def root_task_pid(self):
 		path = "/var/run/ve/{0}.init.pid".format(self._ctid)
