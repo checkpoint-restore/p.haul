@@ -149,10 +149,15 @@ class p_haul_type:
 			# Increase ghost-limit up to 50Mb
 			req.opts.ghost_limit = 50 << 20
 
-		# Specify freezer cgroup for both predump and dump requests
+		# Specify both predump and dump specific options
 		if req.type == pycriu.rpc.PRE_DUMP or req.type == pycriu.rpc.DUMP:
+
+			# Specify freezer cgroup
 			req.opts.freeze_cgroup = \
 				"/sys/fs/cgroup/freezer/{0}/".format(self._ctid)
+
+			# Increase timeout up to 180 seconds
+			req.opts.timeout = 180
 
 	def root_task_pid(self):
 		path = "/var/run/ve/{0}.init.pid".format(self._ctid)
