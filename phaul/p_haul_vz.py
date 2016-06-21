@@ -122,6 +122,7 @@ class p_haul_type:
 
 	def set_options(self, opts):
 		self.__verbose = opts["verbose"]
+		self.__secondary_disks = opts.get("vz_secondary_disks")
 
 	def adjust_criu_req(self, req):
 		"""Add module-specific options to criu request"""
@@ -362,6 +363,7 @@ class p_haul_type:
 def add_hauler_args(parser):
 	"""Add Virtuozzo specific command line arguments"""
 	parser.add_argument("--vz-shared-disks", help="List of shared storage disks")
+	parser.add_argument("--vz-secondary-disks", help="List of secondary ploop disks")
 
 
 def _parse_vz_config(body):
