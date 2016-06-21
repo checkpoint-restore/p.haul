@@ -315,28 +315,6 @@ class p_haul_type:
 		deltas = self.__parse_fdfs_arg(fdfs)
 		return fs_haul_ploop.p_haul_fs_receiver(deltas)
 
-	def __parse_fdfs_arg(self, fdfs):
-		"""
-		Parse string containing list of ploop deltas with socket fds
-
-		String contain list of active ploop deltas with corresponding socket
-		file descriptors in format %delta_path1%:%socket_fd1%[,...]. Parse it
-		and return list of tuples.
-		"""
-
-		FDFS_DELTAS_SEPARATOR = ","
-		FDFS_PAIR_SEPARATOR = ":"
-
-		if not fdfs:
-			return []
-
-		deltas = []
-		for delta in fdfs.split(FDFS_DELTAS_SEPARATOR):
-			path, dummy, fd = delta.rpartition(FDFS_PAIR_SEPARATOR)
-			deltas.append((fs_haul_ploop.get_delta_abspath(path, self._ct_priv), int(fd)))
-
-		return deltas
-
 	def restored(self, pid):
 		pass
 
@@ -358,6 +336,28 @@ class p_haul_type:
 
 	def dump_need_page_server(self):
 		return True
+
+	def __parse_fdfs_arg(self, fdfs):
+		"""
+		Parse string containing list of ploop deltas with socket fds
+
+		String contain list of active ploop deltas with corresponding socket
+		file descriptors in format %delta_path1%:%socket_fd1%[,...]. Parse it
+		and return list of tuples.
+		"""
+
+		FDFS_DELTAS_SEPARATOR = ","
+		FDFS_PAIR_SEPARATOR = ":"
+
+		if not fdfs:
+			return []
+
+		deltas = []
+		for delta in fdfs.split(FDFS_DELTAS_SEPARATOR):
+			path, dummy, fd = delta.rpartition(FDFS_PAIR_SEPARATOR)
+			deltas.append((fs_haul_ploop.get_delta_abspath(path, self._ct_priv), int(fd)))
+
+		return deltas
 
 
 def add_hauler_args(parser):
