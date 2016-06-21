@@ -140,6 +140,12 @@ class p_haul_type:
 			for key, value in vz_cgroup_mount_map.items():
 				req.opts.ext_mnt.add(key=key, val=value)
 
+			# Specify secondary ploop disks as external
+			disks = self.__parse_secondary_disks_arg(self.__secondary_disks)
+			for uuid, major, minor in disks:
+				req.opts.external.append(
+					"dev[{0}/{1}]:{2}".format(major, minor + 1, uuid))
+
 			# Increase ghost-limit up to 50Mb
 			req.opts.ghost_limit = 50 << 20
 
@@ -358,6 +364,29 @@ class p_haul_type:
 			deltas.append((fs_haul_ploop.get_delta_abspath(path, self._ct_priv), int(fd)))
 
 		return deltas
+
+	def __parse_secondary_disks_arg(self, disks_arg):
+		"""
+		Parse string containing list of secondary disks in specific format
+
+		String contain list of secondary ploop disks in format
+		%uuid%:%major%:%minor%[,...]. Consider all additional disks of
+		container (second, third and so on) are secondary. Parse it and return
+		list of tuples.
+		"""
+
+		DISKS_SEPARATOR = ","
+		TUPLE_SEPARATOR = ":"
+
+		if not disks_arg:
+			return []
+
+		disks = []
+		for disk in disks_arg.split(DISKS_SEPARATOR):
+			uuid, major, minor = disk.split(TUPLE_SEPARATOR)
+			disks.append((uuid, int(major), int(minor)))
+
+		return disks
 
 
 def add_hauler_args(parser):
