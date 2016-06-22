@@ -154,7 +154,7 @@ class p_haul_type:
 
 			# Specify freezer cgroup
 			req.opts.freeze_cgroup = \
-				"/sys/fs/cgroup/freezer/{0}/".format(self._ctid)
+				"/sys/fs/cgroup/freezer/machine.slice/{0}/".format(self._ctid)
 
 			# Increase timeout up to 180 seconds
 			req.opts.timeout = 180
