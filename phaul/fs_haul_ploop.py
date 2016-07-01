@@ -179,14 +179,11 @@ class p_haul_fs_receiver:
 			logging.info("\t`- %s", delta[0])
 
 	def __check_delta(self, delta_path):
-		"""Check delta file don't exist and parent directory exist"""
+		"""Check parent directory of delta exist"""
 
 		delta_dir = os.path.dirname(delta_path)
 		if not os.path.isdir(delta_dir):
 			raise Exception("{0} directory missing".format(delta_dir))
-
-		if os.path.isfile(delta_path):
-			raise Exception("{0} already exist".format(delta_path))
 
 
 class delta_receiver(threading.Thread):
