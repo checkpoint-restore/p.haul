@@ -294,6 +294,9 @@ class phaul_iter_worker:
 			fsstats = self.fs.stop_migration()
 			migration_stats.handle_iteration(fsstats)
 
+			# umount before start on target, or we fail on vzstorage
+			self.htype.umount()
+
 			# Start htype on target
 			logging.info("Asking target host to start")
 			self.target_host.start_htype()
