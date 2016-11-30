@@ -44,6 +44,8 @@ def parse_client_args():
 		const=iters.PRE_DUMP_DISABLE, help='Force disable pre-dumps')
 	parser.add_argument('--pre-dump', dest='pre_dump', action='store_const',
 		const=iters.PRE_DUMP_ENABLE, help='Force enable pre-dumps')
+	parser.add_argument("--nostart", default=False, action='store_true',
+		help="Don't start on destination node (if run in restart mode)")
 
 	# Add haulers specific arguments
 	if len(sys.argv) > 1 and sys.argv[1] in htype.get_haul_names():
