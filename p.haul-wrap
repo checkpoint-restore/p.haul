@@ -25,70 +25,70 @@ default_service_bind_addr = "0.0.0.0"
 
 
 def start_web_gui(partner, rpc_port):
-	"""Start web gui if requested"""
-	import webgui.p_haul_web_gui
+    """Start web gui if requested"""
+    import webgui.p_haul_web_gui
 
-	thread.start_new_thread(webgui.p_haul_web_gui.start_web_gui,
-		(partner, rpc_port))
+    thread.start_new_thread(webgui.p_haul_web_gui.start_web_gui,
+        (partner, rpc_port))
 
 
 def run_phaul_service(args, unknown_args):
-	"""Run p.haul-service"""
+    """Run p.haul-service"""
 
-	if args.web_gui:
-		start_web_gui(args.web_partner, args.bind_port)
+    if args.web_gui:
+        start_web_gui(args.web_partner, args.bind_port)
 
-	print "Waiting for connection..."
+    print "Waiting for connection..."
 
-	# Establish connection
-	host = args.bind_addr, args.bind_port
-	server_sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server_sk.bind(host)
-	server_sk.listen(8)
-	connection_sks = [None, None]
-	while True:
-		for i in range(len(connection_sks)):
-			connection_sks[i], dummy = server_sk.accept()
+    # Establish connection
+    host = args.bind_addr, args.bind_port
+    server_sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_sk.bind(host)
+    server_sk.listen(8)
+    connection_sks = [None, None]
+    while True:
+        for i in range(len(connection_sks)):
+            connection_sks[i], dummy = server_sk.accept()
 
-		# Organize p.haul-service args
-		target_args = [args.path]
-		target_args.extend(unknown_args)
-		target_args.extend(["--fdrpc", str(connection_sks[0].fileno()),
-			"--fdmem", str(connection_sks[1].fileno())])
+        # Organize p.haul-service args
+        target_args = [args.path]
+        target_args.extend(unknown_args)
+        target_args.extend(["--fdrpc", str(connection_sks[0].fileno()),
+            "--fdmem", str(connection_sks[1].fileno())])
 
-		# Call p.haul-service
-		cmdline = " ".join(target_args)
-		print "Exec p.haul-service: {0}".format(cmdline)
-		if args.one_shot:
-			os.system(cmdline)
-			return
-		else:
-			thread.start_new_thread(os.system, tuple([cmdline]))
+        # Call p.haul-service
+        cmdline = " ".join(target_args)
+        print "Exec p.haul-service: {0}".format(cmdline)
+        if args.one_shot:
+            os.system(cmdline)
+            return
+        else:
+            thread.start_new_thread(os.system, tuple([cmdline]))
 
 
 def run_phaul_client(args, unknown_args):
-	"""Run p.haul"""
+    """Run p.haul"""
 
-	print "Establish connection..."
+    print "Establish connection..."
 
-	# Establish connection
-	dest_host = args.to, args.port
+    # Establish connection
+    dest_host = args.to, args.port
 
-	connection_sks = [None, None]
-	for i in range(len(connection_sks)):
-		connection_sks[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		connection_sks[i].connect(dest_host)
+    connection_sks = [None, None]
+    for i in range(len(connection_sks)):
+        connection_sks[i] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        connection_sks[i].connect(dest_host)
 
-	# Organize p.haul args
-	target_args = [args.path]
-	target_args.extend(unknown_args)
-	target_args.extend(["--to", args.to,
-		"--fdrpc", str(connection_sks[0].fileno()),
-		"--fdmem", str(connection_sks[1].fileno())])
+    # Organize p.haul args
+    target_args = [args.path]
+    target_args.extend(unknown_args)
+    target_args.extend(["--to", args.to,
+        "--fdrpc", str(connection_sks[0].fileno()),
+        "--fdmem", str(connection_sks[1].fileno())])
 
-	# Call p.haul
-	print "Exec p.haul: {0}".format(" ".join(target_args))
-	os.system(" ".join(target_args))
+    # Call p.haul
+    print "Exec p.haul: {0}".format(" ".join(target_args))
+    os.system(" ".join(target_args))
 
 
 # Initialize arguments parser
@@ -99,31 +99,31 @@ subparsers = parser.add_subparsers(title="Subcommands")
 service_parser = subparsers.add_parser("service", help="Service mode")
 service_parser.set_defaults(func=run_phaul_service)
 service_parser.add_argument("--bind-addr", help="IP to bind to", type=str,
-	default=default_service_bind_addr)
+    default=default_service_bind_addr)
 service_parser.add_argument("--bind-port", help="Port to bind to", type=int,
-	default=default_rpc_port)
+    default=default_rpc_port)
 service_parser.add_argument("--path", help="Path to p.haul-service script",
-	default=os.path.join(os.path.dirname(__file__), "p.haul-service"))
+    default=os.path.join(os.path.dirname(__file__), "p.haul-service"))
 service_parser.add_argument("--one-shot",
-	help="Do not run in loop to accept multiple connections",
-	default=False, action='store_true')
+    help="Do not run in loop to accept multiple connections",
+    default=False, action='store_true')
 service_parser.add_argument("--web-gui",
-	help="Start web gui", default = False, action = 'store_true')
+    help="Start web gui", default = False, action = 'store_true')
 service_parser.add_argument("--web-partner",
-	help="Start web gui", type = str, default = None)
+    help="Start web gui", type = str, default = None)
 
 # Initialize client mode arguments parser
 client_parser = subparsers.add_parser("client", help="Client mode")
 client_parser.set_defaults(func=run_phaul_client)
 client_parser.add_argument("to", help="IP where to haul")
 client_parser.add_argument("--port", help="Port where to haul", type=int,
-	default=default_rpc_port)
+    default=default_rpc_port)
 client_parser.add_argument("--path", help="Path to p.haul script",
-	default=os.path.join(os.path.dirname(__file__), "p.haul"))
+    default=os.path.join(os.path.dirname(__file__), "p.haul"))
 
 # Parse arguments and run wrap in specified mode
 args, unknown_args = parser.parse_known_args()
 try:
-	args.func(args, unknown_args)
+    args.func(args, unknown_args)
 except KeyboardInterrupt:
-	pass
+    pass

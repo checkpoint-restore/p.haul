@@ -53,58 +53,58 @@ SSH options:\n\
 See p.haul-wrap --help and p.haul --help for PHAUL_WRAP_OPTIONS\n"
 
 while [ "$1" != "" ]; do
-	case $1 in
-	"--ssh-compression")
-		SERVER_FLAGS="${SERVER_FLAGS} -C"
-		TUNNEL_FLAGS="${TUNNEL_FLAGS} -C"
-		;;
-	"--ssh-username")
-		shift
-		USER=$1
-		;;
-	"--ssh-loc-port")
-		shift
-		LOC_PORT=$1
-		;;
-	"--port")
-		# Extract --port option(if present).
-		# --port LOC_PORT is added below.
-		shift
-		REM_PORT=$1
-		;;
-	"--ssh-ph-exec")
-		shift
-		PH_EXEC=$1
-		;;
-	"--ssh-ph-wrap-exec")
-		shift
-		PH_WRAP_EXEC=$1
-		;;
-	"--ssh-phs-exec")
-		shift
-		PHS_EXEC=$1
-		;;
-	"--ssh-phs-wrap-exec")
-		shift
-		PHS_WRAP_EXEC=$1
-		;;
-	"--ssh-port")
-		shift
-		PORT=$1
-		;;
-	"--ssh-log")
-		shift
-		LOG=$1
-		;;
-	"--help")
-		printf "${usage}"
-		exit 0
-		;;
-	*)
-		PH_WRAP_OPTS+=($1)
-		;;
-	esac
-	shift
+    case $1 in
+    "--ssh-compression")
+        SERVER_FLAGS="${SERVER_FLAGS} -C"
+        TUNNEL_FLAGS="${TUNNEL_FLAGS} -C"
+        ;;
+    "--ssh-username")
+        shift
+        USER=$1
+        ;;
+    "--ssh-loc-port")
+        shift
+        LOC_PORT=$1
+        ;;
+    "--port")
+        # Extract --port option(if present).
+        # --port LOC_PORT is added below.
+        shift
+        REM_PORT=$1
+        ;;
+    "--ssh-ph-exec")
+        shift
+        PH_EXEC=$1
+        ;;
+    "--ssh-ph-wrap-exec")
+        shift
+        PH_WRAP_EXEC=$1
+        ;;
+    "--ssh-phs-exec")
+        shift
+        PHS_EXEC=$1
+        ;;
+    "--ssh-phs-wrap-exec")
+        shift
+        PHS_WRAP_EXEC=$1
+        ;;
+    "--ssh-port")
+        shift
+        PORT=$1
+        ;;
+    "--ssh-log")
+        shift
+        LOG=$1
+        ;;
+    "--help")
+        printf "${usage}"
+        exit 0
+        ;;
+    *)
+        PH_WRAP_OPTS+=($1)
+        ;;
+    esac
+    shift
 done
 
 # Replace p.haul positional "to" option with 127.0.0.1
