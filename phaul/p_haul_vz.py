@@ -10,7 +10,7 @@ import criu_cr
 import criu_api
 import util
 import fs_haul_ploop
-import pycriu.rpc
+import pycriu.rpc_pb2
 
 
 vz_global_conf = "/etc/vz/vz.conf"

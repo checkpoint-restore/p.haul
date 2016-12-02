@@ -2,7 +2,7 @@
 # CRIU requests creation and initialization helper methods
 #
 
-import pycriu.rpc
+import pycriu.rpc_pb2
 
 
 def _build_names(name_strings):
