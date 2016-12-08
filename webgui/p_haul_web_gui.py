@@ -14,13 +14,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import argparse
 import flask
-import json
 import os
 import requests
 import socket
-import sys
 
 default_port = 8080
 partner = "localhost"
@@ -29,8 +26,6 @@ rpc_port = 12345
 
 APP = flask.Flask(__name__)
 
-# this handles /procs
-import webgui.procs
 
 @APP.after_request
 def add_header(response):
@@ -65,9 +60,10 @@ def register():
 
 @APP.route('/migrate')
 def migrate():
-    """
-        Attempt to migrate a process, where the PID is given in the URL
-        parameter "pid".
+    """Attempt to migrate a process
+
+    Attempt to migrate a process, where the PID is given in the URL
+    parameter "pid".
     """
 
     pid = flask.request.args.get('pid')
@@ -90,7 +86,7 @@ def migrate():
                         "--fdmem", str(connection_sks[1].fileno())])
 
     # Call p.haul
-    print "Exec p.haul: {0}".format(" ".join(target_args))
+    print("Exec p.haul: {0}".format(" ".join(target_args)))
     os.system(" ".join(target_args))
 
     return flask.jsonify({"succeeded": True})
@@ -108,6 +104,6 @@ def start_web_gui(migration_partner, _rpc_port, _debug=False):
                                    (partner, default_port),
                                    data={"partner": partner}
                                    ).json()['your_ip']
-        except:
+        except Exception:
             pass
     APP.run(host='0.0.0.0', port=default_port, debug=_debug, threaded=True)
