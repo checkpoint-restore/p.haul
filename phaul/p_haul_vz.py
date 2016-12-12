@@ -10,7 +10,7 @@ import criu_cr
 import criu_api
 import util
 import fs_haul_ploop
-import pycriu.rpc
+import pycriu.rpc_pb2
 
 
 vz_global_conf = "/etc/vz/vz.conf"
@@ -304,6 +304,8 @@ class p_haul_type:
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		proc_output = proc.communicate()[0]
 		util.log_subprocess_output(proc_output)
+		if proc.returncode != 0:
+			raise Exception("Start failed ({0})".format(proc.returncode))
 		self._fs_mounted = True
 
 	def stop(self, umount):

@@ -49,10 +49,11 @@ class iter_consts:
 
 
 class phaul_iter_worker:
-	def __init__(self, p_type, dst_id, mode, connection):
+	def __init__(self, p_type, dst_id, mode, connection, nostart):
 		self.__mode = mode
 		self.connection = connection
 		self.target_host = xem_rpc_client.rpc_proxy(self.connection.rpc_sk)
+		self.nostart = nostart
 
 		logging.info("Setting up local")
 		self.htype = htype.get_src(p_type)
@@ -294,10 +295,13 @@ class phaul_iter_worker:
 			fsstats = self.fs.stop_migration()
 			migration_stats.handle_iteration(fsstats)
 
-			# Start htype on target
-			logging.info("Asking target host to start")
-			self.target_host.start_htype()
+			# umount before start on target, or we fail on vzstorage
+			self.htype.umount()
 
+			if not self.nostart:
+				# Start htype on target
+				logging.info("Asking target host to start")
+				self.target_host.start_htype()
 		except:
 			self.htype.migration_fail(self.fs)
 			self.htype.start()

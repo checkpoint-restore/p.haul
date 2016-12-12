@@ -3,7 +3,7 @@
 #
 
 import logging
-import pycriu.rpc
+import pycriu.rpc_pb2
 import criu_req
 
 
