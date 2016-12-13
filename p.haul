@@ -27,8 +27,8 @@ args = phaul.args_parser.parse_client_args()
 
 # Configure logging
 logging.basicConfig(filename=args.log_file, filemode="a", level=logging.INFO,
-	format="%(asctime)s.%(msecs)03d: %(process)d: %(message)s",
-	datefmt="%H:%M:%S")
+    format="%(asctime)s.%(msecs)03d: %(process)d: %(message)s",
+    datefmt="%H:%M:%S")
 
 # Setup hook to log uncaught exceptions
 sys.excepthook = phaul.util.log_uncaught_exception
@@ -42,7 +42,7 @@ connection = phaul.connection.establish(args.fdrpc, args.fdmem, args.fdfs)
 # Start the migration
 ph_type = args.type, args.id
 worker = phaul.iters.phaul_iter_worker(ph_type, args.dst_id, args.mode,
-	connection, args.nostart)
+    connection, args.nostart)
 worker.set_options(vars(args))
 worker.start_migration()
 
