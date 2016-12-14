@@ -1,12 +1,12 @@
-import os
-import fcntl
 import errno
+import fcntl
 import logging
+import os
 import socket
 import tarfile
 
 
-class tarfile_fileobj_wrap:
+class tarfile_fileobj_wrap(object):
 	"""Helper class provides read/write interface for socket object
 
 	Current helper class wrap recv/send socket methods in read/write interface.
@@ -29,8 +29,7 @@ class tarfile_fileobj_wrap:
 		return len(data)
 
 	def discard_unread_input(self):
-		"""
-		Cleanup socket after tarfile
+		"""Cleanup socket after tarfile
 
 		tarfile module always align data on source side according to RECORDSIZE
 		constant, but it don't read aligning bytes on target side in some cases
@@ -43,7 +42,7 @@ class tarfile_fileobj_wrap:
 			self.__nread += tarfile.RECORDSIZE - remainder
 
 
-class net_dev:
+class net_dev(object):
 	def __init__(self, name=None, pair=None, link=None):
 		self.name = name
 		self.pair = pair

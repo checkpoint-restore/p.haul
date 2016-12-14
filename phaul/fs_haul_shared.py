@@ -5,7 +5,7 @@
 import logging
 
 
-class p_haul_fs:
+class p_haul_fs(object):
 	def __init__(self):
 		logging.info("Initilized shared FS hauler")
 

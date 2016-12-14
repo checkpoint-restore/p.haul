@@ -1,13 +1,13 @@
-import time
 import logging
+import time
 
 
-class fs_iter_stats:
+class fs_iter_stats(object):
 	def __init__(self, bytes_xferred):
 		self.bytes_xferred = bytes_xferred
 
 
-class live_stats:
+class live_stats(object):
 	def __init__(self):
 		self.__start_time = 0.0
 		self.__end_time = 0.0
@@ -45,7 +45,7 @@ class live_stats:
 
 		logging.info("\t   total time is ~%.2lf sec", total_time)
 		logging.info("\t  frozen time is ~%.2lf sec (%s)", frozen_time,
-			str(frozen_times))
+					str(frozen_times))
 		logging.info("\t restore time is ~%.2lf sec", restore_time)
 		logging.info("\timg sync time is ~%.2lf sec", self.__img_sync_time)
 
@@ -53,7 +53,7 @@ class live_stats:
 		return usec / 1000000.
 
 
-class restart_stats:
+class restart_stats(object):
 	def __init__(self):
 		self.__start_time = 0.0
 		self.__end_time = 0.0
@@ -73,13 +73,13 @@ class restart_stats:
 
 	def __print_overall(self):
 		logging.info("\t   total time is ~%.2lf sec",
-			self.__end_time - self.__start_time)
+					self.__end_time - self.__start_time)
 
 
 def _print_dstats(dstats):
 	if dstats:
 		logging.info("\tDumped %d pages, %d skipped",
-			dstats.pages_written, dstats.pages_skipped_parent)
+					dstats.pages_written, dstats.pages_skipped_parent)
 
 
 def _print_fsstats(fsstats):
@@ -89,4 +89,4 @@ def _print_fsstats(fsstats):
 		if mbytes_xferred != 0:
 			mbytes_xferred_str = " (~{0}Mb)".format(mbytes_xferred)
 		logging.info("\tFs driver transfer %d bytes%s",
-			fsstats.bytes_xferred, mbytes_xferred_str)
+					fsstats.bytes_xferred, mbytes_xferred_str)

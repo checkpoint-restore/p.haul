@@ -3,7 +3,9 @@
 #
 
 import logging
+
 import pycriu.rpc_pb2
+
 import criu_req
 
 
@@ -51,7 +53,8 @@ def criu_restore(htype, img, connection):
 	resp = connection.send_req(req)
 	while True:
 		if resp.type == pycriu.rpc.NOTIFY:
-			logging.info("\t\tNotify (%s.%d)", resp.notify.script, resp.notify.pid)
+			logging.info("\t\tNotify (%s.%d)",
+						resp.notify.script, resp.notify.pid)
 			if resp.notify.script == "setup-namespaces":
 				#
 				# At that point we have only one task

@@ -2,16 +2,17 @@
 # P.HAUL code, that helps on the target node (rpyc service)
 #
 
-import logging
 import distutils.version
-import images
+import logging
+
 import criu_api
 import criu_req
 import htype
+import images
 import iters
 
 
-class phaul_service:
+class phaul_service(object):
 	def __init__(self, connection):
 		self.connection = connection
 		self.htype = None
@@ -106,8 +107,9 @@ class phaul_service:
 		if not target_version:
 			logging.info("\t`- Can't get criu version")
 			return False
-		result = (distutils.version.LooseVersion(source_version) <=
-			distutils.version.LooseVersion(target_version))
+		lsource_version = distutils.version.LooseVersion(source_version)
+		ltarget_version = distutils.version.LooseVersion(target_version)
+		result = lsource_version <= ltarget_version
 		logging.info("\t`- %s -> %s", source_version, target_version)
 		logging.info("\t`- %s", result)
 		return result

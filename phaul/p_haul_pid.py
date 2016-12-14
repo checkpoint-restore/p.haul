@@ -3,11 +3,12 @@
 #
 
 import logging
+
 import criu_cr
 import fs_haul_shared
 
 
-class p_haul_type:
+class p_haul_type(object):
 	def __init__(self, id):
 		self.pid = int(id)
 		self._pidfile = None

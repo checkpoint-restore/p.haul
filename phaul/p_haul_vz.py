@@ -2,15 +2,17 @@
 # Virtuozzo containers hauler module
 #
 
-import os
-import subprocess
-import shlex
 import logging
-import criu_cr
-import criu_api
+import os
+import shlex
+import subprocess
 import util
-import fs_haul_ploop
+
 import pycriu.rpc_pb2
+
+import criu_api
+import criu_cr
+import fs_haul_ploop
 
 
 vz_global_conf = "/etc/vz/vz.conf"
@@ -36,7 +38,7 @@ vz_cgroup_mount_map = {
 }
 
 
-class p_haul_type:
+class p_haul_type(object):
 	def __init__(self, ctid):
 		self._ctid = ctid
 		self._ct_priv = ""
@@ -74,22 +76,23 @@ class p_haul_type:
 				elif pa[0] == "bridge":
 					v_bridge = pa[1]
 			if v_in and v_out:
-				logging.info("\tCollect %s -> %s (%s) veth", v_in, v_out, v_bridge)
+				logging.info("\tCollect %s -> %s (%s) veth",
+							v_in, v_out, v_bridge)
 				self._veths.append(util.net_dev(v_in, v_out, v_bridge))
 
 		# Extract private path from config
 		if "VE_PRIVATE" in config:
 			self._ct_priv = _expand_veid_var(config["VE_PRIVATE"], self._ctid)
 		else:
-			self._ct_priv = _expand_veid_var(global_config["VE_PRIVATE"],
-				self._ctid)
+			self._ct_priv = _expand_veid_var(
+				global_config["VE_PRIVATE"], self._ctid)
 
 		# Extract root path from config
 		if "VE_ROOT" in config:
 			self._ct_root = _expand_veid_var(config["VE_ROOT"], self._ctid)
 		else:
-			self._ct_root = _expand_veid_var(global_config["VE_ROOT"],
-				self._ctid)
+			self._ct_root = _expand_veid_var(
+				global_config["VE_ROOT"], self._ctid)
 
 	def __load_ct_config_dst(self, path):
 		if not os.path.isfile(self.__ct_config_path(path)):
@@ -231,10 +234,14 @@ class p_haul_type:
 			self.__setup_restore_extra_args(args_path, img, connection)
 			# Run vzctl restore
 			logging.info("Starting vzctl restore")
-			proc = subprocess.Popen([vzctl_bin, "--skipowner", "--skiplock", "restore",
-				self._ctid, "--skip_arpdetect", "--dumpfile", img.image_dir()],
-				stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+			proc = subprocess.Popen([vzctl_bin, "--skipowner", "--skiplock",
+									"restore", self._ctid, "--skip_arpdetect",
+									"--dumpfile", img.image_dir()],
+									stdout=subprocess.PIPE,
+									stderr=subprocess.STDOUT)
 			proc_output = proc.communicate()[0]
+
 			util.log_subprocess_output(proc_output)
 			if proc.returncode != 0:
 				raise Exception("Restore failed ({0})".format(proc.returncode))
@@ -294,7 +301,8 @@ class p_haul_type:
 	def target_cleanup(self, src_data):
 		if "shareds" in src_data:
 			for ploop in src_data["shareds"]:
-				fs_haul_ploop.merge_ploop_snapshot(ploop["ddxml"], ploop["guid"])
+				fs_haul_ploop.merge_ploop_snapshot(
+					ploop["ddxml"], ploop["guid"])
 
 	def start(self):
 		logging.info("Starting CT")
@@ -351,8 +359,7 @@ class p_haul_type:
 		return True
 
 	def __parse_fdfs_arg(self, fdfs):
-		"""
-		Parse string containing list of ploop deltas with socket fds
+		"""Parse string containing list of ploop deltas with socket fds
 
 		String contain list of active ploop deltas with corresponding socket
 		file descriptors in format %delta_path1%:%socket_fd1%[,...]. Parse it
@@ -368,13 +375,13 @@ class p_haul_type:
 		deltas = []
 		for delta in fdfs.split(FDFS_DELTAS_SEPARATOR):
 			path, dummy, fd = delta.rpartition(FDFS_PAIR_SEPARATOR)
-			deltas.append((fs_haul_ploop.get_delta_abspath(path, self._ct_priv), int(fd)))
+			delta_path = fs_haul_ploop.get_delta_abspath(path, self._ct_priv)
+			deltas.append((delta_path, int(fd)))
 
 		return deltas
 
 	def __parse_secondary_disks_arg(self, disks_arg):
-		"""
-		Parse string containing list of secondary disks in specific format
+		"""Parse string containing list of secondary disks in specific format
 
 		String contain list of secondary ploop disks in format
 		%uuid%:%major%:%minor%[,...]. Consider all additional disks of
@@ -398,8 +405,10 @@ class p_haul_type:
 
 def add_hauler_args(parser):
 	"""Add Virtuozzo specific command line arguments"""
-	parser.add_argument("--vz-shared-disks", help="List of shared storage disks")
-	parser.add_argument("--vz-secondary-disks", help="List of secondary ploop disks")
+	parser.add_argument("--vz-shared-disks",
+						help="List of shared storage disks")
+	parser.add_argument("--vz-secondary-disks",
+						help="List of secondary ploop disks")
 
 
 def _parse_vz_config(body):

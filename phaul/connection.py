@@ -8,7 +8,7 @@ import socket
 import util
 
 
-class connection:
+class connection(object):
 	"""p.haul connection
 
 	Class encapsulate connections reqired for p.haul work, including rpc socket
@@ -33,7 +33,8 @@ def establish(fdrpc, fdmem, fdfs):
 	with domain AF_INET and type SOCK_STREAM.
 	"""
 
-	logging.info("Use existing connections, fdrpc=%d fdmem=%d fdfs=%s", fdrpc,
+	logging.info(
+		"Use existing connections, fdrpc=%d fdmem=%d fdfs=%s", fdrpc,
 		fdmem, fdfs)
 
 	# Create rpc socket

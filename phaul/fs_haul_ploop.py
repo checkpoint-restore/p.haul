@@ -2,13 +2,15 @@
 # ploop disk hauler
 #
 
+import logging
 import os
 import shutil
-import logging
 import threading
+
 import libploop
-import mstats
+
 import iters
+import mstats
 
 
 DDXML_FILENAME = "DiskDescriptor.xml"
@@ -21,8 +23,7 @@ def get_ddxml_path(path):
 
 
 def get_delta_abspath(delta_path, ct_priv):
-	"""
-	Transform delta path to absolute form
+	"""Transform delta path to absolute form
 
 	If delta path starts with a slash it is already in absolute form,
 	otherwise it is relative to containers private.
@@ -38,14 +39,15 @@ def merge_ploop_snapshot(ddxml, guid):
 	libploop.snapshot(ddxml).delete(guid)
 
 
-class shared_ploop:
+class shared_ploop(object):
 	def __init__(self, path):
 		self.__backup_ddxml = get_ddxml_path(path) + ".copy"
 		self.__orig_ddxml = get_ddxml_path(path)
 
 	def prepare(self):
 		shutil.copyfile(self.__orig_ddxml, self.__backup_ddxml)
-		self.__orig_guid = libploop.snapshot(self.__orig_ddxml).create_offline()
+		self.__orig_guid = libploop.snapshot(
+			self.__orig_ddxml).create_offline()
 		self.__backup_guid = libploop.snapshot(self.__backup_ddxml).create()
 
 	def restore(self):
@@ -55,7 +57,7 @@ class shared_ploop:
 
 	def cleanup(self):
 		if self.__orig_guid:
-			# TODO add delta removing when igor add it to libploop
+			# TODO(dguryanov) add delta removing when igor add it to libploop
 			os.remove(self.__backup_ddxml)
 			os.remove(self.__backup_ddxml + ".lck")
 
@@ -63,7 +65,7 @@ class shared_ploop:
 		return {"ddxml": self.__orig_ddxml, "guid": self.__orig_guid}
 
 
-class p_haul_fs:
+class p_haul_fs(object):
 	def __init__(self, deltas, ct_priv):
 		"""Initialize ploop disks hauler
 
@@ -85,11 +87,12 @@ class p_haul_fs:
 	def __parse_shared_ploops(self, shareds):
 		if not shareds:
 			return []
-		return (get_delta_abspath(s, self.__ct_priv) for s in shareds.split(","))
+		return (get_delta_abspath(s, self.__ct_priv)
+				for s in shareds.split(","))
 
 	def set_options(self, opts):
 		if iters.is_live_mode(opts.get("mode", None)):
-			shareds = self.__parse_shared_ploops(opts.get("vz_shared_disks", []))
+			shareds = self.__parse_shared_ploops(opts.get("vz_shared_disks"))
 			for shared in shareds:
 				self.__shared_ploops.append(shared_ploop(shared))
 
@@ -148,7 +151,7 @@ class p_haul_fs:
 			raise Exception("{0} file missing".format(ddxml_path))
 
 
-class p_haul_fs_receiver:
+class p_haul_fs_receiver(object):
 	def __init__(self, deltas):
 		"""Initialize ploop disks receiver
 
@@ -196,5 +199,5 @@ class delta_receiver(threading.Thread):
 	def run(self):
 		try:
 			libploop.ploopcopy_receiver(self.__path, self.__fd)
-		except:
+		except Exception:
 			logging.exception("Exception in %s delta receiver", self.__path)

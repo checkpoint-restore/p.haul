@@ -13,7 +13,7 @@
 #endif
 
 #ifndef CLONE_NEWPID
-#define CLONE_NEWPID    0x20000000
+#define CLONE_NEWPID	0x20000000
 #endif
 
 #define STK_SIZE	(16 * PAGE_SIZE)

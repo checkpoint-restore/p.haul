@@ -2,20 +2,21 @@
 # images driver for migration (without FS transfer)
 #
 
-import os
-import tempfile
-import tarfile
-import time
-import shutil
-import threading
 import logging
+import os
+import shutil
+import tarfile
+import tempfile
+import threading
+import time
 import util
+
 import criu_api
 
 def_path = "/var/local/p.haul-fs/"
 
 
-class opendir:
+class opendir(object):
 	def __init__(self, path):
 		self._dirname = path
 		self._dirfd = os.open(path, os.O_DIRECTORY)
@@ -46,17 +47,17 @@ class untar_thread(threading.Thread):
 			tf.extractall(self.__dir)
 			tf.close()
 			tf_fileobj.discard_unread_input()
-		except:
+		except Exception:
 			logging.exception("Exception in untar_thread")
 
 
-class img_tar:
+class img_tar(object):
 	def __init__(self, sk, dirname):
 		tf_fileobj = util.tarfile_fileobj_wrap(sk)
 		self.__tf = tarfile.open(mode="w|", fileobj=tf_fileobj)
 		self.__dir = dirname
 
-	def add(self, img, path = None):
+	def add(self, img, path=None):
 		if not path:
 			path = os.path.join(self.__dir, img)
 
@@ -66,7 +67,7 @@ class img_tar:
 		self.__tf.close()
 
 
-class phaul_images:
+class phaul_images(object):
 	WDIR = 1
 	IMGDIR = 2
 
