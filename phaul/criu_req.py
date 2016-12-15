@@ -31,7 +31,7 @@ def get_name(req_type):
 	return _names[req_type]
 
 
-def _make_req(typ, htype = None):
+def _make_req(typ, htype=None):
 	"""Prepare generic criu request"""
 	req = pycriu.rpc.criu_req()
 	req.type = typ
@@ -121,7 +121,7 @@ def make_restore_req(htype, img, nroot):
 		req.opts.tcp_established = True
 
 	for veth in htype.veths():
-		req.opts.veths.add(if_in = veth.name, if_out = veth.pair)
+		req.opts.veths.add(if_in=veth.name, if_out=veth.pair)
 
 	if nroot:
 		req.opts.root = nroot

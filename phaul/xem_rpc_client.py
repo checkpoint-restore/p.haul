@@ -6,7 +6,7 @@ import logging
 import xem_rpc
 
 
-class _rpc_proxy_caller:
+class _rpc_proxy_caller(object):
 	def __init__(self, sk, typ, fname):
 		self._rpc_sk = sk
 		self._fn_typ = typ
@@ -28,7 +28,7 @@ class _rpc_proxy_caller:
 			raise Exception("Proto resp error")
 
 
-class rpc_proxy:
+class rpc_proxy(object):
 	def __init__(self, sk, *args):
 		self._rpc_sk = sk
 		c = _rpc_proxy_caller(self._rpc_sk, xem_rpc.RPC_CMD, "init_rpc")

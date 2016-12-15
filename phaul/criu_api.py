@@ -3,13 +3,15 @@
 # Includes class to work with CRIU service and helpers
 #
 
-import socket
+import logging
 import os
 import re
+import socket
 import subprocess
-import logging
 import util
+
 import pycriu
+
 import criu_req
 
 criu_binary = "criu"
@@ -24,7 +26,7 @@ def_verb = 2
 #
 
 
-class criu_conn:
+class criu_conn(object):
 	def __init__(self, mem_sk):
 		self._iter = 0
 		self.verb = def_verb
@@ -32,8 +34,10 @@ class criu_conn:
 		self._shell_job = False
 		css = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
 		util.set_cloexec(css[1])
-		logging.info("Passing (ctl:%d, data:%d) pair to CRIU", css[0].fileno(), mem_sk.fileno())
-		self._swrk = subprocess.Popen([criu_binary, "swrk", "%d" % css[0].fileno()])
+		logging.info("Passing (ctl:%d, data:%d) pair to CRIU",
+					css[0].fileno(), mem_sk.fileno())
+		self._swrk = subprocess.Popen([criu_binary,
+									"swrk", "%d" % css[0].fileno()])
 		css[0].close()
 		self._cs = css[1]
 		self._last_req = -1
@@ -54,7 +58,8 @@ class criu_conn:
 		resp = pycriu.rpc.criu_resp()
 		resp.ParseFromString(self._cs.recv(1024))
 		if resp.type not in (pycriu.rpc.NOTIFY, self._last_req):
-			raise Exception("CRIU RPC error (%d/%d)" % (resp.type, self._last_req))
+			raise Exception("CRIU RPC error (%d/%d)" %
+							(resp.type, self._last_req))
 
 		return resp
 
@@ -69,7 +74,7 @@ class criu_conn:
 
 		return self._recv_resp()
 
-	def ack_notify(self, success = True):
+	def ack_notify(self, success=True):
 		req = pycriu.rpc.criu_req()
 		req.type = pycriu.rpc.NOTIFY
 		req.notify_success = True
@@ -86,7 +91,7 @@ class criu_conn:
 
 def get_criu_version():
 	proc = subprocess.Popen([criu_binary, "-V"],
-		stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+							stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 	proc_output = proc.communicate()[0]
 	if proc.returncode == 0:
 		match = re.match("Version:\s+(\S+)", proc_output)

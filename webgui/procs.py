@@ -16,25 +16,27 @@
 
 import flask
 import json
+import os
 import psutil
 import time
-import os
 
 from webgui.p_haul_web_gui import APP
 
 
 @APP.route('/procs')
 def procs():
-    """
-        This function is responsible for listing the processes on this machine as
-        a JSON object, where children processes are stored hierarchically
-        beneath their parent processes.
+    """List processes
+
+    This function is responsible for listing the processes
+    on this machine as a JSON object, where children processes
+    are stored hierarchically beneath their parent processes.
     """
 
     def generate():
-        """
-            Respond to an HTTP GET request with a stream of events containing
-            JSON strings.
+        """Respond to an HTTP GET request
+
+        Respond to an HTTP GET request with a stream of events
+        containing JSON strings.
         """
 
         oldroot = {}
@@ -52,7 +54,7 @@ def procs():
                 else:
                     try:
                         name = os.path.basename(p.cmdline[0])
-                    except:
+                    except Exception:
                         name = p.name
                 proc = {
                     # name and ppid are either functions or variables in
@@ -81,9 +83,10 @@ def procs():
             time.sleep(1.0)
 
     def unflatten(flatprocs, proc):
-        """
-            Utility to convert a flat list of processes with references to
-            their parents' PIDs into a tree.
+        """Convert list of processes to a tree
+
+        Utility to convert a flat list of processes with references
+        to their parents' PIDs into a tree.
         """
 
         remainder = []

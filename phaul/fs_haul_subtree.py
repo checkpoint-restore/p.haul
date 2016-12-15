@@ -4,14 +4,14 @@
 # legacy OpenVZ configurations.
 #
 
-import subprocess as sp
-import os
 import logging
+import os
+import subprocess as sp
 
 rsync_log_file = "rsync.log"
 
 
-class p_haul_fs:
+class p_haul_fs(object):
 	def __init__(self, subtree_paths):
 		self.__roots = []
 		for path in subtree_paths:
@@ -37,8 +37,9 @@ class p_haul_fs:
 			# to produce big pause between the 1st pre-dump and
 			# .stop_migration
 
-			ret = sp.call(["rsync", "-a", dir_name, dst],
-				stdout = logf, stderr = logf)
+			ret = sp.call(
+				["rsync", "-a", dir_name, dst],
+				stdout=logf, stderr=logf)
 			if ret != 0:
 				raise Exception("Rsync failed")
 

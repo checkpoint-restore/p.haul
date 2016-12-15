@@ -2,11 +2,11 @@
 # RPC server implementation
 #
 
-import socket
+import logging
 import select
+import socket
 import threading
 import traceback
-import logging
 
 rpc_sk_buf = 16384
 
@@ -17,7 +17,7 @@ RPC_RESP = 1
 RPC_EXC = 2
 
 
-class _rpc_server_sk:
+class _rpc_server_sk(object):
 	def __init__(self, sk):
 		self._sk = sk
 		self._master = None
@@ -58,7 +58,7 @@ class _rpc_server_sk:
 		self._master.on_connect(*args)
 
 
-class _rpc_stop_fd:
+class _rpc_stop_fd(object):
 	def __init__(self, fd):
 		self._fd = fd
 
@@ -69,7 +69,7 @@ class _rpc_stop_fd:
 		mgr.stop()
 
 
-class _rpc_server_manager:
+class _rpc_server_manager(object):
 	def __init__(self, srv_class, connection):
 		self._srv_class = srv_class
 		self._connection = connection
@@ -111,7 +111,7 @@ class rpc_threaded_srv(threading.Thread):
 	def run(self):
 		try:
 			self._mgr.loop(self._stop_fd)
-		except:
+		except Exception:
 			logging.exception("Exception in rpc_threaded_srv")
 
 	def init_stop_fd(self):

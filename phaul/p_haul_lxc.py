@@ -2,20 +2,21 @@
 # LinuX Containers hauler module
 #
 
+import logging
 import os
 import shutil
-import logging
-import criu_cr
+from subprocess import PIPE
+from subprocess import Popen
 import util
-import fs_haul_shared
-from subprocess import Popen, PIPE
 
+import criu_cr
+import fs_haul_shared
 
 lxc_dir = "/var/lib/lxc/"
 lxc_rootfs_dir = "/usr/lib64/lxc/rootfs"
 
 
-class p_haul_type:
+class p_haul_type(object):
 	def __init__(self, name):
 		self._ctname = name
 		#
@@ -83,14 +84,14 @@ class p_haul_type:
 	def root_task_pid(self):
 		pid = -1
 
-		pd = Popen(["lxc-info", "-n", self._ctname], stdout = PIPE)
+		pd = Popen(["lxc-info", "-n", self._ctname], stdout=PIPE)
 		for l in pd.stdout:
 			if l.startswith("PID:"):
 				pid = int(l.split(":")[1])
 		status = pd.wait()
 		if status:
 			raise Exception("lxc info -n %s failed: %d" %
-						(self._ctname, status))
+							(self._ctname, status))
 		if pid == -1:
 			raise Exception("CT isn't running")
 		return pid

@@ -11,9 +11,9 @@ set -e
 # This script performs folowing actions:
 # 1) Launch p.haul-service on the remote and bind it to localhost:REM_PORT
 # 2) Parse cmdline options to extract ssh* opts and change
-#    p.haul opts appropriately, so p.haul will connect to
-#    localhost:LOC_PORT, that will be followed to the remote
-#    through the ssh tunnel.
+#	 p.haul opts appropriately, so p.haul will connect to
+#	 localhost:LOC_PORT, that will be followed to the remote
+#	 through the ssh tunnel.
 # 3) Establish ssh tunnel localhost:LOC_PORT->SSH->localhost:REM_PORT.
 # 4) Launch p.haul to start migration.
 
@@ -39,16 +39,16 @@ usage=\
 Usage: p.haul-ssh [SSH_OPTIONS] [PHAUL_WRAP_OPTIONS]
 \n\
 SSH options:\n\
-  --ssh-compression   Use compression in ssh tunnel\n\
-  --ssh-username      Remote username (current user by default)\n\
-  --ssh-loc-port      Local port to use for forwarding (${LOC_PORT} by default)\n\
-  --ssh-port          SSH port (${PORT} by default)\n\
-  --ssh-log           Logfile for service log\n\
-  --ssh-ph-exec       Path to p.haul executable\n\
+  --ssh-compression	  Use compression in ssh tunnel\n\
+  --ssh-username	  Remote username (current user by default)\n\
+  --ssh-loc-port	  Local port to use for forwarding (${LOC_PORT} by default)\n\
+  --ssh-port		  SSH port (${PORT} by default)\n\
+  --ssh-log			  Logfile for service log\n\
+  --ssh-ph-exec		  Path to p.haul executable\n\
   --ssh-ph-wrap-exec  Path to p.haul-wrap executable\n\
-  --ssh-phs-exec      Path to p.haul-service executable on the remote machine\n\
+  --ssh-phs-exec	  Path to p.haul-service executable on the remote machine\n\
   --ssh-phs-wrap-exec Path to p.haul-wrap executable on the remote machine\n\
-  --help              Print this messange\n\
+  --help			  Print this messange\n\
 \n\
 See p.haul-wrap --help and p.haul --help for PHAUL_WRAP_OPTIONS\n"
 

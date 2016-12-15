@@ -4,8 +4,8 @@
 # See p_haul_pid for comments of how a class should look like.
 #
 
-import logging
 import importlib
+import logging
 
 
 __haul_modules = {
@@ -50,7 +50,7 @@ def __get(id):
 
 	hauler_module = __get_module(hauler_name)
 	logging.debug("%s hauler imported from %s", hauler_name,
-		hauler_module.__file__)
+				hauler_module.__file__)
 	return hauler_module.p_haul_type(haulee_id)
 
 

@@ -35,21 +35,21 @@ from one node ot another (nodes can be VMs).
    * Make _local_ directory for service ($csdir)
    * Start CRIU service by root user
 
-	# criu service -o $csdir/log -v4 --daemon
+    # criu service -o $csdir/log -v4 --daemon
 
    b) p.haul
 
    * Compile and install CRIU RPC bindings with 'make install'
    * Create _local_ directory for images
 
-	# mkdir -p /var/local/p.haul-fs/
+    # mkdir -p /var/local/p.haul-fs/
 
      The path above is for now hard-coded in p_haul_img.py
 
    * On destination node start the p.haul service
 
-	[dst]# ./p.haul-service
-	Starting p.haul rpyc service
+    [dst]# ./p.haul-service
+    Starting p.haul rpyc service
 
      It will not go daemon and will print logs on the terminals
 
@@ -59,9 +59,9 @@ from one node ot another (nodes can be VMs).
    Copy p.haul/test/mtouch/ directory on $nfs and launch memory toucher
    with the run.sh script
 
-	[src]# cd $nfs/mtouch/ && ./run.sh
-	...
-	Child 12345 done, code O
+    [src]# cd $nfs/mtouch/ && ./run.sh
+    ...
+    Child 12345 done, code O
 
    The 12345 is the pid of the started process ($pid), the O (not 0,
    but O) is the child start result. If it's not O, then somehting
@@ -76,21 +76,21 @@ from one node ot another (nodes can be VMs).
 
 4. Migrate memory toucher from source node
 
-	[src]# ./p.haul pid $test_pid $destination_node_ip
-	...
-	Migration succeeded
-		total time is ~4.12 sec
-		frozen time is ~1.61 sec
-		restore time is ~1.06 sec
+    [src]# ./p.haul pid $test_pid $destination_node_ip
+    ...
+    Migration succeeded
+        total time is ~4.12 sec
+        frozen time is ~1.61 sec
+        restore time is ~1.06 sec
 
 
 5. Check that test works OK on destination node
 
-	[dst]# cd $nfs/mtouch/
-	[dst]# touch mem-touch-stop
-	[dst]# tail mem-touch.log
-	...
-	Finish
+    [dst]# cd $nfs/mtouch/
+    [dst]# touch mem-touch-stop
+    [dst]# tail mem-touch.log
+    ...
+    Finish
 
 
 6. CRIU logs and image files used durin migration are left by p.haul in the
