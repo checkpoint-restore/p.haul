@@ -116,6 +116,11 @@ def parse_client_args():
 		default=False, action='store_true',
 		help="Don't start on destination node (if run in restart mode)")
 
+	parser.add_argument(
+		"--auto-dedup",
+		default=False, action='store_true',
+		help="Do automatic deduplication of criu memory images to save disk/memory space")
+
 	# Add haulers specific arguments
 	if len(sys.argv) > 1 and sys.argv[1] in htype.get_haul_names():
 		htype.add_hauler_args(sys.argv[1], parser)

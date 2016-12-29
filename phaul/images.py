@@ -84,6 +84,7 @@ class phaul_images(object):
 		self._keep_on_close = True
 
 	def set_options(self, opts):
+		self.auto_dedup = opts["auto_dedup"]
 		self._keep_on_close = opts["keep_images"]
 
 		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())

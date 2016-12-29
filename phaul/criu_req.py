@@ -57,6 +57,7 @@ def _make_common_dump_req(typ, pid, htype, img, connection, fs):
 
 	req.opts.images_dir_fd = img.image_dir_fd()
 	req.opts.work_dir_fd = img.work_dir_fd()
+	req.opts.auto_dedup = img.auto_dedup
 	p_img = img.prev_image_dir()
 	if p_img:
 		req.opts.parent_img = p_img
@@ -93,6 +94,7 @@ def make_page_server_req(img, connection):
 	req.opts.ps.fd = connection.mem_sk_fileno()
 	req.opts.images_dir_fd = img.image_dir_fd()
 	req.opts.work_dir_fd = img.work_dir_fd()
+	req.opts.auto_dedup = img.auto_dedup
 
 	p_img = img.prev_image_dir()
 	if p_img:
@@ -115,6 +117,7 @@ def make_restore_req(htype, img, nroot):
 	req = _make_req(pycriu.rpc.RESTORE, htype)
 	req.opts.images_dir_fd = img.image_dir_fd()
 	req.opts.work_dir_fd = img.work_dir_fd()
+	req.opts.auto_dedup = img.auto_dedup
 	req.opts.notify_scripts = True
 
 	if htype.can_migrate_tcp():
