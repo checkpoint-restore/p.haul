@@ -23,18 +23,16 @@ cgexec_bin = "cgexec"
 
 
 vz_cgroup_mount_map = {
-	"/sys/fs/cgroup/cpu,cpuacct": "cpu",
-	"/sys/fs/cgroup/cpuset": "cpuset",
-	"/sys/fs/cgroup/net_cls": "net_cls",
-	"/sys/fs/cgroup/memory": "memory",
-	"/sys/fs/cgroup/devices": "devices",
-	"/sys/fs/cgroup/blkio": "blkio",
-	"/sys/fs/cgroup/freezer": "freezer",
-	"/sys/fs/cgroup/beancounter": "beancounter",
-	"/sys/fs/cgroup/ve": "ve",
-	"/sys/fs/cgroup/perf_event": "perf_event",
-	"/sys/fs/cgroup/hugetlb": "hugetlb",
-	"/sys/fs/cgroup/systemd": "systemd",
+	"cpu,cpuacct": "cpu",
+	"cpuset": "cpuset",
+	"net_cls": "net_cls",
+	"memory": "memory",
+	"devices": "devices",
+	"blkio": "blkio",
+	"freezer": "freezer",
+	"perf_event": "perf_event",
+	"hugetlb": "hugetlb",
+	"systemd": "systemd",
 }
 
 
@@ -129,7 +127,6 @@ class p_haul_type(object):
 
 	def adjust_criu_req(self, req):
 		"""Add module-specific options to criu request"""
-
 		# Specify dump specific options
 		if req.type == pycriu.rpc.DUMP:
 
@@ -140,8 +137,7 @@ class p_haul_type(object):
 			req.opts.manage_cgroups = True
 
 			# Setup mapping for external Virtuozzo specific cgroup mounts
-			for key, value in vz_cgroup_mount_map.items():
-				req.opts.ext_mnt.add(key=key, val=value)
+			self.__fill_vz_cgroup_ext_mount_map(req)
 
 			# Specify secondary ploop disks as external
 			disks = self.__parse_secondary_disks_arg(self.__secondary_disks)
@@ -161,6 +157,29 @@ class p_haul_type(object):
 
 			# Increase timeout up to 180 seconds
 			req.opts.timeout = 180
+
+	def __fill_vz_cgroup_ext_mount_map(self, req):
+		with open("/proc/self/mountinfo") as x:
+			mountinfo = x.readlines()
+		# Walk cgroups maps
+		for cgkey in vz_cgroup_mount_map:
+
+			# If key consists of two cgroups (e.g."cpu,cpuacct"), walk each
+			for cgname in cgkey.split(","):
+
+				# Substite "systemd" with "name=systemd" option
+				if cgname == "systemd":
+					cgname = "name=systemd"
+
+				# Iterate through lines in mountinfo until we find a match
+				for buf in mountinfo:
+					mi_line = buf.split()
+					if mi_line[8] != "cgroup":
+						continue
+					if cgname in mi_line[10].split(","):
+						req.opts.ext_mnt.add(key = mi_line[4],
+								val = vz_cgroup_mount_map[cgkey])
+						break
 
 	def root_task_pid(self):
 		path = "/var/run/ve/{0}.init.pid".format(self._ctid)
