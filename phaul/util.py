@@ -59,6 +59,18 @@ def ifdown(ifname):
 	os.system("ip link set %s down" % ifname)
 
 
+def lock_veth(nfchain, veth):
+	ebtables_modify("-I ip-filter-%s -j %s" % (veth, nfchain))
+
+
+def unlock_veth(nfchain, veth):
+	ebtables_modify("-D ip-filter-%s -j %s" % (veth, nfchain))
+
+
+def ebtables_modify(command):
+	os.system("ebtables %s" % command)
+
+
 def bridge_add(ifname, brname):
 	logging.info("\t\tAdd %s to %s", ifname, brname)
 	os.system("brctl addif %s %s" % (brname, ifname))
