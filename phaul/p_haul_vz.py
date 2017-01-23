@@ -7,6 +7,7 @@ import os
 import shlex
 import subprocess
 import util
+from tempfile import NamedTemporaryFile
 
 import pycriu.rpc_pb2
 
@@ -50,6 +51,14 @@ class p_haul_type(object):
 		# v_bridge is the bridge to which thie veth is attached
 		#
 		self._veths = []
+		#
+		# This part generates unique ID, since UUID (37 symbols) is too long for
+		# ebtables chain name which is 29 max. NamedTemporaryFile ensures that file
+		# is automatically self-destroyed when it's closed
+		#
+		self.__lockfile = NamedTemporaryFile(dir="/vz/tmp", prefix="criu-")
+		fname = self.__lockfile.name.split("/")
+		self._nfchain = fname[len(fname) - 1]
 		self.__verbose = criu_api.def_verb
 
 	def __load_ct_config(self, path):
@@ -293,9 +302,11 @@ class p_haul_type(object):
 	def migration_complete(self, fs, target_host):
 		fs.cleanup_shared_ploops()
 		self.umount()
+		self.net_unlock()
 		target_host.migration_complete(fs.prepare_src_data({}))
 
 	def migration_fail(self, fs):
+		self.net_unlock()
 		fs.restore_shared_ploops()
 
 	def target_cleanup(self, src_data):
@@ -340,14 +351,18 @@ class p_haul_type(object):
 		pass
 
 	def net_lock(self):
-		for veth in self._veths:
-			util.ifdown(veth.pair)
+		if self._veths:
+			logging.info("\t\tEbtables chain %s will block veth traffic for %s" % (self._nfchain, ", ".join(i.pair for i in self._veths)))
+			util.ebtables_modify("-N %s -P DROP" % self._nfchain)
+			for veth in self._veths:
+				util.lock_veth(self._nfchain, veth.pair)
 
 	def net_unlock(self):
-		for veth in self._veths:
-			util.ifup(veth.pair)
-			if veth.link and not self._bridged:
-				util.bridge_add(veth.pair, veth.link)
+		if self._veths:
+			logging.info("\t\tUnlocking veth traffic")
+			for veth in self._veths:
+				util.unlock_veth(self._nfchain, veth.pair)
+			util.ebtables_modify("-X %s" % self._nfchain)
 
 	def can_migrate_tcp(self):
 		return True
