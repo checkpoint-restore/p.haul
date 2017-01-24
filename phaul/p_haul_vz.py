@@ -359,14 +359,10 @@ class p_haul_type(object):
 		pass
 
 	def net_lock(self):
-		for veth in self._veths:
-			util.ifdown(veth.pair)
+		pass
 
 	def net_unlock(self):
-		for veth in self._veths:
-			util.ifup(veth.pair)
-			if veth.link and not self._bridged:
-				util.bridge_add(veth.pair, veth.link)
+		pass
 
 	def can_migrate_tcp(self):
 		return True
