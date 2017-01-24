@@ -13,6 +13,7 @@ __haul_modules = {
 	"pid": "p_haul_pid",
 	"lxc": "p_haul_lxc",
 	"docker": "p_haul_docker",
+	"runc": "p_haul_runc",
 }
 
 
