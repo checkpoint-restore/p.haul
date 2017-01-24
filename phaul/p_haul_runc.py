@@ -30,6 +30,24 @@ class p_haul_type(object):
 
 		self._ctid = ctid
 		self._veths = []
+		self._binds = {}
+		self._inherit_fd = {}
+
+	def _parse_self_cgroup(self):
+		# Get pairs of {subsystem: root}
+		cgroups = {}
+		with open("/proc/self/cgroup", "r") as proc_cgroups:
+			for line in proc_cgroups.readlines():
+				parts = line.split(":")
+				if len(parts) < 3:
+					logging.error("Invalid cgroup: %s", line)
+				else:
+					subsystems = parts[1].split(",")
+					for subsystem in subsystems:
+						cgroups.update(
+							{re.sub("name=", "",
+							subsystem): parts[2]})
+		return cgroups
 
 	def init_src(self):
 		try:
@@ -87,11 +105,15 @@ class p_haul_type(object):
 		if req.type in [pycriu.rpc.DUMP, pycriu.rpc.RESTORE]:
 			req.opts.manage_cgroups = True
 			req.opts.notify_scripts = True
+			for key, value in self._binds.items():
+				req.opts.ext_mnt.add(key=key, val=value)
 
 		if req.type == pycriu.rpc.RESTORE:
 			req.opts.root = self._ct_rootfs
 			req.opts.rst_sibling = True
 			req.opts.evasive_devices = True
+			for key, value in self._inherit_fd.items():
+				req.opts.inherit_fd.add(key=key, fd=value)
 
 	def root_task_pid(self):
 		return self._root_pid
@@ -173,6 +195,42 @@ class p_haul_type(object):
 			self._ct_rootfs = os.path.join(self._runc_bundle, root_path)
 		else:
 			self._ct_rootfs = root_path
+
+		if any([mount["type"] == "cgroup" for mount in
+				self._container_state["mounts"]]):
+			self_cgroups = self._parse_self_cgroup()
+			cgroup_paths = self._container_state["cgroup_paths"]
+		for mount in self._container_state["mounts"]:
+			if mount["type"] == "bind":
+				if mount["destination"].startswith(self._ct_rootfs):
+					dst = mount["destination"][len(self._ct_rootfs):]
+				else:
+					dst = mount["destination"]
+				self._binds.update({dst: mount["source"]})
+			if mount["type"] == "cgroup":
+				with open("/proc/self/mountinfo", "r") as mountinfo:
+					lines = mountinfo.readlines()
+				for subsystem, c_mp in cgroup_paths.items():
+					# Remove container ID from path
+					mountpoint = os.path.split(c_mp)[0]
+					dst = os.path.join(mount["destination"],
+							os.path.split(mountpoint)[0])
+					if dst.startswith(self._ct_rootfs):
+						dst = dst[len(self._ct_rootfs):]
+					line = next(line for line in lines
+							if mountpoint in line)
+					src = os.path.join(mountpoint,
+						os.path.relpath(
+							self_cgroups[subsystem],
+							line.split()[3]))
+					self._binds.update({dst: src})
+
+		with open(os.path.join(img.image_dir(), "descriptors.json"), "r") as descr:
+			inherits = [(dsc, i) for i, dsc in
+					enumerate(json.loads(descr.read()))
+					if "pipe:" in dsc]
+		for dsc, i in inherits:
+			self._inherit_fd.update({dsc: i})
 
 		ct_path = os.path.join(runc_run, self._ctid)
 		if not os.path.exists(ct_path):
