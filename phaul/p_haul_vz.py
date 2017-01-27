@@ -36,6 +36,11 @@ vz_cgroup_mount_map = {
 }
 
 
+vz_action_scripts = {
+	"post-network-lock" : ["/usr/libexec/criu/scripts/nfs-ports-allow.sh"]
+}
+
+
 class p_haul_type(object):
 	def __init__(self, ctid):
 		self._ctid = ctid
@@ -363,6 +368,18 @@ class p_haul_type(object):
 
 	def net_unlock(self):
 		pass
+
+	def run_action_scripts(self, stage):
+		if stage not in vz_action_scripts:
+			return
+		script_env = os.environ.copy()
+		script_env["CRTOOLS_INIT_PID"] = str(self.root_task_pid())
+		script_env["CRTOOLS_SCRIPT_ACTION"] = stage
+		for script_bin in vz_action_scripts[stage]:
+			child = subprocess.Popen(script_bin, env=script_env)
+			child.wait()
+			logging.info("\t\t\tAction script %s finished with exit code %d" %
+					(script_bin, child.returncode))
 
 	def can_migrate_tcp(self):
 		return True

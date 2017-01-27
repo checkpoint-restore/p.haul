@@ -38,6 +38,7 @@ def criu_dump(htype, pid, img, criu_connection, fs):
 		elif resp.notify.script == "network-unlock":
 			htype.net_unlock()
 
+		htype.run_action_scripts(resp.notify.script)
 		logging.info("\t\tNotify (%s)", resp.notify.script)
 		resp = criu_connection.ack_notify()
 
