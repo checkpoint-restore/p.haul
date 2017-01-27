@@ -106,6 +106,9 @@ class p_haul_type(object):
 	def net_unlock(self):
 		pass
 
+	def run_action_scripts(self, stage):
+		pass
+
 	def can_migrate_tcp(self):
 		return False
 

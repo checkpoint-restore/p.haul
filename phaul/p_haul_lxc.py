@@ -171,6 +171,9 @@ class p_haul_type(object):
 			if veth.link and not self._bridged:
 				util.bridge_add(veth.pair, veth.link)
 
+	def run_action_scripts(self, stage):
+		pass
+
 	def can_migrate_tcp(self):
 		return True
 
