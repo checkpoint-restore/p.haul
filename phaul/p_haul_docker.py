@@ -76,6 +76,9 @@ class p_haul_type(object):
 	def stop(self, umount):
 		pass
 
+	def run_action_scripts(self, stage):
+		pass
+
 	def get_fs(self, fdfs=None):
 		# use rsync for rootfs and configuration directories
 		return fs_haul_subtree.p_haul_fs(
