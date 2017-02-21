@@ -264,3 +264,6 @@ class p_haul_type(object):
 
 	def veths(self):
 		return self._veths
+
+	def run_action_scripts(self, stage):
+		pass
