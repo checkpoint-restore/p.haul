@@ -86,6 +86,7 @@ class phaul_images(object):
 	def set_options(self, opts):
 		self.auto_dedup = opts["auto_dedup"]
 		self._keep_on_close = opts["keep_images"]
+		self.tcp_skip_in_flight = True
 
 		suf = time.strftime("-%y.%m.%d-%H.%M", time.localtime())
 		util.makedirs(opts["img_path"])
