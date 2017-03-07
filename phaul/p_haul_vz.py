@@ -32,7 +32,7 @@ vz_cgroup_mount_map = {
 	"freezer": "freezer",
 	"perf_event": "perf_event",
 	"hugetlb": "hugetlb",
-	"systemd": "systemd",
+	"name=systemd": "systemd",
 	"pids": "pids",
 }
 
@@ -161,6 +161,10 @@ class p_haul_type(object):
 			req.opts.freeze_cgroup = \
 				"/sys/fs/cgroup/freezer/machine.slice/{0}/".format(self._ctid)
 
+			# Setup cgroup dump controllers
+			for cgkey in vz_cgroup_mount_map:
+				req.opts.cgroup_dump_controller.append(cgkey)
+
 			# Increase timeout up to 180 seconds
 			req.opts.timeout = 180
 
@@ -172,10 +176,6 @@ class p_haul_type(object):
 
 			# If key consists of two cgroups (e.g."cpu,cpuacct"), walk each
 			for cgname in cgkey.split(","):
-
-				# Substite "systemd" with "name=systemd" option
-				if cgname == "systemd":
-					cgname = "name=systemd"
 
 				# Iterate through lines in mountinfo until we find a match
 				for buf in mountinfo:
