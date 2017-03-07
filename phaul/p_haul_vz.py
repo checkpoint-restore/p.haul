@@ -33,6 +33,7 @@ vz_cgroup_mount_map = {
 	"perf_event": "perf_event",
 	"hugetlb": "hugetlb",
 	"systemd": "systemd",
+	"pids": "pids",
 }
 
 
