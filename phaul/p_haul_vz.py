@@ -26,6 +26,7 @@ vz_cgroup_mount_map = {
 	"cpu,cpuacct": "cpu",
 	"cpuset": "cpuset",
 	"net_cls": "net_cls",
+	"net_cls,net_prio": "net_cls,net_prio",
 	"memory": "memory",
 	"devices": "devices",
 	"blkio": "blkio",
@@ -35,6 +36,23 @@ vz_cgroup_mount_map = {
 	"name=systemd": "systemd",
 	"pids": "pids",
 }
+
+cgroup_controllers = [
+	"cpuacct,cpu",
+	"cpuset",
+	"net_cls",
+	"net_prio,net_cls",
+	"memory",
+	"devices",
+	"blkio",
+	"freezer",
+	"perf_event",
+	"hugetlb",
+	"name=systemd",
+	"pids",
+	"beancounter",
+	"ve",
+]
 
 
 vz_action_scripts = {
@@ -162,8 +180,8 @@ class p_haul_type(object):
 				"/sys/fs/cgroup/freezer/machine.slice/{0}/".format(self._ctid)
 
 			# Setup cgroup dump controllers
-			for cgkey in vz_cgroup_mount_map:
-				req.opts.cgroup_dump_controller.append(cgkey)
+			for cgname in cgroup_controllers:
+				req.opts.cgroup_dump_controller.append(cgname)
 
 			# Increase timeout up to 180 seconds
 			req.opts.timeout = 180
@@ -173,19 +191,21 @@ class p_haul_type(object):
 			mountinfo = x.readlines()
 		# Walk cgroups maps
 		for cgkey in vz_cgroup_mount_map:
-
-			# If key consists of two cgroups (e.g."cpu,cpuacct"), walk each
-			for cgname in cgkey.split(","):
-
-				# Iterate through lines in mountinfo until we find a match
-				for buf in mountinfo:
-					mi_line = buf.split()
-					if mi_line[8] != "cgroup":
-						continue
-					if cgname in mi_line[10].split(","):
-						req.opts.ext_mnt.add(key = mi_line[4],
-								val = vz_cgroup_mount_map[cgkey])
+			# Iterate through lines in mountinfo until we find a match
+			for buf in mountinfo:
+				cg_matches = True
+				mi_line = buf.split()
+				if mi_line[8] != "cgroup":
+					continue
+				# If key consists of two cgroups (e.g."cpu,cpuacct"), search each
+				for cgname in cgkey.split(","):
+					if cgname not in mi_line[10].split(","):
+						cg_matches = False
 						break
+				if cg_matches:
+					req.opts.ext_mnt.add(key = mi_line[4],
+							val = vz_cgroup_mount_map[cgkey])
+					break
 
 	def root_task_pid(self):
 		path = "/var/run/ve/{0}.init.pid".format(self._ctid)
